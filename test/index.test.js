@@ -1,0 +1,188 @@
+const GrpcLoader = require('../')
+const path = require('path')
+const grpc = require('@grpc/grpc-js')
+const { expect } = require('chai')
+
+describe('Grpc Loader', function () {
+  class Greeter {
+    constructor (loader) {
+      this._loader = loader
+    }
+
+    async init (server) {
+      server.addService(this._loader.service('test.helloworld.Greeter'), this._loader.callbackify(this, { exclude: ['init'] }))
+    }
+
+    async SayHello (ctx) {
+      const metadata = ctx.metadata.clone()
+      metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
+      ctx.sendMetadata(metadata)
+      if (metadata.get('x-throw-error').length > 0) {
+        throw new Error('throw error because x-throw-error')
+      }
+
+      if (metadata.get('x-long-delay').length > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 1000 * 10))
+      }
+
+      expect(this).to.be.an('object')
+
+      return { message: `hello, ${ctx.request.name || 'world'}` }
+    }
+
+    async SayHello2 (ctx) {
+      return this.SayHello(ctx)
+    }
+  }
+
+  it('Should sayHello from client to server', async function () {
+    const loader = new GrpcLoader({
+      location: path.resolve(__dirname, 'protos'),
+      files: ['test/helloworld/helloworld.proto']
+    })
+    await loader.init()
+
+    expect(loader._types).is.an('object')
+
+    const server = loader.initServer()
+    const servicers = [new Greeter(loader)]
+    await Promise.all(servicers.map(async s => s.init(server)))
+    const addr = { host: '127.0.0.1', port: 12305 }
+    await server.listen(addr)
+
+    await loader.initClients({
+      services: {
+        'test.helloworld.Greeter': addr.host + ':' + addr.port
+      }
+    })
+    const client = loader.client('test.helloworld.Greeter')
+    const result = await client.sayHello({ name: 'grpc' })
+    expect(result).to.be.an('object')
+    expect(result.message).to.be.eq('hello, grpc')
+
+    // 支持相同service的client访问不同host和port
+    const timeout = 20
+    const client2 = loader.client('test.helloworld.Greeter', { host: 'localhost', port: 12305, timeout })
+    const result2 = await client2.sayHello({ name: 'grpc' })
+    expect(result2).to.be.an('object')
+    expect(result2.message).to.be.eq('hello, grpc')
+
+    try {
+      await client2.sayHello({ name: 'grpc' }, loader.makeMetadata({ 'x-throw-error': 'true' }))
+      expect.fail('should not run here')
+    } catch (err) {
+      expect(/x-throw-error/.test(err.message)).to.be.eq(true)
+      expect(/SayHello/i.test(err.message)).to.be.eq(true)
+    }
+
+    const start = Date.now()
+    try {
+      await client2.sayHello({ name: 'grpc' }, loader.makeMetadata({ 'x-long-delay': 'true' }))
+      expect.fail('should not run here')
+    } catch (err) {
+      expect(Date.now() - start).to.be.lte(timeout * 1.5)
+      expect(/Deadline/i.test(err.message)).to.be.eq(true)
+      expect(/SayHello/i.test(err.message)).to.be.eq(true)
+    }
+
+    server.forceShutdown()
+  })
+
+  it('Should run with dev and metadata', async function () {
+    const loader = new GrpcLoader({
+      location: path.resolve(__dirname, 'protos'),
+      files: ['test/helloworld/helloworld.proto']
+    })
+    await loader.init({
+      isDev: true,
+      packagePrefix: 'test'
+    })
+
+    const server = loader.initServer()
+    const servicers = [new Greeter(loader)]
+    await Promise.all(servicers.map(async s => s.init(server)))
+    const addr = { host: '127.0.0.1', port: 12306 }
+    await server.listen(addr)
+
+    await loader.initClients({
+      services: {
+        'test.helloworld.Greeter': addr.host + ':' + addr.port
+      }
+    })
+    const client = loader.client('test.helloworld.Greeter')
+
+    await new Promise((resolve, reject) => {
+      const timestampClientSend = new Date()
+      const meta = loader.makeMetadata({
+        'x-cache-control': 'max-age=100',
+        'x-business-id': ['grpcity', 'testing'],
+        'x-timestamp-client': 'begin=' + timestampClientSend.toISOString()
+      })
+      const ctx = client.original.sayHello({ name: 'grpc' }, meta, (err, result) => {
+        if (err) {
+          reject(err)
+          return
+        }
+        expect(result).to.be.an('object')
+        expect(result.message).to.be.eq('hello, grpc')
+
+        resolve()
+      })
+
+      ctx.on('metadata', metadata => {
+        expect(metadata.get('x-cache-control')).to.be.an('array').deep.eq(['max-age=100'])
+        expect(metadata.get('x-business-id')).to.be.an('array').deep.eq(['grpcity, testing'])
+
+        const timestamps = metadata.get('x-timestamp-server')
+        expect(timestamps).to.be.an('array').with.lengthOf(1)
+        const timestampServerReceived = new Date(timestamps[0].split('=')[1])
+        const timeUsed = timestampServerReceived - timestampClientSend
+        expect(timeUsed).to.gte(0).lt(100)
+      })
+    })
+
+    server.forceShutdown()
+  })
+
+  it('Should run with dev with different init()', async function () {
+    const loader = new GrpcLoader({
+      location: path.resolve(__dirname, 'protos'),
+      files: ['test/helloworld/helloworld.proto']
+    })
+    await loader.init({
+      isDev: true
+    })
+  })
+})
+
+describe('Grpc protobuf message', function () {
+  const loader = new GrpcLoader({
+    location: path.resolve(__dirname, 'protos'),
+    files: ['test/helloworld/helloworld.proto']
+  })
+
+  before(async function () {
+    await loader.init({
+      isDev: true,
+      packagePrefix: 'stage.dev'
+    })
+  })
+
+  it('Should decode and encode protobuf message: HelloRequest', async function () {
+    const HelloRequest = loader.message('test.helloworld.model.HelloRequest')
+    const jsonData = { name: 'test' }
+    const buffer = HelloRequest.encode(jsonData).finish()
+    const decoded = HelloRequest.decode(buffer)
+    expect(decoded).to.be.an('object')
+    expect(decoded.name).to.be.eq(jsonData.name)
+  })
+
+  it('Should decode and encode protobuf message: HelloReply', async function () {
+    const HelloReply = loader.message('test.helloworld.model.HelloReply')
+    const jsonData = { message: 'test' }
+    const buffer = HelloReply.encode(jsonData).finish()
+    const decoded = HelloReply.decode(buffer)
+    expect(decoded).to.be.an('object')
+    expect(decoded.message).to.be.eq(jsonData.message)
+  })
+})
