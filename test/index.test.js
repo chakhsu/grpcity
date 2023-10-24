@@ -1,6 +1,5 @@
 const GrpcLoader = require('../')
 const path = require('path')
-const grpc = require('@grpc/grpc-js')
 const { expect } = require('chai')
 
 describe('Grpc Loader', function () {
