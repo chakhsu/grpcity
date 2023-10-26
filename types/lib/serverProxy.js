@@ -96,10 +96,39 @@ var ServerProxy = /** @class */ (function () {
             });
         });
     };
+    ServerProxy.prototype.shutdown = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!this._server) {
+                            return [2 /*return*/];
+                        }
+                        return [4 /*yield*/, new Promise(function (resolve, reject) {
+                                _this._server.tryShutdown(function (err) {
+                                    if (err !== null) {
+                                        reject(err);
+                                    }
+                                    else {
+                                        resolve();
+                                    }
+                                });
+                            })];
+                    case 1:
+                        _a.sent();
+                        delete this._server;
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
     ServerProxy.prototype.forceShutdown = function () {
-        var res = this._server.forceShutdown();
+        if (!this._server) {
+            return;
+        }
+        this._server.forceShutdown();
         delete this._server;
-        return res;
     };
     ServerProxy.prototype.tryShutdown = function (callback) {
         var res = this._server.tryShutdown(callback);

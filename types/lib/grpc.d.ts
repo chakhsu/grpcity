@@ -57,6 +57,7 @@ declare class GrpcLoader {
         init(...args: any[]): any;
         _server: grpc.Server;
         listen(addr: any, credentials?: any): Promise<void>;
+        shutdown(): Promise<void>;
         forceShutdown(): void;
         tryShutdown(callback: any): void;
         makeServerCredentials(rootCerts: any, keyCertPairs: any, checkClientCertificate: any): grpc.ServerCredentials;
