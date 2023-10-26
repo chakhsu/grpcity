@@ -4,10 +4,7 @@ declare class ServerProxy {
     _middleware: any[];
     init(...args: any[]): this;
     _server: grpc.Server;
-    listen({ host, port }: {
-        host: any;
-        port: any;
-    }, credentials?: any): Promise<void>;
+    listen(addr: any, credentials?: any): Promise<void>;
     forceShutdown(): void;
     tryShutdown(callback: any): void;
     makeServerCredentials(rootCerts: any, keyCertPairs: any, checkClientCertificate: any): grpc.ServerCredentials;

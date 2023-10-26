@@ -46,14 +46,16 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 var grpc = require('@grpc/grpc-js');
 var assert = require('assert');
 var compose = require('koa-compose');
+var _ = require('lodash');
 var Joi = require('joi');
 var debug = require('debug')('grpcity:serverProxy');
-var schemas = {
-    listen: Joi.object().keys({
+var addressSchema = Joi.alternatives([
+    Joi.string().regex(/:/, 'host and port like 127.0.0.1:9090'),
+    Joi.object().keys({
         host: Joi.string().ip().required(),
         port: Joi.number().integer().min(0).max(65535).required()
     })
-};
+]);
 var ServerProxy = /** @class */ (function () {
     function ServerProxy() {
         this._middleware = [];
@@ -69,24 +71,24 @@ var ServerProxy = /** @class */ (function () {
         }
         return this;
     };
-    ServerProxy.prototype.listen = function (_a, credentials) {
-        var host = _a.host, port = _a.port;
+    ServerProxy.prototype.listen = function (addr, credentials) {
         if (credentials === void 0) { credentials = undefined; }
         return __awaiter(this, void 0, void 0, function () {
-            var url, bindPort;
+            var url, bindPort, port;
             var _this = this;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         assert(this._server, 'must be first init() server before server listen()');
-                        Joi.assert({ host: host, port: port }, schemas.listen, 'server listen() params Error');
-                        debug('server listen options', { host: host, port: port });
-                        url = "".concat(host, ":").concat(port);
+                        Joi.assert(addr, addressSchema, 'server listen() params Error');
+                        debug('server listen options', addr);
+                        url = _.isString(addr) ? addr : "".concat(addr.host, ":").concat(addr.port);
                         return [4 /*yield*/, new Promise(function (resolve, reject) {
                                 _this._server.bindAsync(url, credentials || _this.makeServerCredentials(), function (err, result) { return (err ? reject(err) : resolve(result)); });
                             })];
                     case 1:
-                        bindPort = _b.sent();
+                        bindPort = _a.sent();
+                        port = addr.port ? addr.port : Number(addr.match(/:(\d+)/)[1]);
                         assert(bindPort === port, 'server bind port not to be right');
                         this._server.start();
                         return [2 /*return*/];

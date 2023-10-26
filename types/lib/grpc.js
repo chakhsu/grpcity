@@ -77,7 +77,13 @@ function prefixingDefinition(packageDefinition, packagePrefix) {
     return packageDefinition;
 }
 var addressSchema = Joi.object()
-    .pattern(/\.*/, Joi.string().regex(/:/, 'host and port like 127.0.0.1:9090'));
+    .pattern(/\.*/, Joi.alternatives([
+    Joi.string().regex(/:/, 'host and port like 127.0.0.1:9090'),
+    Joi.object().keys({
+        host: Joi.string().ip().required(),
+        port: Joi.number().integer().min(0).max(65535).required()
+    })
+]));
 var schemas = {
     constructor: Joi.array().items(Joi.object().keys({
         location: Joi.string().required(),
@@ -176,7 +182,8 @@ module.exports = /** @class */ (function () {
                         serviceNames = Object.keys(services);
                         serviceNames.forEach(function (name) {
                             var isDefaultClient = true;
-                            _this._makeClient(isDefaultClient, name, services[name], credentials, channelOptions);
+                            var addr = _.isString(services[name]) ? services[name] : services[name].host + ':' + services[name].port;
+                            _this._makeClient(isDefaultClient, name, addr, credentials, channelOptions);
                         });
                         this._initDefaultClient = true;
                         return [2 /*return*/];
