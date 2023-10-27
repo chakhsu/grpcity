@@ -317,12 +317,14 @@ module.exports = /** @class */ (function () {
         var _b = _a === void 0 ? {} : _a, _c = _b.exclude, exclude = _c === void 0 ? [] : _c, inherit = _b.inherit;
         assert(typeof target === 'object', 'Must callbackify an object');
         assert(Array.isArray(exclude), 'options.exclude must be an array of strings');
+        exclude.push.apply(exclude, Object.getOwnPropertyNames(Object.getPrototypeOf({})));
         var allPropertyNames = [];
+        allPropertyNames.push.apply(allPropertyNames, Object.keys(target));
         allPropertyNames.push.apply(allPropertyNames, Object.getOwnPropertyNames(Object.getPrototypeOf(target)));
         if (inherit && inherit.prototype) {
             allPropertyNames.push.apply(allPropertyNames, Object.getOwnPropertyNames(inherit.prototype));
-            allPropertyNames = __spreadArray([], new Set(allPropertyNames), true);
         }
+        allPropertyNames = __spreadArray([], new Set(allPropertyNames), true);
         var methods = {};
         for (var _i = 0, allPropertyNames_1 = allPropertyNames; _i < allPropertyNames_1.length; _i++) {
             var key = allPropertyNames_1[_i];
@@ -339,6 +341,7 @@ module.exports = /** @class */ (function () {
                 }
             }
         }
+        debug('callbackify()', methods);
         return methods;
     };
     return GrpcLoader;
