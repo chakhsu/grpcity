@@ -1,6 +1,6 @@
 {
   "name": "grpcity",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "A powerful and complete gRPC framework for Node.js",  
   "author": "Chakhsu.Lau",
   "license": "MIT",

@@ -84,7 +84,7 @@ describe('Grpc Loader', function () {
       expect(/SayHello/i.test(err.message)).to.be.eq(true)
     }
 
-    server.forceShutdown()
+    await server.shutdown()
   })
 
   it('Should run with dev and metadata', async function () {
@@ -140,7 +140,7 @@ describe('Grpc Loader', function () {
       })
     })
 
-    server.forceShutdown()
+    await server.shutdown()
   })
 
   it('Should run with dev with different init()', async function () {
