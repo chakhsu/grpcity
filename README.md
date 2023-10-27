@@ -1,7 +1,6 @@
 # gRPCity
 
-gRPC + City = gRPCity: A powerful and complete gRPC library for Node.js
-
+gRPC + City = gRPCity: A simple and easy to use library for Node.js and gRPC.
 
 
 
