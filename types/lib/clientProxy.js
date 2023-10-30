@@ -74,10 +74,10 @@ var ClientProxy = /** @class */ (function () {
                     var timeout, deadline, outSideError;
                     return __generator(this, function (_a) {
                         if (typeof options === 'function') {
-                            throw new Error('EasyGrpcLoader: AsyncFunction should not contain callback function');
+                            throw new Error('gRPCity: AsyncFunction should not contain callback function');
                         }
                         else if (typeof metadata === 'function') {
-                            throw new Error('EasyGrpcLoader: AsyncFunction should not contain callback function');
+                            throw new Error('gRPCity: AsyncFunction should not contain callback function');
                         }
                         if (metadata instanceof Metadata) {
                             options = Object.assign({}, options);

@@ -59,10 +59,10 @@ declare class GrpcLoader {
         listen(addr: any, credentials?: any): Promise<void>;
         shutdown(): Promise<void>;
         forceShutdown(): void;
-        tryShutdown(callback: any): void;
         makeServerCredentials(rootCerts: any, keyCertPairs: any, checkClientCertificate: any): grpc.ServerCredentials;
         _insecureServerCredentials: grpc.ServerCredentials;
         addService(service: any, implementation: any): void;
+        removeService(service: any): void;
         addMiddleware(fn: any): void;
         addMiddlewares(fns: any): void;
         _proxy(target: any, key: any): (call: any) => Promise<any>;

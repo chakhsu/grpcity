@@ -52,7 +52,7 @@ var debug = require('debug')('grpcity:serverProxy');
 var addressSchema = Joi.alternatives([
     Joi.string().regex(/:/, 'host and port like 127.0.0.1:9090'),
     Joi.object().keys({
-        host: Joi.string().ip().required(),
+        host: Joi.string().required(),
         port: Joi.number().integer().min(0).max(65535).required()
     })
 ]);
@@ -107,7 +107,7 @@ var ServerProxy = /** @class */ (function () {
                         }
                         return [4 /*yield*/, new Promise(function (resolve, reject) {
                                 _this._server.tryShutdown(function (err) {
-                                    if (err !== null) {
+                                    if (err) {
                                         reject(err);
                                     }
                                     else {
@@ -130,11 +130,6 @@ var ServerProxy = /** @class */ (function () {
         this._server.forceShutdown();
         delete this._server;
     };
-    ServerProxy.prototype.tryShutdown = function (callback) {
-        var res = this._server.tryShutdown(callback);
-        delete this._server;
-        return res;
-    };
     ServerProxy.prototype.makeServerCredentials = function (rootCerts, keyCertPairs, checkClientCertificate) {
         if (rootCerts) {
             return grpc.ServerCredentials.createSsl(rootCerts, keyCertPairs, checkClientCertificate);
@@ -149,6 +144,10 @@ var ServerProxy = /** @class */ (function () {
     ServerProxy.prototype.addService = function (service, implementation) {
         assert(this._server, 'must be first init() server before server addService()');
         this._server.addService(service, implementation);
+    };
+    ServerProxy.prototype.removeService = function (service) {
+        assert(this._server, 'must be first init() server before server removeService()');
+        this._server.removeService(service);
     };
     // 只支持传入一个方法
     ServerProxy.prototype.addMiddleware = function (fn) {
