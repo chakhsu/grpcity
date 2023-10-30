@@ -2,7 +2,7 @@ const GrpcLoader = require('../')
 const path = require('path')
 const { expect } = require('chai')
 
-describe('Grpc Loader', function () {
+describe('Grpc Loader', () => {
   class Greeter {
     constructor (loader) {
       this._loader = loader
@@ -34,7 +34,7 @@ describe('Grpc Loader', function () {
     }
   }
 
-  it('Should sayHello from client to server', async function () {
+  it('Should sayHello from client to server', async () => {
     const loader = new GrpcLoader({
       location: path.resolve(__dirname, 'protos'),
       files: ['test/helloworld/helloworld.proto']
@@ -87,7 +87,7 @@ describe('Grpc Loader', function () {
     await server.shutdown()
   })
 
-  it('Should run with dev and metadata', async function () {
+  it('Should run with dev and metadata', async () => {
     const loader = new GrpcLoader({
       location: path.resolve(__dirname, 'protos'),
       files: ['test/helloworld/helloworld.proto']
@@ -143,7 +143,7 @@ describe('Grpc Loader', function () {
     await server.shutdown()
   })
 
-  it('Should run with dev with different init()', async function () {
+  it('Should run with dev with different init()', async () => {
     const loader = new GrpcLoader({
       location: path.resolve(__dirname, 'protos'),
       files: ['test/helloworld/helloworld.proto']
@@ -154,7 +154,7 @@ describe('Grpc Loader', function () {
   })
 })
 
-describe('Grpc protobuf message', function () {
+describe('Grpc protobuf message', () => {
   const loader = new GrpcLoader({
     location: path.resolve(__dirname, 'protos'),
     files: ['test/helloworld/helloworld.proto']
