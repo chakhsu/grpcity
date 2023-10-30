@@ -160,14 +160,14 @@ describe('Grpc protobuf message', () => {
     files: ['test/helloworld/helloworld.proto']
   })
 
-  before(async function () {
+  before(async () => {
     await loader.init({
       isDev: true,
       packagePrefix: 'stage.dev'
     })
   })
 
-  it('Should decode and encode protobuf message: HelloRequest', async function () {
+  it('Should decode and encode protobuf message: HelloRequest', async () => {
     const HelloRequest = loader.message('test.helloworld.model.HelloRequest')
     const jsonData = { name: 'test' }
     const buffer = HelloRequest.encode(jsonData).finish()
@@ -176,7 +176,7 @@ describe('Grpc protobuf message', () => {
     expect(decoded.name).to.be.eq(jsonData.name)
   })
 
-  it('Should decode and encode protobuf message: HelloReply', async function () {
+  it('Should decode and encode protobuf message: HelloReply', async () => {
     const HelloReply = loader.message('test.helloworld.model.HelloReply')
     const jsonData = { message: 'test' }
     const buffer = HelloReply.encode(jsonData).finish()

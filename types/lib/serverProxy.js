@@ -170,52 +170,51 @@ var ServerProxy = /** @class */ (function () {
     };
     // 洋葱模型：提供 rpc method 中间件前后处理的能力
     ServerProxy.prototype._proxy = function (target, key) {
+        var _this = this;
         var fn = compose(this._middleware);
-        return function (call) {
-            return __awaiter(this, void 0, void 0, function () {
-                var ctx, handleResponse;
-                var _this = this;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            ctx = {
-                                // 上下文的补充
-                                // TODO: 可能需要更多上下文字段
-                                // method: target.constructor.name + '.' + key,
-                                path: call.call.handler.path || '',
-                                request: call.request
-                            };
-                            handleResponse = function () { return __awaiter(_this, void 0, void 0, function () {
-                                var _a;
-                                return __generator(this, function (_b) {
-                                    switch (_b.label) {
-                                        case 0:
-                                            _a = ctx;
-                                            return [4 /*yield*/, target[key](call)];
-                                        case 1:
-                                            _a.response = _b.sent();
-                                            return [2 /*return*/];
-                                    }
-                                });
-                            }); };
-                            return [4 /*yield*/, fn(ctx, handleResponse).catch(function (err) {
-                                    if (typeof err.stack === 'string') {
-                                        var stack = err.stack.split('\n');
-                                        err.message += " [Error Message From Server, stack: ".concat(stack[1].trim(), "]");
-                                    }
-                                    else {
-                                        err.message += ' [Error Message From Server]';
-                                    }
-                                    throw new Error(err);
-                                })];
-                        case 1:
-                            _a.sent();
-                            debug(key, JSON.stringify(ctx));
-                            return [2 /*return*/, ctx.response];
-                    }
-                });
+        return function (call) { return __awaiter(_this, void 0, void 0, function () {
+            var ctx, handleResponse;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        ctx = {
+                            // 上下文的补充
+                            // TODO: 可能需要更多上下文字段
+                            // method: target.constructor.name + '.' + key,
+                            path: call.call.handler.path || '',
+                            request: call.request
+                        };
+                        handleResponse = function () { return __awaiter(_this, void 0, void 0, function () {
+                            var _a;
+                            return __generator(this, function (_b) {
+                                switch (_b.label) {
+                                    case 0:
+                                        _a = ctx;
+                                        return [4 /*yield*/, target[key](call)];
+                                    case 1:
+                                        _a.response = _b.sent();
+                                        return [2 /*return*/];
+                                }
+                            });
+                        }); };
+                        return [4 /*yield*/, fn(ctx, handleResponse).catch(function (err) {
+                                if (typeof err.stack === 'string') {
+                                    var stack = err.stack.split('\n');
+                                    err.message += " [Error Message From Server, stack: ".concat(stack[1].trim(), "]");
+                                }
+                                else {
+                                    err.message += ' [Error Message From Server]';
+                                }
+                                throw new Error(err);
+                            })];
+                    case 1:
+                        _a.sent();
+                        debug(key, JSON.stringify(ctx));
+                        return [2 /*return*/, ctx.response];
+                }
             });
-        };
+        }); };
     };
     return ServerProxy;
 }());

@@ -50,6 +50,7 @@ var ClientProxy = /** @class */ (function () {
     function ClientProxy() {
     }
     ClientProxy.prototype.proxy = function (client, defaultOptions, appName) {
+        var _this = this;
         if (defaultOptions === void 0) { defaultOptions = {}; }
         if (appName === void 0) { appName = undefined; }
         defaultOptions = defaultOptions || {};
@@ -69,57 +70,55 @@ var ClientProxy = /** @class */ (function () {
             var name = _a[0], func = _a[1];
             var fullServiceName = "".concat(methodNames[name.toUpperCase()]);
             debug('proxy method', fullServiceName);
-            var asyncFunc = function (request, metadata, options) {
-                return __awaiter(this, void 0, void 0, function () {
-                    var timeout, deadline, outSideError;
-                    return __generator(this, function (_a) {
-                        if (typeof options === 'function') {
-                            throw new Error('gRPCity: AsyncFunction should not contain callback function');
-                        }
-                        else if (typeof metadata === 'function') {
-                            throw new Error('gRPCity: AsyncFunction should not contain callback function');
-                        }
-                        if (metadata instanceof Metadata) {
-                            options = Object.assign({}, options);
-                        }
-                        else {
-                            options = Object.assign({}, metadata);
-                            metadata = new Metadata();
-                        }
-                        metadata.add('x-client-hostname', hostname);
-                        if (appName) {
-                            metadata.add('x-client-app-name', appName);
-                        }
-                        if (!options.deadline) {
-                            timeout = options.timeout || defaultOptions.timeout;
-                            deadline = new Date(Date.now() + timeout);
-                            options.deadline = deadline;
-                            delete options.timeout;
-                            debug('grpc client request will timeout at', { fullServiceName: fullServiceName, deadline: deadline });
-                        }
-                        outSideError = new Error();
-                        return [2 /*return*/, new Promise(function (resolve, reject) {
-                                var argumentsList = [request, metadata, options];
-                                argumentsList.push(function (err, response) {
-                                    if (err) {
-                                        outSideError.name = 'GrpcClientError';
-                                        outSideError.code = err.code;
-                                        outSideError.message = "".concat(fullServiceName, " (").concat(err.message, ")");
-                                        var stacks = outSideError.stack.split('\n');
-                                        outSideError.stack = __spreadArray(__spreadArray(__spreadArray([
-                                            stacks[0]
-                                        ], stacks.slice(2), true), [
-                                            '    ...'
-                                        ], false), err.stack.split('\n').slice(1, 3), true).join('\n');
-                                        reject(outSideError);
-                                    }
-                                    resolve(response);
-                                });
-                                func.apply(client, argumentsList);
-                            })];
-                    });
+            var asyncFunc = function (request, metadata, options) { return __awaiter(_this, void 0, void 0, function () {
+                var timeout, deadline, outSideError;
+                return __generator(this, function (_a) {
+                    if (typeof options === 'function') {
+                        throw new Error('gRPCity: AsyncFunction should not contain callback function');
+                    }
+                    else if (typeof metadata === 'function') {
+                        throw new Error('gRPCity: AsyncFunction should not contain callback function');
+                    }
+                    if (metadata instanceof Metadata) {
+                        options = Object.assign({}, options);
+                    }
+                    else {
+                        options = Object.assign({}, metadata);
+                        metadata = new Metadata();
+                    }
+                    metadata.add('x-client-hostname', hostname);
+                    if (appName) {
+                        metadata.add('x-client-app-name', appName);
+                    }
+                    if (!options.deadline) {
+                        timeout = options.timeout || defaultOptions.timeout;
+                        deadline = new Date(Date.now() + timeout);
+                        options.deadline = deadline;
+                        delete options.timeout;
+                        debug('grpc client request will timeout at', { fullServiceName: fullServiceName, deadline: deadline });
+                    }
+                    outSideError = new Error();
+                    return [2 /*return*/, new Promise(function (resolve, reject) {
+                            var argumentsList = [request, metadata, options];
+                            argumentsList.push(function (err, response) {
+                                if (err) {
+                                    outSideError.name = 'GrpcClientError';
+                                    outSideError.code = err.code;
+                                    outSideError.message = "".concat(fullServiceName, " (").concat(err.message, ")");
+                                    var stacks = outSideError.stack.split('\n');
+                                    outSideError.stack = __spreadArray(__spreadArray(__spreadArray([
+                                        stacks[0]
+                                    ], stacks.slice(2), true), [
+                                        '    ...'
+                                    ], false), err.stack.split('\n').slice(1, 3), true).join('\n');
+                                    reject(outSideError);
+                                }
+                                resolve(response);
+                            });
+                            func.apply(client, argumentsList);
+                        })];
                 });
-            };
+            }); };
             // 原方法放到 original 里
             if (!target.original) {
                 target.original = {};
