@@ -167,6 +167,18 @@ describe('Grpc protobuf message', () => {
     })
   })
 
+  it('Should get protobuf service definition: Greeter', async () => {
+    const greeterDefinition = loader.service('test.helloworld.Greeter')
+    expect(greeterDefinition.SayHello).to.be.an('object')
+    expect(greeterDefinition.SayHello2).to.be.an('object')
+  })
+
+  it('Should get protobuf service definition: Hellor', async () => {
+    const hellorDefinition = loader.service('test.helloworld.Hellor')
+    expect(hellorDefinition.SayHello).to.be.an('object')
+    expect(hellorDefinition.SayHello2).to.be.an('object')
+  })
+
   it('Should decode and encode protobuf message: HelloRequest', async () => {
     const HelloRequest = loader.message('test.helloworld.model.HelloRequest')
     const jsonData = { name: 'test' }
