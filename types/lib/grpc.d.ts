@@ -3,6 +3,7 @@ declare class GrpcLoader {
     constructor(protoFileOptions: any);
     _protoFiles: any[];
     _clientMap: Map<any, any>;
+    _clientAddrMap: Map<any, any>;
     init({ services, isDev, packagePrefix, loadOptions, channelOptions, appName }?: {
         services?: any;
         isDev?: boolean;

@@ -107,6 +107,7 @@ module.exports = /** @class */ (function () {
         Joi.assert(protoFileOptions, schemas.constructor, 'new GrpcLoader() params Error');
         this._protoFiles = Array.isArray(protoFileOptions) ? protoFileOptions : [protoFileOptions];
         this._clientMap = new Map();
+        this._clientAddrMap = new Map();
     }
     GrpcLoader.prototype.init = function (_a) {
         var _b = _a === void 0 ? {} : _a, _c = _b.services, services = _c === void 0 ? undefined : _c, _d = _b.isDev, isDev = _d === void 0 ? false : _d, _e = _b.packagePrefix, packagePrefix = _e === void 0 ? '' : _e, _f = _b.loadOptions, loadOptions = _f === void 0 ? {} : _f, _g = _b.channelOptions, channelOptions = _g === void 0 ? {} : _g, appName = _b.appName;
@@ -268,13 +269,22 @@ module.exports = /** @class */ (function () {
     };
     GrpcLoader.prototype._makeClient = function (isDefaultClient, name, addr, credentials, channelOptions) {
         if (channelOptions === void 0) { channelOptions = {}; }
+        var ctBool = !!credentials;
         var cacheKeyPrefix = isDefaultClient ? 'defaultAddr' : addr.replace(/\./g, '-');
+        var cacheKeyWithCt = "".concat(cacheKeyPrefix, ".").concat(name, ".").concat(ctBool);
         var cacheKey = "".concat(cacheKeyPrefix, ".").concat(name);
         if (this._clientMap.has(cacheKey)) {
             return this._clientMap.get(cacheKey);
         }
+        else if (this._clientMap.has(cacheKeyWithCt)) {
+            return this._clientMap.get(cacheKeyWithCt);
+        }
         else {
+            if (addr === 'undefined:undefined') {
+                addr = this._clientAddrMap.get(name);
+            }
             var client = this._makeClientWithoutCache(isDefaultClient, name, addr, credentials, channelOptions = {});
+            this._clientAddrMap.set(name, addr);
             this._clientMap.set(cacheKey, client);
             return client;
         }

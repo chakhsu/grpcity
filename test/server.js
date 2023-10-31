@@ -1,5 +1,6 @@
 const GrpcLoader = require('..')
 const path = require('path')
+const fs = require('fs')
 
 const timeout = (ms) => {
   return new Promise((resolve, reject) => setTimeout(resolve, ms))
@@ -8,6 +9,7 @@ const timeout = (ms) => {
 class Greeter {
   constructor (loader) {
     this._loader = loader
+    this.count = 0
   }
 
   async init (server) {
@@ -29,8 +31,9 @@ class Greeter {
       await new Promise((resolve) => setTimeout(resolve, 1000 * 10))
     }
     await timeout(1000)
+    this.count++
 
-    return { message: `hello, ${ctx.request.name || 'world'}`, name_count: 1 }
+    return { message: `hello, ${ctx.request.name || 'world'}`, name_count: this.count }
   }
 
   async SayHello2 (ctx) {
@@ -101,8 +104,14 @@ async function start (addr) {
   const servicers = [new Greeter(loader), new Hellor(loader)]
   await Promise.all(servicers.map(async s => s.init(server)))
 
-  await server.listen(addr)
+  const credentials = server.makeServerCredentials(
+    fs.readFileSync(__dirname + '/certs/ca.crt'), [{
+      private_key: fs.readFileSync(__dirname + '/certs/server.key'),
+      cert_chain: fs.readFileSync(__dirname + '/certs/server.crt')
+  }], true)
+
+  await server.listen(addr, credentials)
   console.log('start:', addr)
 }
 
-start('127.0.0.1:9099')
+start('localhost:9099')

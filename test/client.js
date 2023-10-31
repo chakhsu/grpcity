@@ -1,5 +1,6 @@
 const GrpcLoader = require('..')
 const path = require('path')
+const fs = require('fs')
 
 async function start (addr) {
   const loader = new GrpcLoader({
@@ -8,15 +9,22 @@ async function start (addr) {
   })
   await loader.init()
 
+  const credentials = loader.makeCredentials(
+    fs.readFileSync(__dirname + '/certs/ca.crt'), 
+    fs.readFileSync(__dirname + '/certs/client.key'), 
+    fs.readFileSync(__dirname + '/certs/client.crt')
+  )
+
   await loader.initClients({
     services: {
       'test.helloworld.Greeter': addr,
       'test.helloworld.Hellor': addr
-    }
+    },
+    credentials
   })
 
   // greeterClient
-  const greeterClient = loader.client('test.helloworld.Greeter')
+  const greeterClient = loader.client('test.helloworld.Greeter', { credentials })
   const result = await greeterClient.sayHello({ name: 'greeter' })
   console.log('greeterClient.sayHello', result)
 
@@ -29,4 +37,4 @@ async function start (addr) {
   console.log('hellorClient.sayHello', result3)
 }
 
-start('127.0.0.1:9099')
+start('localhost:9099')
