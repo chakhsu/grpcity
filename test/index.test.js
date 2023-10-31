@@ -55,14 +55,14 @@ describe('Grpc Loader', () => {
       }
     })
     const client = loader.client('test.helloworld.Greeter')
-    const result = await client.sayHello({ name: 'grpc' })
+    const { response: result } = await client.sayHello({ name: 'grpc' })
     expect(result).to.be.an('object')
     expect(result.message).to.be.eq('hello, grpc')
 
     // 支持相同service的client访问不同host和port
     const timeout = 20
     const client2 = loader.client('test.helloworld.Greeter', { host: 'localhost', port: 12305, timeout })
-    const result2 = await client2.sayHello({ name: 'grpc' })
+    const { response: result2 } = await client2.sayHello({ name: 'grpc' })
     expect(result2).to.be.an('object')
     expect(result2.message).to.be.eq('hello, grpc')
 
@@ -117,7 +117,7 @@ describe('Grpc Loader', () => {
         'x-business-id': ['grpcity', 'testing'],
         'x-timestamp-client': 'begin=' + timestampClientSend.toISOString()
       })
-      const ctx = client.original.sayHello({ name: 'grpc' }, meta, (err, result) => {
+      const ctx = client.call.sayHello({ name: 'grpc' }, meta, (err, result) => {
         if (err) {
           reject(err)
           return

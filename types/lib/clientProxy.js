@@ -99,6 +99,7 @@ var ClientProxy = /** @class */ (function () {
                     }
                     outSideError = new Error();
                     return [2 /*return*/, new Promise(function (resolve, reject) {
+                            var result = {};
                             var argumentsList = [request, metadata, options];
                             argumentsList.push(function (err, response) {
                                 if (err) {
@@ -113,17 +114,27 @@ var ClientProxy = /** @class */ (function () {
                                     ], false), err.stack.split('\n').slice(1, 3), true).join('\n');
                                     reject(outSideError);
                                 }
-                                resolve(response);
+                                debug('get response', response);
+                                result.response = response;
                             });
-                            func.apply(client, argumentsList);
+                            var call = func.apply(client, argumentsList);
+                            call.on('metadata', function (metadata) {
+                                debug('get metadata', metadata);
+                                result.metadata = metadata;
+                            });
+                            call.on('status', function (status) {
+                                debug('get status', status);
+                                result.status = status;
+                                resolve(result);
+                            });
                         })];
                 });
             }); };
-            // 原方法放到 original 里
-            if (!target.original) {
-                target.original = {};
+            // 原方法放到 call 里
+            if (!target.call) {
+                target.call = {};
             }
-            target.original[name] = function () {
+            target.call[name] = function () {
                 var argumentsList = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     argumentsList[_i] = arguments[_i];

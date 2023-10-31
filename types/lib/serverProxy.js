@@ -183,7 +183,8 @@ var ServerProxy = /** @class */ (function () {
                             // TODO: 可能需要更多上下文字段
                             // method: target.constructor.name + '.' + key,
                             path: call.call.handler.path || '',
-                            request: call.request
+                            request: call.request,
+                            metadata: call.metadata.clone()
                         };
                         handleResponse = function () { return __awaiter(_this, void 0, void 0, function () {
                             var _a;
