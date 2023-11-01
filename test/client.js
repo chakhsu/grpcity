@@ -23,10 +23,17 @@ async function start (addr) {
     credentials
   })
 
+  const meta = loader.makeMetadata({
+    'x-cache-control': 'max-age=100',
+    'x-business-id': ['grpcity', 'testing'],
+    'x-timestamp-client': 'begin=' + new Date().toISOString()
+  })
+
   // greeterClient
   const greeterClient = loader.client('test.helloworld.Greeter', { credentials })
-  const { response: result } = await greeterClient.sayHello({ name: 'greeter' })
+  const { status, metadata, response: result } = await greeterClient.sayHello({ name: 'greeter' }, meta)
   console.log('greeterClient.sayHello', result)
+  console.log('greeterClient.sayHello metadata', metadata)
 
   // hellorClient
   const hellorClient = loader.client('test.helloworld.Hellor')
