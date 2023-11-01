@@ -61,7 +61,8 @@ message Message {
 Next, create `loader.js`` and write the following code in it:
 
 ```js
-import GrpcLoader from 'grpcity'import path from 'node:path'
+import GrpcLoader from 'grpcity'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 

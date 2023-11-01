@@ -61,7 +61,8 @@ message Message {
 然后，创建`loader.js`, 编写下面的代码到其中：
 
 ```js
-import GrpcLoader from 'grpcity'import path from 'node:path'
+import GrpcLoader from 'grpcity'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
