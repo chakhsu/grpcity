@@ -25,17 +25,17 @@ async function start (addr) {
   // stream client to server
   const clientStreamHelloCall = client.call.clientStreamHello(meta, (err, response) => {
     if (err) {
-        console.log(err)
+      console.log(err)
     } else {
-        console.log(response)
+      console.log(response)
     }
   })
   clientStreamHelloCall.write({ message: 'Hello!' })
   clientStreamHelloCall.write({ message: 'How are you?' })
   clientStreamHelloCall.end()
 
-//   client to stream server
-  const serverStreamHelloCall = client.call.serverStreamHello({ message: "Hello! How are you?" })
+  // client to stream server
+  const serverStreamHelloCall = client.call.serverStreamHello({ message: 'Hello! How are you?' })
   serverStreamHelloCall.on('data', (chunk) => {
     console.log(chunk.message)
   })
