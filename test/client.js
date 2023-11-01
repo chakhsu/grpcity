@@ -10,9 +10,9 @@ async function start (addr) {
   await loader.init()
 
   const credentials = loader.makeCredentials(
-    fs.readFileSync(__dirname + '/certs/ca.crt'),
-    fs.readFileSync(__dirname + '/certs/client.key'),
-    fs.readFileSync(__dirname + '/certs/client.crt')
+    fs.readFileSync(path.resolve(__dirname, 'certs/ca.crt')),
+    fs.readFileSync(path.resolve(__dirname, 'certs/client.key')),
+    fs.readFileSync(path.resolve(__dirname, 'certs/client.crt'))
   )
 
   await loader.initClients({
@@ -34,13 +34,14 @@ async function start (addr) {
   const { status, metadata, response: result } = await greeterClient.sayHello({ name: 'greeter' }, meta)
   console.log('greeterClient.sayHello', result)
   console.log('greeterClient.sayHello metadata', metadata)
+  console.log('greeterClient.sayHello status', status)
 
   // hellorClient
   const hellorClient = loader.client('test.helloworld.Hellor')
-  const  { response: result2 } = await hellorClient.sayHello({ name: 'hellor2' })
+  const { response: result2 } = await hellorClient.sayHello({ name: 'hellor2' })
   console.log('hellorClient.sayHello', result2)
 
-  const  { response: result3 } = await hellorClient.sayHello({ name: 'hellor3' })
+  const { response: result3 } = await hellorClient.sayHello({ name: 'hellor3' })
   console.log('hellorClient.sayHello', result3)
 }
 

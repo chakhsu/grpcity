@@ -105,10 +105,10 @@ async function start (addr) {
   await Promise.all(servicers.map(async s => s.init(server)))
 
   const credentials = server.makeServerCredentials(
-    fs.readFileSync(__dirname + '/certs/ca.crt'), [{
-      private_key: fs.readFileSync(__dirname + '/certs/server.key'),
-      cert_chain: fs.readFileSync(__dirname + '/certs/server.crt')
-  }], true)
+    fs.readFileSync(path.resolve(__dirname, 'certs/ca.crt')), [{
+      private_key: fs.readFileSync(path.resolve(__dirname, 'certs/server.key')),
+      cert_chain: fs.readFileSync(path.resolve(__dirname, 'certs/server.crt'))
+    }], true)
 
   await server.listen(addr, credentials)
   console.log('start:', addr)
