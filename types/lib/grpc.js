@@ -304,10 +304,10 @@ module.exports = /** @class */ (function () {
             Object.entries(initialValues).forEach(function (_a) {
                 var key = _a[0], value = _a[1];
                 if (Array.isArray(value)) {
-                    value.map(function (v) { return meta.add(key, v); });
+                    value.map(function (v) { return meta.add(key, _.isString(v) ? v : Buffer.from(v)); });
                 }
                 else {
-                    meta.add(key, value);
+                    meta.add(key, _.isString(value) ? value : Buffer.from(value));
                 }
             });
         }
