@@ -127,7 +127,7 @@ const start = async (addr) => {
     })
 
     const client = loader.client('Greeter')
-    const result = await server1Client.sayGreet({ message: 'greeter' })
+    const result = await client.sayGreet({ message: 'greeter' })
     console.log('sayGreet', result.response)
 }
 
