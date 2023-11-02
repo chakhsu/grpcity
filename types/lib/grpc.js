@@ -318,11 +318,10 @@ module.exports = /** @class */ (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
-        return serverProxy.init.apply(serverProxy, args);
+        return serverProxy._init.apply(serverProxy, args);
     };
     // async func --- to --> callback type func
     // use in grpc server side mostly
-    //
     GrpcLoader.prototype.callbackify = function (target, _a) {
         var _b = _a === void 0 ? {} : _a, _c = _b.exclude, exclude = _c === void 0 ? [] : _c, inherit = _b.inherit;
         assert(typeof target === 'object', 'Must callbackify an object');

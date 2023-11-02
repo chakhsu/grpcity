@@ -2,7 +2,7 @@ declare const _exports: ServerProxy;
 export = _exports;
 declare class ServerProxy {
     _middleware: any[];
-    init(...args: any[]): this;
+    _init(...args: any[]): this;
     _server: grpc.Server;
     listen(addr: any, credentials?: any): Promise<void>;
     shutdown(): Promise<void>;

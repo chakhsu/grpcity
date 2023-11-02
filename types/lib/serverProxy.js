@@ -60,7 +60,7 @@ var ServerProxy = /** @class */ (function () {
     function ServerProxy() {
         this._middleware = [];
     }
-    ServerProxy.prototype.init = function () {
+    ServerProxy.prototype._init = function () {
         var _a;
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {

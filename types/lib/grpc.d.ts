@@ -55,7 +55,7 @@ declare class GrpcLoader {
     makeMetadata(initialValues: any): grpc.Metadata;
     initServer(...args: any[]): {
         _middleware: any[];
-        init(...args: any[]): any;
+        _init(...args: any[]): any;
         _server: grpc.Server;
         listen(addr: any, credentials?: any): Promise<void>;
         shutdown(): Promise<void>;
