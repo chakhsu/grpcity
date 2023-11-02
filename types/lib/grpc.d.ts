@@ -48,7 +48,8 @@ declare class GrpcLoader {
         credentials?: any;
         channelOptions?: {};
     }): {
-        async: {};
+        stream: {};
+        call: {};
     };
     _makeClient(isDefaultClient: any, name: any, addr: any, credentials: any, channelOptions?: {}): any;
     _makeClientWithoutCache(isDefaultClient: any, name: any, addr: any, credentials: any, channelOptions?: {}): any;

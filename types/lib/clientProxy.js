@@ -45,6 +45,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 };
 var Metadata = require('@grpc/grpc-js').Metadata;
 var os = require('os');
+var pEvent = require('p-event');
 var debug = require('debug')('grpcity:clientProxy');
 var ClientProxy = /** @class */ (function () {
     function ClientProxy() {
@@ -55,7 +56,6 @@ var ClientProxy = /** @class */ (function () {
         if (appName === void 0) { appName = undefined; }
         defaultOptions = defaultOptions || {};
         defaultOptions.timeout = defaultOptions.timeout || 1000 * 10;
-        var hostname = os.hostname();
         var prototype = Object.getPrototypeOf(client);
         var methodNames = Object.keys(prototype).reduce(function (names, key) {
             if (prototype[key] && prototype[key].path) {
@@ -63,88 +63,348 @@ var ClientProxy = /** @class */ (function () {
             }
             return names;
         }, {});
+        var basicMeta = { hostname: os.hostname(), appName: appName };
         var target = Object.entries(prototype).filter(function (_a) {
             var name = _a[0], func = _a[1];
             return name !== 'constructor' && typeof func === 'function';
         }).reduce(function (target, _a) {
             var name = _a[0], func = _a[1];
-            var fullServiceName = "".concat(methodNames[name.toUpperCase()]);
-            debug('proxy method', fullServiceName);
-            var asyncFunc = function (request, metadata, options) { return __awaiter(_this, void 0, void 0, function () {
-                var timeout, deadline, outSideError;
+            basicMeta.fullServiceName = "".concat(methodNames[name.toUpperCase()]);
+            debug('proxy method', basicMeta.fullServiceName);
+            var _b = _this._getFuncStreamWay(func), requestStream = _b.requestStream, responseStream = _b.responseStream;
+            if (!requestStream && !responseStream) {
+                // promisify unary method
+                target[name] = _this._promisifyUnaryMethod(client, func, defaultOptions, basicMeta);
+            }
+            // stream
+            if (requestStream && !responseStream) {
+                // promisify only client stream method
+                target.stream[name] = _this._promisifyClientStreamMethod(client, func, defaultOptions, basicMeta);
+            }
+            if (!requestStream && responseStream) {
+                // promisify only server stream method
+                target.stream[name] = _this._promisifyServerStreamMethod(client, func, defaultOptions, basicMeta);
+            }
+            if (requestStream && responseStream) {
+                target.stream[name] = _this._promisifyDuplexStreamMethod(client, func, defaultOptions, basicMeta);
+            }
+            // keep callback method
+            target.call[name] = _this._keepCallbackMethod(client, func);
+            return target;
+        }, { stream: {}, call: {} });
+        return target;
+    };
+    ClientProxy.prototype._getFuncStreamWay = function (func) {
+        var requestStream = func.requestStream, responseStream = func.responseStream;
+        return { requestStream: requestStream, responseStream: responseStream };
+    };
+    ClientProxy.prototype._promisifyUnaryMethod = function (client, func, defaultOptions, basicMeta) {
+        var _this = this;
+        var hostname = basicMeta.hostname, appName = basicMeta.appName, fullServiceName = basicMeta.fullServiceName;
+        var asyncUnaryMethod = function (request, metadata, options) { return __awaiter(_this, void 0, void 0, function () {
+            var timeout, deadline, outSideError;
+            return __generator(this, function (_a) {
+                if (typeof options === 'function') {
+                    throw new Error('gRPCity: AsyncFunction should not contain callback function');
+                }
+                else if (typeof metadata === 'function') {
+                    throw new Error('gRPCity: AsyncFunction should not contain callback function');
+                }
+                if (metadata instanceof Metadata) {
+                    options = Object.assign({}, options);
+                }
+                else {
+                    options = Object.assign({}, metadata);
+                    metadata = new Metadata();
+                }
+                metadata.add('x-client-hostname', hostname);
+                if (appName) {
+                    metadata.add('x-client-app-name', appName);
+                }
+                if (!options.deadline) {
+                    timeout = options.timeout || defaultOptions.timeout;
+                    deadline = new Date(Date.now() + timeout);
+                    options.deadline = deadline;
+                    delete options.timeout;
+                    debug('grpc client request will timeout at', { fullServiceName: fullServiceName, deadline: deadline });
+                }
+                outSideError = new Error();
+                return [2 /*return*/, new Promise(function (resolve, reject) {
+                        var result = {};
+                        var argumentsList = [request, metadata, options];
+                        argumentsList.push(function (err, response) {
+                            if (err) {
+                                outSideError.name = 'GrpcClientError';
+                                outSideError.code = err.code;
+                                outSideError.message = "".concat(fullServiceName, " (").concat(err.message, ")");
+                                var stacks = outSideError.stack.split('\n');
+                                outSideError.stack = __spreadArray(__spreadArray(__spreadArray([
+                                    stacks[0]
+                                ], stacks.slice(2), true), [
+                                    '    ...'
+                                ], false), err.stack.split('\n').slice(1, 3), true).join('\n');
+                                reject(outSideError);
+                            }
+                            debug('unaryMethod get response', response);
+                            result.response = response;
+                        });
+                        var call = func.apply(client, argumentsList);
+                        call.on('metadata', function (metadata) {
+                            debug('unaryMethod get metadata', metadata);
+                            result.metadata = metadata;
+                        });
+                        call.on('status', function (status) {
+                            debug('unaryMethod get status', status);
+                            result.status = status;
+                            resolve(result);
+                        });
+                    })];
+            });
+        }); };
+        return asyncUnaryMethod;
+    };
+    ClientProxy.prototype._promisifyClientStreamMethod = function (client, func, defaultOptions, basicMeta) {
+        var _this = this;
+        var hostname = basicMeta.hostname, appName = basicMeta.appName, fullServiceName = basicMeta.fullServiceName;
+        var clientStreamMethod = function (metadata, options) {
+            if (typeof options === 'function') {
+                throw new Error('gRPCity: asyncStreamFunction should not contain callback function');
+            }
+            else if (typeof metadata === 'function') {
+                throw new Error('gRPCity: asyncStreamFunction should not contain callback function');
+            }
+            if (metadata instanceof Metadata) {
+                options = Object.assign({}, options);
+            }
+            else {
+                options = Object.assign({}, metadata);
+                metadata = new Metadata();
+            }
+            metadata.add('x-client-hostname', hostname);
+            if (appName) {
+                metadata.add('x-client-app-name', appName);
+            }
+            if (!options.deadline) {
+                var timeout = options.timeout || defaultOptions.timeout;
+                var deadline = new Date(Date.now() + timeout);
+                options.deadline = deadline;
+                delete options.timeout;
+                debug('grpc client request will timeout at', { fullServiceName: fullServiceName, deadline: deadline });
+            }
+            var result = {};
+            var outSideError = new Error();
+            var argumentsList = [metadata, options];
+            argumentsList.push(function (err, response) {
+                if (err) {
+                    outSideError.name = 'GrpcClientError';
+                    outSideError.code = err.code;
+                    outSideError.message = "".concat(fullServiceName, " (").concat(err.message, ")");
+                    var stacks = outSideError.stack.split('\n');
+                    outSideError.stack = __spreadArray(__spreadArray(__spreadArray([
+                        stacks[0]
+                    ], stacks.slice(2), true), [
+                        '    ...'
+                    ], false), err.stack.split('\n').slice(1, 3), true).join('\n');
+                }
+                debug('clientStreamMethod get response', response);
+                result.response = response;
+            });
+            var call = func.apply(client, argumentsList);
+            call.writeAll = function (messages) {
+                if (Array.isArray(messages)) {
+                    messages.forEach(function (message) {
+                        call.write(message);
+                    });
+                }
+            };
+            call.writeEnd = function () { return __awaiter(_this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
-                    if (typeof options === 'function') {
-                        throw new Error('gRPCity: AsyncFunction should not contain callback function');
+                    switch (_a.label) {
+                        case 0:
+                            call.end();
+                            return [4 /*yield*/, new Promise(function (resolve, reject) {
+                                    call.on('metadata', function (metadata) {
+                                        debug('clientStreamMethod get metadata', metadata);
+                                        result.metadata = metadata;
+                                    });
+                                    call.on('status', function (status) {
+                                        debug('clientStreamMethod get status', status);
+                                        result.status = status;
+                                        resolve();
+                                    });
+                                })];
+                        case 1:
+                            _a.sent();
+                            return [2 /*return*/, result];
                     }
-                    else if (typeof metadata === 'function') {
-                        throw new Error('gRPCity: AsyncFunction should not contain callback function');
-                    }
-                    if (metadata instanceof Metadata) {
-                        options = Object.assign({}, options);
-                    }
-                    else {
-                        options = Object.assign({}, metadata);
-                        metadata = new Metadata();
-                    }
-                    metadata.add('x-client-hostname', hostname);
-                    if (appName) {
-                        metadata.add('x-client-app-name', appName);
-                    }
-                    if (!options.deadline) {
-                        timeout = options.timeout || defaultOptions.timeout;
-                        deadline = new Date(Date.now() + timeout);
-                        options.deadline = deadline;
-                        delete options.timeout;
-                        debug('grpc client request will timeout at', { fullServiceName: fullServiceName, deadline: deadline });
-                    }
-                    outSideError = new Error();
-                    return [2 /*return*/, new Promise(function (resolve, reject) {
-                            var result = {};
-                            var argumentsList = [request, metadata, options];
-                            argumentsList.push(function (err, response) {
-                                if (err) {
-                                    outSideError.name = 'GrpcClientError';
-                                    outSideError.code = err.code;
-                                    outSideError.message = "".concat(fullServiceName, " (").concat(err.message, ")");
-                                    var stacks = outSideError.stack.split('\n');
-                                    outSideError.stack = __spreadArray(__spreadArray(__spreadArray([
-                                        stacks[0]
-                                    ], stacks.slice(2), true), [
-                                        '    ...'
-                                    ], false), err.stack.split('\n').slice(1, 3), true).join('\n');
-                                    reject(outSideError);
-                                }
-                                debug('get response', response);
-                                result.response = response;
-                            });
-                            var call = func.apply(client, argumentsList);
-                            call.on('metadata', function (metadata) {
-                                debug('get metadata', metadata);
-                                result.metadata = metadata;
-                            });
-                            call.on('status', function (status) {
-                                debug('get status', status);
-                                result.status = status;
-                                resolve(result);
-                            });
-                        })];
                 });
             }); };
-            // 原方法放到 call 里
-            if (!target.call) {
-                target.call = {};
+            return call;
+        };
+        return clientStreamMethod;
+    };
+    ClientProxy.prototype._promisifyServerStreamMethod = function (client, func, defaultOptions, basicMeta) {
+        var _this = this;
+        var hostname = basicMeta.hostname, appName = basicMeta.appName, fullServiceName = basicMeta.fullServiceName;
+        var serverStreamMethod = function (request, metadata, options) {
+            if (typeof options === 'function') {
+                throw new Error('gRPCity: asyncStreamFunction should not contain callback function');
             }
-            target.call[name] = function () {
-                var argumentsList = [];
-                for (var _i = 0; _i < arguments.length; _i++) {
-                    argumentsList[_i] = arguments[_i];
+            else if (typeof metadata === 'function') {
+                throw new Error('gRPCity: asyncStreamFunction should not contain callback function');
+            }
+            if (metadata instanceof Metadata) {
+                options = Object.assign({}, options);
+            }
+            else {
+                options = Object.assign({}, metadata);
+                metadata = new Metadata();
+            }
+            metadata.add('x-client-hostname', hostname);
+            if (appName) {
+                metadata.add('x-client-app-name', appName);
+            }
+            if (!options.deadline) {
+                var timeout = options.timeout || defaultOptions.timeout;
+                var deadline = new Date(Date.now() + timeout);
+                options.deadline = deadline;
+                delete options.timeout;
+                debug('grpc client request will timeout at', { fullServiceName: fullServiceName, deadline: deadline });
+            }
+            var call = func.apply(client, [request, metadata, options]);
+            call.readAll = function () { return __awaiter(_this, void 0, void 0, function () {
+                var result, outSideError;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            result = {};
+                            outSideError = new Error();
+                            return [4 /*yield*/, new Promise(function (resolve, reject) {
+                                    call.on('error', function (err) {
+                                        outSideError.name = 'GrpcClientError';
+                                        outSideError.code = err.code;
+                                        outSideError.message = "".concat(fullServiceName, " (").concat(err.message, ")");
+                                        var stacks = outSideError.stack.split('\n');
+                                        outSideError.stack = __spreadArray(__spreadArray(__spreadArray([
+                                            stacks[0]
+                                        ], stacks.slice(2), true), [
+                                            '    ...'
+                                        ], false), err.stack.split('\n').slice(1, 3), true).join('\n');
+                                        reject(outSideError);
+                                    });
+                                    result.response = pEvent.iterator(call, 'data', {
+                                        resolutionEvents: ['status', 'end']
+                                    });
+                                    call.on('metadata', function (metadata) {
+                                        debug('serverStreamMethod get metadata', metadata);
+                                        result.metadata = metadata;
+                                    });
+                                    call.on('status', function (status) {
+                                        debug('serverStreamMethod get status', status);
+                                        result.status = status;
+                                        resolve();
+                                    });
+                                })];
+                        case 1:
+                            _a.sent();
+                            return [2 /*return*/, result];
+                    }
+                });
+            }); };
+            return call;
+        };
+        return serverStreamMethod;
+    };
+    ClientProxy.prototype._promisifyDuplexStreamMethod = function (client, func, defaultOptions, basicMeta) {
+        var _this = this;
+        var hostname = basicMeta.hostname, appName = basicMeta.appName, fullServiceName = basicMeta.fullServiceName;
+        var duplexStreamMethod = function (metadata, options) {
+            if (typeof options === 'function') {
+                throw new Error('gRPCity: asyncStreamFunction should not contain callback function');
+            }
+            else if (typeof metadata === 'function') {
+                throw new Error('gRPCity: asyncStreamFunction should not contain callback function');
+            }
+            if (metadata instanceof Metadata) {
+                options = Object.assign({}, options);
+            }
+            else {
+                options = Object.assign({}, metadata);
+                metadata = new Metadata();
+            }
+            metadata.add('x-client-hostname', hostname);
+            if (appName) {
+                metadata.add('x-client-app-name', appName);
+            }
+            if (!options.deadline) {
+                var timeout = options.timeout || defaultOptions.timeout;
+                var deadline = new Date(Date.now() + timeout);
+                options.deadline = deadline;
+                delete options.timeout;
+                debug('grpc client request will timeout at', { fullServiceName: fullServiceName, deadline: deadline });
+            }
+            var call = func.apply(client, [metadata, options]);
+            call.writeAll = function (messages) {
+                if (Array.isArray(messages)) {
+                    messages.forEach(function (message) {
+                        call.write(message);
+                    });
                 }
-                return func.apply(client, argumentsList);
             };
-            target[name] = asyncFunc;
-            return target;
-        }, { async: {} });
-        return target;
+            call.writeEnd = call.end;
+            call.readAll = function () { return __awaiter(_this, void 0, void 0, function () {
+                var result, outSideError;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            call.end();
+                            result = {};
+                            outSideError = new Error();
+                            return [4 /*yield*/, new Promise(function (resolve, reject) {
+                                    call.on('error', function (err) {
+                                        outSideError.name = 'GrpcClientError';
+                                        outSideError.code = err.code;
+                                        outSideError.message = "".concat(fullServiceName, " (").concat(err.message, ")");
+                                        var stacks = outSideError.stack.split('\n');
+                                        outSideError.stack = __spreadArray(__spreadArray(__spreadArray([
+                                            stacks[0]
+                                        ], stacks.slice(2), true), [
+                                            '    ...'
+                                        ], false), err.stack.split('\n').slice(1, 3), true).join('\n');
+                                        reject(outSideError);
+                                    });
+                                    result.response = pEvent.iterator(call, 'data', {
+                                        resolutionEvents: ['status', 'end']
+                                    });
+                                    call.on('metadata', function (metadata) {
+                                        debug('serverStreamMethod get metadata', metadata);
+                                        result.metadata = metadata;
+                                    });
+                                    call.on('status', function (status) {
+                                        debug('serverStreamMethod get status', status);
+                                        result.status = status;
+                                        resolve();
+                                    });
+                                })];
+                        case 1:
+                            _a.sent();
+                            return [2 /*return*/, result];
+                    }
+                });
+            }); };
+            return call;
+        };
+        return duplexStreamMethod;
+    };
+    ClientProxy.prototype._keepCallbackMethod = function (client, func) {
+        var callbackMethod = function () {
+            var argumentsList = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                argumentsList[_i] = arguments[_i];
+            }
+            return func.apply(client, argumentsList);
+        };
+        return callbackMethod;
     };
     return ClientProxy;
 }());

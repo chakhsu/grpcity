@@ -56,7 +56,7 @@ var defaultLoadOptions = require('./defaultLoadOptions');
 var clientProxy = require('./clientProxy');
 var serverProxy = require('./serverProxy');
 var debug = require('debug')('grpcity');
-function prefixingDefinition(packageDefinition, packagePrefix) {
+var prefixingDefinition = function (packageDefinition, packagePrefix) {
     var _a;
     for (var qualifiedName in packageDefinition) {
         var definition = packageDefinition[qualifiedName];
@@ -75,7 +75,7 @@ function prefixingDefinition(packageDefinition, packagePrefix) {
         }
     }
     return packageDefinition;
-}
+};
 var addressSchema = Joi.object()
     .pattern(/\.*/, Joi.alternatives([
     Joi.string().regex(/:/, 'host and port like 127.0.0.1:9090'),
