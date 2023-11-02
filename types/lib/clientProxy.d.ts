@@ -14,4 +14,7 @@ declare class ClientProxy {
     _promisifyServerStreamMethod(client: any, func: any, defaultOptions: any, basicMeta: any): (request: any, metadata: any, options: any) => any;
     _promisifyDuplexStreamMethod(client: any, func: any, defaultOptions: any, basicMeta: any): (metadata: any, options: any) => any;
     _keepCallbackMethod(client: any, func: any): (...argumentsList: any[]) => any;
+    _prepareMetadata(metadata: any, options: any, basicMeta: any): any[];
+    _handlerError(err: any, basicMeta: any): Error;
+    _setDeadline(options: any, defaultOptions: any, basicMeta: any): any;
 }
