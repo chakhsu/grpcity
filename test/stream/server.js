@@ -15,15 +15,23 @@ class Stream {
   }
 
   clientStreamHello (call, callback) {
-    call.on('data', (chunk) => {
-      console.log(chunk.message)
+    const metadata = call.metadata.clone()
+    metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
+    call.sendMetadata(metadata)
+
+    call.on('data', (data) => {
+      console.log(data)
     })
-    call.on('end', (chunk) => {
+    call.on('end', () => {
       callback(null, { message: "Hello! I'm fine, thank you!" })
     })
   }
 
   serverStreamHello (call) {
+    const metadata = call.metadata.clone()
+    metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
+    call.sendMetadata(metadata)
+
     console.log(call.request.message)
     call.write({ message: 'Hello! I got you message.' })
     call.write({ message: "I'm fine, thank you" })
@@ -31,17 +39,23 @@ class Stream {
   }
 
   mutualStreamHello (call) {
+    const metadata = call.metadata.clone()
+    metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
+    call.sendMetadata(metadata)
+
+    call.write({ message: 'emmm...' })
     call.on('data', (chunk) => {
       console.log(chunk.message)
       if (chunk.message === 'Hello!') {
-        call.write({ message: 'Hello!' })
+        call.write({ message: 'Hello too.' })
       } else if (chunk.message === 'How are you?') {
         call.write({ message: "I'm fine, thank you" })
       } else {
         call.write({ message: 'pardon?' })
       }
     })
-    call.on('end', (chunk) => {
+    call.on('end', () => {
+      console.log('client call end.')
       call.end()
     })
   }

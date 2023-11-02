@@ -37,7 +37,7 @@ async function start (addr) {
   // client to stream server
   const serverStreamHelloCall = client.call.serverStreamHello({ message: 'Hello! How are you?' })
   serverStreamHelloCall.on('data', (chunk) => {
-    console.log(chunk.message)
+    console.log(chunk)
   })
   serverStreamHelloCall.on('end', () => {
     console.log('server call end.')
@@ -45,15 +45,17 @@ async function start (addr) {
 
   // stream client to stream server
   const mutualStreamHelloCall = client.call.mutualStreamHello()
+  mutualStreamHelloCall.write({ message: 'Hello!' })
+  mutualStreamHelloCall.write({ message: 'How are you?' })
+  mutualStreamHelloCall.write({ message: 'other thing x' })
+  mutualStreamHelloCall.end()
+
   mutualStreamHelloCall.on('data', (chunk) => {
-    console.log(chunk.message)
+    console.log(chunk)
   })
   mutualStreamHelloCall.on('end', () => {
     console.log('server call end.')
   })
-  mutualStreamHelloCall.write({ message: 'Hello!' })
-  mutualStreamHelloCall.write({ message: 'How are you?' })
-  mutualStreamHelloCall.end()
 }
 
 start('localhost:9097')
