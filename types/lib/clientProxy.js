@@ -50,7 +50,7 @@ var debug = require('debug')('grpcity:clientProxy');
 var ClientProxy = /** @class */ (function () {
     function ClientProxy() {
     }
-    ClientProxy.prototype.proxy = function (client, defaultOptions, appName) {
+    ClientProxy.prototype._proxy = function (client, defaultOptions, appName) {
         var _this = this;
         if (defaultOptions === void 0) { defaultOptions = {}; }
         if (appName === void 0) { appName = undefined; }

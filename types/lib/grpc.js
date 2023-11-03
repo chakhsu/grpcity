@@ -247,7 +247,7 @@ module.exports = /** @class */ (function () {
         else {
             var client = this._makeClient(isDefaultClient, name, addr, credentials, channelOptions);
             var appName = this._appName;
-            var proxy = clientProxy.proxy(client, { timeout: timeout }, appName);
+            var proxy = clientProxy._proxy(client, { timeout: timeout }, appName);
             this._clientMap.set(cacheKey, proxy);
             return proxy;
         }
@@ -264,7 +264,7 @@ module.exports = /** @class */ (function () {
         var _b = _a === void 0 ? {} : _a, addr = _b.addr, _c = _b.timeout, timeout = _c === void 0 ? undefined : _c, _d = _b.credentials, credentials = _d === void 0 ? undefined : _d, _e = _b.channelOptions, channelOptions = _e === void 0 ? {} : _e;
         var client = this._makeClientWithoutCache(false, name, addr, credentials, channelOptions);
         var appName = this._appName;
-        var proxy = clientProxy.proxy(client, { timeout: timeout }, appName);
+        var proxy = clientProxy._proxy(client, { timeout: timeout }, appName);
         return proxy;
     };
     GrpcLoader.prototype._makeClient = function (isDefaultClient, name, addr, credentials, channelOptions) {

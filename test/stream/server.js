@@ -49,9 +49,9 @@ class Stream {
       if (chunk.message === 'Hello!') {
         call.write({ message: 'Hello too.' })
       } else if (chunk.message === 'How are you?') {
-        call.write({ message: `I'm fine, thank you` })
+        call.write({ message: 'I\'m fine, thank you' })
         setTimeout(() => {
-          call.write({ message: `delay 1s` })
+          call.write({ message: 'delay 1s' })
         }, 1000)
       } else {
         call.write({ message: 'pardon?' })
