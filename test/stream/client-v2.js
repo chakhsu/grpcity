@@ -23,26 +23,31 @@ async function start (addr) {
   })
 
   // stream client to server
-  const clientStreamHelloCall = client.stream.clientStreamHello(meta)
+  const clientStreamHelloCall = client.clientStreamHello(meta)
   clientStreamHelloCall.write({ message: 'Hello!' })
   clientStreamHelloCall.write({ message: 'How are you?' })
   const writeResult = await clientStreamHelloCall.writeEnd()
   console.log(writeResult.response)
 
   // client to stream server
-  const serverStreamHelloCall = client.stream.serverStreamHello({ message: 'Hello! How are you?' }, meta)
+  const serverStreamHelloCall = client.serverStreamHello({ message: 'Hello! How are you?' }, meta)
   const serverReadResult = await serverStreamHelloCall.readAll()
   for await (const data of serverReadResult.response) {
     console.log(data)
   }
 
   // stream client to stream server
-  const mutualStreamHelloCall = client.stream.mutualStreamHello(meta)
+  const mutualStreamHelloCall = client.mutualStreamHello(meta)
   mutualStreamHelloCall.writeAll([
     { message: 'Hello!' },
     { message: 'How are you?' },
     { message: 'other thing x' }
   ])
+  mutualStreamHelloCall.write({ message: 'maybe' })
+
+  // if no readAll(), need to writeEnd()
+  // mutualStreamHelloCall.writeEnd()
+
   const mutualReadAllResult = await mutualStreamHelloCall.readAll()
   for await (const data of mutualReadAllResult.response) {
     console.log(data)

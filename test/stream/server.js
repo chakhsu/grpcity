@@ -49,14 +49,19 @@ class Stream {
       if (chunk.message === 'Hello!') {
         call.write({ message: 'Hello too.' })
       } else if (chunk.message === 'How are you?') {
-        call.write({ message: "I'm fine, thank you" })
+        call.write({ message: `I'm fine, thank you` })
+        setTimeout(() => {
+          call.write({ message: `delay 1s` })
+        }, 1000)
       } else {
         call.write({ message: 'pardon?' })
       }
     })
     call.on('end', () => {
-      console.log('client call end.')
-      call.end()
+      setTimeout(() => {
+        console.log('client call end.')
+        call.end()
+      }, 3000)
     })
   }
 }
