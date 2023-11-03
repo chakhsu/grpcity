@@ -79,19 +79,19 @@ var ClientProxy = /** @class */ (function () {
             // stream
             if (requestStream && !responseStream) {
                 // promisify only client stream method
-                target.stream[name] = _this._promisifyClientStreamMethod(client, func, defaultOptions, basicMeta);
+                target[name] = _this._promisifyClientStreamMethod(client, func, defaultOptions, basicMeta);
             }
             if (!requestStream && responseStream) {
                 // promisify only server stream method
-                target.stream[name] = _this._promisifyServerStreamMethod(client, func, defaultOptions, basicMeta);
+                target[name] = _this._promisifyServerStreamMethod(client, func, defaultOptions, basicMeta);
             }
             if (requestStream && responseStream) {
-                target.stream[name] = _this._promisifyDuplexStreamMethod(client, func, defaultOptions, basicMeta);
+                target[name] = _this._promisifyDuplexStreamMethod(client, func, defaultOptions, basicMeta);
             }
             // keep callback method
             target.call[name] = _this._keepCallbackMethod(client, func);
             return target;
-        }, { stream: {}, call: {} });
+        }, { call: {} });
         return target;
     };
     ClientProxy.prototype._getFuncStreamWay = function (func) {
@@ -159,6 +159,8 @@ var ClientProxy = /** @class */ (function () {
                 result.response = response;
             });
             var call = func.apply(client, argumentsList);
+            // write() already exists in call
+            // call.write = call.write
             call.writeAll = function (messages) {
                 if (Array.isArray(messages)) {
                     messages.forEach(function (message) {
@@ -252,6 +254,8 @@ var ClientProxy = /** @class */ (function () {
             _a = _this._prepareMetadata(metadata, options, basicMeta), metadata = _a[0], options = _a[1];
             options = _this._setDeadline(options, defaultOptions, basicMeta);
             var call = func.apply(client, [metadata, options]);
+            // write() already exists in call
+            // call.write = call.write
             call.writeAll = function (messages) {
                 if (Array.isArray(messages)) {
                     messages.forEach(function (message) {
@@ -259,7 +263,9 @@ var ClientProxy = /** @class */ (function () {
                     });
                 }
             };
+            // for better understand and use
             call.writeEnd = call.end;
+            // readAll() needs to execute writeAll() or write() first before it can be executed
             call.readAll = function () { return __awaiter(_this, void 0, void 0, function () {
                 var result;
                 var _this = this;

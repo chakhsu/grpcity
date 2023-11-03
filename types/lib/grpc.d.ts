@@ -48,7 +48,6 @@ declare class GrpcLoader {
         credentials?: any;
         channelOptions?: {};
     }): {
-        stream: {};
         call: {};
     };
     _makeClient(isDefaultClient: any, name: any, addr: any, credentials: any, channelOptions?: {}): any;
