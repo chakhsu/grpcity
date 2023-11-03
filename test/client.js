@@ -2,7 +2,7 @@ const GrpcLoader = require('..')
 const path = require('path')
 const fs = require('fs')
 
-async function start (addr) {
+const start = async (addr) => {
   const loader = new GrpcLoader({
     location: path.resolve(__dirname, 'protos'),
     files: ['test/helloworld/helloworld.proto']

@@ -66,7 +66,7 @@ class Stream {
   }
 }
 
-async function start (addr) {
+const start = async (addr) => {
   const loader = new GrpcLoader({
     location: path.resolve(__dirname, './'),
     files: ['stream.proto']

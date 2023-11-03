@@ -86,6 +86,7 @@ var ClientProxy = /** @class */ (function () {
                 target[name] = _this._promisifyServerStreamMethod(client, func, defaultOptions, basicMeta);
             }
             if (requestStream && responseStream) {
+                // promisify duplex stream method
                 target[name] = _this._promisifyDuplexStreamMethod(client, func, defaultOptions, basicMeta);
             }
             // keep callback method

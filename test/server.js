@@ -91,7 +91,7 @@ const middlewareB = async (ctx, next) => {
   console.log('middlewareB: 2', ctx, endTime, endTime - beginTime)
 }
 
-async function start (addr) {
+const start = async (addr) => {
   const loader = new GrpcLoader({
     location: path.resolve(__dirname, 'protos'),
     files: ['test/helloworld/helloworld.proto']
