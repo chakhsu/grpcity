@@ -17,7 +17,7 @@
 
 gPRCity is a simple, easy-to-use, and advanced gRPC microservices library based on Node.js.
 
-> The name is derived from "gRPC + City = gRPCity," symbolizing the author's hope that this library can support the development of business cities. Taking a technological perspective as the foundation, it enables everyone to focus on business and better support delivery. Here, I would like to recommend a game called "Cities: Skylines 2." It is a city simulation game that allows players to experience the excitement and challenges of creating and maintaining a real city firsthand.
+> The name is derived from "gRPC + City = gRPCity", symbolizing the author's hope that this library can support the development of business cities. Taking a technological perspective as the foundation, it enables everyone to focus on business and better support delivery. Here, I would like to recommend a game called "Cities: Skylines 2." It is a city simulation game that allows players to experience the excitement and challenges of creating and maintaining a real city firsthand.
 
 Here is the feature:
 
@@ -42,6 +42,14 @@ View full documentation and examples on [chakhsu.github.io/grpcity-docs](https:/
 
 ### Quick Start
 
+#### Install
+
+```bash
+npm i grpcity
+```
+
+#### Proto
+
 First, create the `greeter.proto` file and write the following content in it:
 
 ```proto
@@ -58,6 +66,8 @@ message Message {
 }
 ```
 
+#### Loader
+
 Next, create `loader.js`` and write the following code in it:
 
 ```js
@@ -73,6 +83,8 @@ export default new GrpcLoader({
     ]
 })
 ```
+
+#### Server
 
 Then, create `server.js` and write the following code in it:
 
@@ -112,6 +124,8 @@ const start = async (addr) => {
 
 start('127.0.0.1:9099')
 ```
+
+#### Client
 
 Finally, create `client.js` and write the following code in it:
 

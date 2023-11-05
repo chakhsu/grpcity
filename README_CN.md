@@ -42,6 +42,14 @@
 
 ### 快速开始
 
+#### 安装
+
+```bash
+npm i grpcity
+```
+
+#### Proto
+
 首先，创建`greeter.proto`文件，编写下面的内容到其中：
 
 ```proto
@@ -58,6 +66,8 @@ message Message {
 }
 ```
 
+#### Loader
+
 然后，创建`loader.js`, 编写下面的代码到其中：
 
 ```js
@@ -73,6 +83,8 @@ export default new GrpcLoader({
     ]
 })
 ```
+
+#### Server
 
 其次，创建`server.js`, 编写下面的代码到其中：
 ```js
@@ -111,6 +123,8 @@ const start = async (addr) => {
 
 start('127.0.0.1:9099')
 ```
+
+#### Client
 
 最后，创建`client.js`, 编写下面的代码到其中：
 
