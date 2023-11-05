@@ -29,12 +29,14 @@ const start = async (addr) => {
   const writeResult = await clientStreamHelloCall.writeEnd()
   console.log(writeResult.response)
 
-  // client to stream server
+  // // client to stream server
   const serverStreamHelloCall = client.serverStreamHello({ message: 'Hello! How are you?' }, meta)
-  const serverReadResult = await serverStreamHelloCall.readAll()
-  for await (const data of serverReadResult.response) {
+  const serverReadAllResult = await serverStreamHelloCall.readAll()
+  for await (const data of serverReadAllResult) {
     console.log(data)
   }
+  const serverReadEndResult = serverStreamHelloCall.readEnd()
+  console.log(serverReadEndResult)
 
   // stream client to stream server
   const mutualStreamHelloCall = client.mutualStreamHello(meta)
@@ -45,13 +47,13 @@ const start = async (addr) => {
   ])
   mutualStreamHelloCall.write({ message: 'maybe' })
 
-  // if no readAll(), need to writeEnd()
-  // mutualStreamHelloCall.writeEnd()
-
-  const mutualReadAllResult = await mutualStreamHelloCall.readAll()
-  for await (const data of mutualReadAllResult.response) {
+  const mutualReadAllResult = mutualStreamHelloCall.readAll()
+  for await (const data of mutualReadAllResult) {
     console.log(data)
   }
+
+  const mutualReadEndResult = mutualStreamHelloCall.readEnd()
+  console.log(mutualReadEndResult)
 }
 
 start('localhost:9097')
