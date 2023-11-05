@@ -208,36 +208,26 @@ var ClientProxy = /** @class */ (function () {
             _a = _this._prepareMetadata(metadata, options, basicMeta), metadata = _a[0], options = _a[1];
             options = _this._setDeadline(options, defaultOptions, basicMeta);
             var call = func.apply(client, [request, metadata, options]);
-            call.readAll = function () { return __awaiter(_this, void 0, void 0, function () {
-                var result;
-                var _this = this;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            result = {};
-                            return [4 /*yield*/, new Promise(function (resolve, reject) {
-                                    call.on('error', function (err) {
-                                        reject(_this._handlerError(err, basicMeta));
-                                    });
-                                    result.response = pEvent.iterator(call, 'data', {
-                                        resolutionEvents: ['status', 'end']
-                                    });
-                                    call.on('metadata', function (metadata) {
-                                        debug('serverStreamMethod get metadata', metadata);
-                                        result.metadata = metadata;
-                                    });
-                                    call.on('status', function (status) {
-                                        debug('serverStreamMethod get status', status);
-                                        result.status = status;
-                                        resolve();
-                                    });
-                                })];
-                        case 1:
-                            _a.sent();
-                            return [2 /*return*/, result];
-                    }
+            call.on('error', function (err) {
+                throw _this._handlerError(err, basicMeta);
+            });
+            var result = {};
+            call.readAll = function () {
+                call.on('metadata', function (metadata) {
+                    debug('serverStreamMethod get metadata', metadata);
+                    result.metadata = metadata;
                 });
-            }); };
+                call.on('status', function (status) {
+                    debug('serverStreamMethod get status', status);
+                    result.status = status;
+                });
+                return pEvent.iterator(call, 'data', {
+                    resolutionEvents: ['status', 'end']
+                });
+            };
+            call.readEnd = function () {
+                return result;
+            };
             return call;
         };
         return serverStreamMethod;
@@ -264,40 +254,28 @@ var ClientProxy = /** @class */ (function () {
                     });
                 }
             };
-            // for better understand and use
-            call.writeEnd = call.end;
+            call.on('error', function (err) {
+                throw _this._handlerError(err, basicMeta);
+            });
             // readAll() needs to execute writeAll() or write() first before it can be executed
-            call.readAll = function () { return __awaiter(_this, void 0, void 0, function () {
-                var result;
-                var _this = this;
-                return __generator(this, function (_a) {
-                    switch (_a.label) {
-                        case 0:
-                            call.end();
-                            result = {};
-                            return [4 /*yield*/, new Promise(function (resolve, reject) {
-                                    call.on('error', function (err) {
-                                        reject(_this._handlerError(err, basicMeta));
-                                    });
-                                    result.response = pEvent.iterator(call, 'data', {
-                                        resolutionEvents: ['status', 'end']
-                                    });
-                                    call.on('metadata', function (metadata) {
-                                        debug('serverStreamMethod get metadata', metadata);
-                                        result.metadata = metadata;
-                                    });
-                                    call.on('status', function (status) {
-                                        debug('serverStreamMethod get status', status);
-                                        result.status = status;
-                                        resolve();
-                                    });
-                                })];
-                        case 1:
-                            _a.sent();
-                            return [2 /*return*/, result];
-                    }
+            var result = {};
+            call.readAll = function () {
+                call.end();
+                call.on('metadata', function (metadata) {
+                    debug('serverStreamMethod get metadata', metadata);
+                    result.metadata = metadata;
                 });
-            }); };
+                call.on('status', function (status) {
+                    debug('serverStreamMethod get status', status);
+                    result.status = status;
+                });
+                return pEvent.iterator(call, 'data', {
+                    resolutionEvents: ['status', 'end']
+                });
+            };
+            call.readEnd = function () {
+                return result;
+            };
             return call;
         };
         return duplexStreamMethod;
