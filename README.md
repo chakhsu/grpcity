@@ -38,7 +38,7 @@ Here is the feature:
 
 ---
 
-View full documentation and examples on [chakhsu.github.io/grpcity-docs](https://chakhsu.github.io/grpcity-docs).
+View full documentation and examples on [grpcity.vercel.app](https://grpcity.vercel.app).
 
 ### Quick Start
 
@@ -158,7 +158,7 @@ node ./client.js
 
 ---
 
-View full documentation and examples on [chakhsu.github.io/grpcity-docs](https://chakhsu.github.io/grpcity-docs).
+View full documentation and examples on [grpcity.vercel.app](https://grpcity.vercel.app).
 
 ### License
 
