@@ -192,6 +192,16 @@ module.exports = /** @class */ (function () {
             });
         });
     };
+    GrpcLoader.prototype.closeClients = function () {
+        this._clientMap.forEach(function (client, key) {
+            if (client && typeof client.close === 'function') {
+                client.close();
+            }
+        });
+        this._clientMap.clear();
+        this._clientAddrMap.clear();
+        this._initDefaultClient = false;
+    };
     GrpcLoader.prototype.makeCredentials = function (rootCerts, privateKey, certChain, verifyOptions) {
         if (rootCerts) {
             return grpc.credentials.createSsl(rootCerts, privateKey, certChain, verifyOptions);

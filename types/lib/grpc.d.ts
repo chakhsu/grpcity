@@ -23,6 +23,7 @@ declare class GrpcLoader {
         credentials?: any;
     }): Promise<void>;
     _initDefaultClient: boolean;
+    closeClients(): void;
     makeCredentials(rootCerts: any, privateKey: any, certChain: any, verifyOptions: any): grpc.ChannelCredentials;
     _insecureCredentials: grpc.ChannelCredentials;
     service(name: any): any;
