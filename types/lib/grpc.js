@@ -326,14 +326,9 @@ module.exports = /** @class */ (function () {
         var _b = _a === void 0 ? {} : _a, _c = _b.exclude, exclude = _c === void 0 ? [] : _c, inherit = _b.inherit;
         assert(typeof target === 'object', 'Must callbackify an object');
         assert(Array.isArray(exclude), 'options.exclude must be an array of strings');
-        exclude.push.apply(exclude, Object.getOwnPropertyNames(Object.getPrototypeOf({})));
-        var allPropertyNames = [];
-        allPropertyNames.push.apply(allPropertyNames, Object.keys(target));
-        allPropertyNames.push.apply(allPropertyNames, Object.getOwnPropertyNames(Object.getPrototypeOf(target)));
-        if (inherit && inherit.prototype) {
-            allPropertyNames.push.apply(allPropertyNames, Object.getOwnPropertyNames(inherit.prototype));
-        }
-        allPropertyNames = __spreadArray([], new Set(allPropertyNames), true);
+        var protoPropertyNames = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
+        exclude.push.apply(exclude, protoPropertyNames);
+        var allPropertyNames = __spreadArray([], new Set(__spreadArray(__spreadArray(__spreadArray([], Object.keys(target), true), Object.getOwnPropertyNames(Object.getPrototypeOf(target)), true), (inherit && inherit.prototype ? Object.getOwnPropertyNames(inherit.prototype) : []), true)), true);
         var methods = {};
         for (var _i = 0, allPropertyNames_1 = allPropertyNames; _i < allPropertyNames_1.length; _i++) {
             var key = allPropertyNames_1[_i];
