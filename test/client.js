@@ -43,6 +43,24 @@ const start = async (addr) => {
 
   const { response: result3 } = await hellorClient.sayHello({ name: 'hellor3' })
   console.log('hellorClient.sayHello', result3)
+
+  loader.closeClients()
+
+  try {
+    const { response: result4 } = await hellorClient.sayHello({ name: 'hellor4' })
+    console.log('hellorClient.sayHello', result4)
+  } catch (error) {
+    // reconnect
+    await loader.initClients({
+      services: {
+        'test.helloworld.Hellor': addr
+      },
+      credentials
+    })
+    const newHellorClient = loader.client('test.helloworld.Hellor')
+    const { response: result5 } = await newHellorClient.sayHello({ name: 'hellor5' })
+    console.log('newHellorClient.sayHello', result5)
+  }
 }
 
 start('localhost:9099')
