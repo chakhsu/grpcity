@@ -28,6 +28,9 @@
     "lint": "standard -v 'lib/**/*.js' 'test/**/*.js' | snazzy",
     "type-gen": "tsc -d --allowJs --outDir types index.js"
   },
+  "engines": {
+    "node": ">=16"
+  },
   "dependencies": {
     "@grpc/grpc-js": "^1.9.7",
     "@grpc/proto-loader": "^0.7.10",
