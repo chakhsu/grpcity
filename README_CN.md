@@ -1,11 +1,14 @@
 # gRPCity
 
 <p align="left">
+  <a aria-label="Github build status" href="https://github.com/chakhsu/grpcity/actions">
+    <img alt="build-status" src="https://github.com/chakhsu/grpcity/actions/workflows/tests.yml/badge.svg">
+  </a>
   <a aria-label="NPM version" href="https://www.npmjs.com/package/grpcity">
-    <img alt="" src="https://badgen.net/npm/v/grpcity">
+    <img alt="npm-version" src="https://badgen.net/npm/v/grpcity">
   </a>
   <a aria-label="License" href="https://github.com/chakhsu/grpcity/blob/main/LICENSE">
-    <img alt="" src="https://badgen.net/npm/license/grpcity">
+    <img alt="npm-license" src="https://badgen.net/npm/license/grpcity">
   </a>
 </p>
 
