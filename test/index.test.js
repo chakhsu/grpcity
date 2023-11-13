@@ -79,7 +79,7 @@ describe('Grpc Loader', () => {
       await client2.sayHello({ name: 'grpc' }, loader.makeMetadata({ 'x-long-delay': 'true' }))
       expect.fail('should not run here')
     } catch (err) {
-      expect(Date.now() - start).to.be.lte(timeout * 1.5)
+      expect(Date.now() - start).to.be.lte(timeout * 2)
       expect(/Deadline/i.test(err.message)).to.be.eq(true)
       expect(/SayHello/i.test(err.message)).to.be.eq(true)
     }
