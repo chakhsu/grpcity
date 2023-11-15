@@ -94,10 +94,6 @@ export default new GrpcLoader({
 import loader from './loader.js'
 
 class Greeter {
-    constructor(loader) {
-        this._loader = loader
-    }
-
     init(server) {
         server.addService('helloworld.Greeter', this, { exclude: ['init'] })
     }
@@ -114,7 +110,7 @@ const start = async (addr) => {
     await loader.init()
 
     const server = loader.initServer()
-    const servicers = [new Greeter(loader)]
+    const servicers = [new Greeter()]
     await Promise.all(servicers.map(async s => s.init(server)))
 
     await server.listen(addr)
