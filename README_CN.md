@@ -58,7 +58,7 @@ npm i grpcity
 ```proto
 syntax = "proto3";
 
-package greeter;
+package helloworld;
 
 service Greeter {
   rpc SayGreet(Message) returns (Message) {}
@@ -99,10 +99,7 @@ class Greeter {
     }
 
     init(server) {
-        server.addService(
-            this._loader.service('Greeter'),
-            this._loader.callbackify(this, { exclude: ['init'] })
-        )
+        server.addService('helloworld.Greeter', this, { exclude: ['init'] })
     }
 
     async sayGreet(ctx) {
@@ -139,11 +136,11 @@ const start = async (addr) => {
 
     await loader.initClients({
         services: {
-            'test.helloworld.Greeter': addr
+            'helloworld.Greeter': addr
         }
     })
 
-    const client = loader.client('Greeter')
+    const client = loader.client('helloworld.Greeter')
     const result = await client.sayGreet({ message: 'greeter' })
     console.log('sayGreet', result.response)
 }
