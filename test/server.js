@@ -13,7 +13,7 @@ class Greeter {
   }
 
   async init (server) {
-    server.addService('test.helloworld.Greeter', this, { exclude: ['init'] } )
+    server.addService('test.helloworld.Greeter', this, { exclude: ['init'] })
   }
 
   async SayHello (ctx) {
