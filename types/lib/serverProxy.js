@@ -122,6 +122,7 @@ var ServerProxy = /** @class */ (function () {
                     case 1:
                         _a.sent();
                         delete this._server;
+                        delete this._loader;
                         return [2 /*return*/];
                 }
             });
@@ -133,6 +134,7 @@ var ServerProxy = /** @class */ (function () {
         }
         this._server.forceShutdown();
         delete this._server;
+        delete this._loader;
     };
     ServerProxy.prototype.makeServerCredentials = function (rootCerts, keyCertPairs, checkClientCertificate) {
         if (rootCerts) {
@@ -183,9 +185,9 @@ var ServerProxy = /** @class */ (function () {
         debug('callbackify()', methods);
         return methods;
     };
-    ServerProxy.prototype.removeService = function (service) {
+    ServerProxy.prototype.removeService = function (name) {
         assert(this._server, 'must be first init() server before server removeService()');
-        this._server.removeService(service);
+        this._server.removeService(this._loader.service(name));
     };
     // 只支持传入一个方法
     ServerProxy.prototype.addMiddleware = function (fn) {

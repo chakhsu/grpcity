@@ -19,7 +19,7 @@ declare class ServerProxy {
         inherit: any;
         _implementationType: any;
     }): {};
-    removeService(service: any): void;
+    removeService(name: any): void;
     addMiddleware(fn: any): void;
     addMiddlewares(fns: any): void;
     _proxy(target: any, key: any, options: any): (call: any) => Promise<any>;
