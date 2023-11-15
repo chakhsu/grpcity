@@ -9,7 +9,7 @@ describe('Grpc Loader', () => {
     }
 
     async init (server) {
-      server.addService(this._loader.service('test.helloworld.Greeter'), this._loader.callbackify(this, { exclude: ['init'] }))
+      server.addService('test.helloworld.Greeter', this, { exclude: ['init'] })
     }
 
     async SayHello (ctx) {
@@ -94,7 +94,7 @@ describe('Grpc Loader', () => {
     })
     await loader.init({
       isDev: true,
-      packagePrefix: 'test'
+      packagePrefix: 'dev'
     })
 
     const server = loader.initServer()

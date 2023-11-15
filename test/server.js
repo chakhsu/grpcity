@@ -13,10 +13,7 @@ class Greeter {
   }
 
   async init (server) {
-    server.addService(
-      this._loader.service('test.helloworld.Greeter'),
-      this._loader.callbackify(this, { exclude: ['init'] })
-    )
+    server.addService('test.helloworld.Greeter', this, { exclude: ['init'] } )
   }
 
   async SayHello (ctx) {
@@ -47,10 +44,7 @@ class Hellor {
   }
 
   async init (server) {
-    server.addService(
-      this._loader.service('test.helloworld.Hellor'),
-      this._loader.callbackify(this, { exclude: ['init'] })
-    )
+    server.addService('test.helloworld.Hellor', this, { exclude: ['init'] })
   }
 
   async SayHello (ctx) {
@@ -96,7 +90,10 @@ const start = async (addr) => {
     location: path.resolve(__dirname, 'protos'),
     files: ['test/helloworld/helloworld.proto']
   })
-  await loader.init()
+  await loader.init({
+    isDev: true,
+    packagePrefix: 'dev'
+  })
 
   const server = loader.initServer()
   server.addMiddlewares([middlewareA, middlewareB])

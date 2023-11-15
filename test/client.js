@@ -7,7 +7,10 @@ const start = async (addr) => {
     location: path.resolve(__dirname, 'protos'),
     files: ['test/helloworld/helloworld.proto']
   })
-  await loader.init()
+  await loader.init({
+    isDev: true,
+    packagePrefix: 'dev'
+  })
 
   const credentials = loader.makeCredentials(
     fs.readFileSync(path.resolve(__dirname, 'certs/ca.crt')),
@@ -48,7 +51,7 @@ const start = async (addr) => {
 
   try {
     const { response: result4 } = await hellorClient.sayHello({ name: 'hellor4' })
-    console.log('hellorClient.sayHello', result4)
+    console.log('hellorClient.sayHello, must not log here', result4)
   } catch (error) {
     // reconnect
     await loader.initClients({

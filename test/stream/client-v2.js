@@ -6,7 +6,10 @@ const start = async (addr) => {
     location: path.resolve(__dirname, './'),
     files: ['stream.proto']
   })
-  await loader.init()
+  await loader.init({
+    isDev: true,
+    packagePrefix: 'dev'
+  })
 
   await loader.initClients({
     services: {

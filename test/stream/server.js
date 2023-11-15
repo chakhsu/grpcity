@@ -8,10 +8,7 @@ class Stream {
   }
 
   async init (server) {
-    server.addService(
-      this._loader.service('stream.Hellor'),
-      this._loader.callbackify(this, { exclude: ['init'] })
-    )
+    server.addService('stream.Hellor', this, { exclude: ['init'] })
   }
 
   clientStreamHello (call, callback) {
@@ -71,7 +68,10 @@ const start = async (addr) => {
     location: path.resolve(__dirname, './'),
     files: ['stream.proto']
   })
-  await loader.init()
+  await loader.init({
+    isDev: true,
+    packagePrefix: 'dev'
+  })
 
   const server = loader.initServer()
 
