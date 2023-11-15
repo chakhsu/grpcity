@@ -44,7 +44,6 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     return to.concat(ar || Array.prototype.slice.call(from));
 };
 var assert = require('assert');
-var util = require('util');
 var grpc = require('@grpc/grpc-js');
 var protoLoader = require('@grpc/proto-loader');
 var protobuf = require('protobufjs');
@@ -309,6 +308,7 @@ module.exports = /** @class */ (function () {
         return client;
     };
     GrpcLoader.prototype.makeMetadata = function (initialValues) {
+        assert(this._types, 'Must called init() first. 尚未加载proto文件到loader.');
         var meta = new grpc.Metadata();
         if (typeof initialValues === 'object') {
             Object.entries(initialValues).forEach(function (_a) {
@@ -328,35 +328,8 @@ module.exports = /** @class */ (function () {
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
-        return serverProxy._init.apply(serverProxy, args);
-    };
-    // async func --- to --> callback type func
-    // use in grpc server side mostly
-    GrpcLoader.prototype.callbackify = function (target, _a) {
-        var _b = _a === void 0 ? {} : _a, _c = _b.exclude, exclude = _c === void 0 ? [] : _c, inherit = _b.inherit;
-        assert(typeof target === 'object', 'Must callbackify an object');
-        assert(Array.isArray(exclude), 'options.exclude must be an array of strings');
-        var protoPropertyNames = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
-        exclude.push.apply(exclude, protoPropertyNames);
-        var allPropertyNames = __spreadArray([], new Set(__spreadArray(__spreadArray(__spreadArray([], Object.keys(target), true), Object.getOwnPropertyNames(Object.getPrototypeOf(target)), true), (inherit && inherit.prototype ? Object.getOwnPropertyNames(inherit.prototype) : []), true)), true);
-        var methods = {};
-        for (var _i = 0, allPropertyNames_1 = allPropertyNames; _i < allPropertyNames_1.length; _i++) {
-            var key = allPropertyNames_1[_i];
-            var fn = target[key];
-            if (typeof fn === 'function' && key !== 'constructor' && !exclude.includes(key)) {
-                if (util.types.isAsyncFunction(fn)) {
-                    var eglWrapFunction = serverProxy._proxy(target, key);
-                    debug("callbackify async function: ".concat(key));
-                    methods[key] = util.callbackify(eglWrapFunction).bind(target);
-                }
-                else {
-                    debug("copy non-async function: ".concat(key));
-                    methods[key] = fn.bind(target);
-                }
-            }
-        }
-        debug('callbackify()', methods);
-        return methods;
+        assert(this._types, 'Must called init() first. 尚未加载proto文件到loader.');
+        return serverProxy._init.apply(serverProxy, __spreadArray([this], args, false));
     };
     return GrpcLoader;
 }());

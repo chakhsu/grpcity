@@ -45,6 +45,7 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
 };
 var grpc = require('@grpc/grpc-js');
 var assert = require('assert');
+var util = require('util');
 var compose = require('koa-compose');
 var _ = require('lodash');
 var Joi = require('joi');
@@ -60,11 +61,14 @@ var ServerProxy = /** @class */ (function () {
     function ServerProxy() {
         this._middleware = [];
     }
-    ServerProxy.prototype._init = function () {
+    ServerProxy.prototype._init = function (loader) {
         var _a;
         var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        if (!this._loader) {
+            this._loader = loader;
         }
         if (!this._server) {
             this._server = new ((_a = grpc.Server).bind.apply(_a, __spreadArray([void 0], args, false)))();
@@ -141,9 +145,43 @@ var ServerProxy = /** @class */ (function () {
             return this._insecureServerCredentials;
         }
     };
-    ServerProxy.prototype.addService = function (service, implementation) {
-        assert(this._server, 'must be first init() server before server addService()');
-        this._server.addService(service, implementation);
+    ServerProxy.prototype.addService = function (name, implementation, _a) {
+        var _b = _a === void 0 ? {} : _a, _c = _b.exclude, exclude = _c === void 0 ? [] : _c, inherit = _b.inherit;
+        var service = this._loader.service(name);
+        var options = { exclude: exclude, inherit: inherit, _implementationType: {} };
+        Object.keys(service).forEach(function (key) {
+            var _a = service[key], requestStream = _a.requestStream, responseStream = _a.responseStream;
+            options._implementationType[service[key].originalName] = { requestStream: requestStream, responseStream: responseStream };
+        });
+        this._server.addService(service, this._callbackify(implementation, options));
+    };
+    // async func --- to --> callback type func
+    // use in grpc server side mostly
+    ServerProxy.prototype._callbackify = function (target, _a) {
+        var _b = _a === void 0 ? {} : _a, _c = _b.exclude, exclude = _c === void 0 ? [] : _c, inherit = _b.inherit, _implementationType = _b._implementationType;
+        assert(typeof target === 'object', 'Must callbackify an object');
+        assert(Array.isArray(exclude), 'options.exclude must be an array of strings');
+        var protoPropertyNames = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
+        exclude.push.apply(exclude, protoPropertyNames);
+        var allPropertyNames = __spreadArray([], new Set(__spreadArray(__spreadArray(__spreadArray([], Object.keys(target), true), Object.getOwnPropertyNames(Object.getPrototypeOf(target)), true), (inherit && inherit.prototype ? Object.getOwnPropertyNames(inherit.prototype) : []), true)), true);
+        var methods = {};
+        for (var _i = 0, allPropertyNames_1 = allPropertyNames; _i < allPropertyNames_1.length; _i++) {
+            var key = allPropertyNames_1[_i];
+            var fn = target[key];
+            if (typeof fn === 'function' && key !== 'constructor' && !exclude.includes(key)) {
+                if (util.types.isAsyncFunction(fn)) {
+                    var eglWrapFunction = this._proxy(target, key, _implementationType);
+                    debug("callbackify async function: ".concat(key));
+                    methods[key] = util.callbackify(eglWrapFunction).bind(target);
+                }
+                else {
+                    debug("copy non-async function: ".concat(key));
+                    methods[key] = fn.bind(target);
+                }
+            }
+        }
+        debug('callbackify()', methods);
+        return methods;
     };
     ServerProxy.prototype.removeService = function (service) {
         assert(this._server, 'must be first init() server before server removeService()');
@@ -153,7 +191,7 @@ var ServerProxy = /** @class */ (function () {
     ServerProxy.prototype.addMiddleware = function (fn) {
         if (typeof fn !== 'function')
             throw new TypeError('grpcity loader server middleware must be a function!');
-        debug('use %s', fn._name || fn.name || '-');
+        debug('addMiddleware %s', fn._name || fn.name || '-');
         this._middleware.push(fn);
     };
     // 支持传入方法数组或者一个方法
@@ -169,7 +207,7 @@ var ServerProxy = /** @class */ (function () {
         }
     };
     // 洋葱模型：提供 rpc method 中间件前后处理的能力
-    ServerProxy.prototype._proxy = function (target, key) {
+    ServerProxy.prototype._proxy = function (target, key, options) {
         var _this = this;
         var fn = compose(this._middleware);
         return function (call) { return __awaiter(_this, void 0, void 0, function () {
