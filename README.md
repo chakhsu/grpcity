@@ -41,7 +41,7 @@ Here is the feature:
 
 ---
 
-View full documentation and examples on [grpcity.vercel.app](https://grpcity.vercel.app).
+View full documentation and examples on [grpcity.js.org](https://grpcity.js.org).
 
 ### Quick Start
 
@@ -71,7 +71,7 @@ message Message {
 
 #### Loader
 
-Next, create `loader.js`` and write the following code in it:
+Next, create `loader.js` and write the following code in it:
 
 ```js
 import GrpcLoader from 'grpcity'
@@ -154,7 +154,7 @@ node ./client.js
 
 ---
 
-View full documentation and examples on [grpcity.vercel.app](https://grpcity.vercel.app).
+View full documentation and examples on [grpcity.js.org](https://grpcity.js.org).
 
 ### License
 

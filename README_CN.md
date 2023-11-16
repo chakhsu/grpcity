@@ -41,7 +41,7 @@
 
 ---
 
-可通过访问 [grpcity.vercel.app](https://grpcity.vercel.app) 查看完整的文档和示例。
+可通过访问 [grpcity.js.org](https://grpcity.js.org) 查看完整的文档和示例。
 
 ### 快速开始
 
@@ -153,7 +153,7 @@ node ./client.js
 
 ---
 
-可通过访问 [grpcity.vercel.app](https://grpcity.vercel.app) 查看完整的文档和示例。
+可通过访问 [grpcity.js.org](https://grpcity.js.org) 查看完整的文档和示例。
 
 
 ### License
