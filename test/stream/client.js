@@ -26,7 +26,7 @@ const start = async (addr) => {
   })
 
   // client to server
-  const unaryHelloCall = client.call.unaryHello({ message: 'gRPCity' }, meta, (err, response) => {
+  client.call.unaryHello({ message: 'gRPCity' }, meta, (err, response) => {
     if (err) {
       console.log(err)
     } else {
