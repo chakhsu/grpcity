@@ -25,6 +25,15 @@ const start = async (addr) => {
     'x-timestamp-client': 'begin=' + new Date().toISOString()
   })
 
+  // client to server
+  const unaryHelloCall = client.call.unaryHello({ message: 'gRPCity' }, meta, (err, response) => {
+    if (err) {
+      console.log(err)
+    } else {
+      console.log(response)
+    }
+  })
+
   // stream client to server
   const clientStreamHelloCall = client.call.clientStreamHello(meta, (err, response) => {
     if (err) {
@@ -51,10 +60,13 @@ const start = async (addr) => {
   mutualStreamHelloCall.write({ message: 'Hello!' })
   mutualStreamHelloCall.write({ message: 'How are you?' })
   mutualStreamHelloCall.write({ message: 'other thing x' })
-  mutualStreamHelloCall.end()
 
-  mutualStreamHelloCall.on('data', (chunk) => {
-    console.log(chunk)
+  mutualStreamHelloCall.on('data', (data) => {
+    console.log(data)
+    if (data.message === 'delay 1s') {
+      mutualStreamHelloCall.write({ message: 'ok, I known you delay 1s' })
+      mutualStreamHelloCall.end()
+    }
   })
   mutualStreamHelloCall.on('end', () => {
     console.log('server call end.')

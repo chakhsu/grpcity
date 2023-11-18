@@ -1,9 +1,12 @@
 const GrpcLoader = require('../../index.js')
 const path = require('path')
 
+function timeout (ms) {
+  return new Promise((resolve, reject) => setTimeout(resolve, ms))
+}
+
 class Stream {
-  constructor (loader) {
-    this._loader = loader
+  constructor () {
     this.count = 0
   }
 
@@ -11,25 +14,23 @@ class Stream {
     server.addService('stream.Hellor', this, { exclude: ['init'] })
   }
 
-  unaryHello (call, callback) {
+  async unaryHello (call) {
     console.log(call.request.message)
-    callback(null, { message: 'hello ' + call.request.message })
+    return { message: 'hello ' + call.request.message }
   }
 
-  clientStreamHello (call, callback) {
+  async clientStreamHello (call) {
     const metadata = call.metadata.clone()
     metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
     call.sendMetadata(metadata)
 
-    call.on('data', (data) => {
+    for await (const data of call.readAll()) {
       console.log(data)
-    })
-    call.on('end', () => {
-      callback(null, { message: "Hello! I'm fine, thank you!" })
-    })
+    }
+    return { message: "Hello! I'm fine, thank you!" }
   }
 
-  serverStreamHello (call) {
+  async serverStreamHello (call) {
     const metadata = call.metadata.clone()
     metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
     call.sendMetadata(metadata)
@@ -37,34 +38,38 @@ class Stream {
     console.log(call.request.message)
     call.write({ message: 'Hello! I got you message.' })
     call.write({ message: "I'm fine, thank you" })
+    call.writeAll([
+      { message: 'other thing x' },
+      { message: 'other thing y' }
+    ])
     call.end()
   }
 
-  mutualStreamHello (call) {
+  async mutualStreamHello (call) {
     const metadata = call.metadata.clone()
     metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
     call.sendMetadata(metadata)
 
     call.write({ message: 'emmm...' })
-    call.on('data', (chunk) => {
-      console.log(chunk.message)
-      if (chunk.message === 'Hello!') {
+
+    for await (const data of call.readAll()) {
+      console.log(data.message)
+      if (data.message === 'Hello!') {
         call.write({ message: 'Hello too.' })
-      } else if (chunk.message === 'How are you?') {
+      } else if (data.message === 'How are you?') {
         call.write({ message: 'I\'m fine, thank you' })
-        setTimeout(() => {
-          call.write({ message: 'delay 1s' })
-        }, 1000)
+        await timeout(1000)
+        call.write({ message: 'delay 1s' })
+        call.writeAll([
+          { message: 'emm... ' },
+          { message: 'emm......' }
+        ])
       } else {
         call.write({ message: 'pardon?' })
       }
-    })
-    call.on('end', () => {
-      setTimeout(() => {
-        console.log('client call end.')
-        call.end()
-      }, 3000)
-    })
+    }
+
+    call.end()
   }
 }
 
@@ -80,7 +85,7 @@ const start = async (addr) => {
 
   const server = loader.initServer()
 
-  const servicers = [new Stream(loader)]
+  const servicers = [new Stream()]
   await Promise.all(servicers.map(async s => s.init(server)))
 
   await server.listen(addr)

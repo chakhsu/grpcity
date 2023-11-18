@@ -4,10 +4,6 @@ const { expect } = require('chai')
 
 describe('Grpc Loader', () => {
   class Greeter {
-    constructor (loader) {
-      this._loader = loader
-    }
-
     async init (server) {
       server.addService('test.helloworld.Greeter', this, { exclude: ['init'] })
     }
@@ -44,7 +40,7 @@ describe('Grpc Loader', () => {
     expect(loader._types).is.an('object')
 
     const server = loader.initServer()
-    const servicers = [new Greeter(loader)]
+    const servicers = [new Greeter()]
     await Promise.all(servicers.map(async s => s.init(server)))
     const addr = { host: '127.0.0.1', port: 12305 }
     await server.listen(addr)
@@ -98,7 +94,7 @@ describe('Grpc Loader', () => {
     })
 
     const server = loader.initServer()
-    const servicers = [new Greeter(loader)]
+    const servicers = [new Greeter()]
     await Promise.all(servicers.map(async s => s.init(server)))
     const addr = { host: '127.0.0.1', port: 12306 }
     await server.listen(addr)

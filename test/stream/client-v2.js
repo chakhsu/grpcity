@@ -25,14 +25,18 @@ const start = async (addr) => {
     'x-timestamp-client': 'begin=' + new Date().toISOString()
   })
 
+  // client to server
+  const unaryHelloCall = await client.unaryHello({ message: 'gRPCity' }, meta)
+  console.log(unaryHelloCall.response)
+
   // stream client to server
   const clientStreamHelloCall = client.clientStreamHello(meta)
   clientStreamHelloCall.write({ message: 'Hello!' })
   clientStreamHelloCall.write({ message: 'How are you?' })
   const writeResult = await clientStreamHelloCall.writeEnd()
-  console.log(writeResult.response)
+  console.log(writeResult)
 
-  // // client to stream server
+  // client to stream server
   const serverStreamHelloCall = client.serverStreamHello({ message: 'Hello! How are you?' }, meta)
   const serverReadAllResult = await serverStreamHelloCall.readAll()
   for await (const data of serverReadAllResult) {
@@ -52,6 +56,10 @@ const start = async (addr) => {
 
   const mutualReadAllResult = mutualStreamHelloCall.readAll()
   for await (const data of mutualReadAllResult) {
+    if (data.message === 'delay 1s') {
+      mutualStreamHelloCall.write({ message: 'ok, I known you delay 1s' })
+      mutualStreamHelloCall.writeEnd()
+    }
     console.log(data)
   }
 
