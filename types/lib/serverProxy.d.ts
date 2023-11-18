@@ -14,14 +14,24 @@ declare class ServerProxy {
         exclude?: any[];
         inherit: any;
     }): void;
+    removeService(name: any): void;
+    addMiddleware(...args: any[]): void;
+    _use(fn: any): void;
     _callbackify(target: any, { exclude, inherit, _implementationType }?: {
         exclude?: any[];
         inherit: any;
         _implementationType: any;
     }): {};
-    removeService(name: any): void;
-    addMiddleware(...args: any[]): void;
-    _use(fn: any): void;
-    _proxy(target: any, key: any, options: any): (call: any) => Promise<any>;
+    _proxy(target: any, key: any, options?: {}): (call: any, callback: any) => void;
+    _createContext(call: any): {
+        path: any;
+        request: any;
+        metadata: any;
+    };
+    _callUnaryProxyMethod(target: any, key: any, composeFunc: any): (call: any, callback: any) => void;
+    _callClientStreamProxyMethod(target: any, key: any, composeFunc: any): (call: any, callback: any) => void;
+    _callServerStreamProxyMethod(target: any, key: any, composeFunc: any): (call: any) => void;
+    _callDuplexStreamProxyMethod(target: any, key: any, composeFunc: any): (call: any) => void;
+    _createInternalErrorStatus(err: any): any;
 }
 import grpc = require("@grpc/grpc-js");

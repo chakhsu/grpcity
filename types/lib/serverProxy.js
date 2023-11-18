@@ -49,6 +49,7 @@ var util = require('util');
 var compose = require('koa-compose');
 var _ = require('lodash');
 var Joi = require('joi');
+var pEvent = require('p-event');
 var debug = require('debug')('grpcity:serverProxy');
 var addressSchema = Joi.alternatives([
     Joi.string().regex(/:/, 'host and port like 127.0.0.1:9090'),
@@ -157,34 +158,6 @@ var ServerProxy = /** @class */ (function () {
         });
         this._server.addService(service, this._callbackify(implementation, options));
     };
-    // async func --- to --> callback type func
-    // use in grpc server side mostly
-    ServerProxy.prototype._callbackify = function (target, _a) {
-        var _b = _a === void 0 ? {} : _a, _c = _b.exclude, exclude = _c === void 0 ? [] : _c, inherit = _b.inherit, _implementationType = _b._implementationType;
-        assert(typeof target === 'object', 'Must callbackify an object');
-        assert(Array.isArray(exclude), 'options.exclude must be an array of strings');
-        var protoPropertyNames = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
-        exclude.push.apply(exclude, protoPropertyNames);
-        var allPropertyNames = __spreadArray([], new Set(__spreadArray(__spreadArray(__spreadArray([], Object.keys(target), true), Object.getOwnPropertyNames(Object.getPrototypeOf(target)), true), (inherit && inherit.prototype ? Object.getOwnPropertyNames(inherit.prototype) : []), true)), true);
-        var methods = {};
-        for (var _i = 0, allPropertyNames_1 = allPropertyNames; _i < allPropertyNames_1.length; _i++) {
-            var key = allPropertyNames_1[_i];
-            var fn = target[key];
-            if (typeof fn === 'function' && key !== 'constructor' && !exclude.includes(key)) {
-                if (util.types.isAsyncFunction(fn)) {
-                    var eglWrapFunction = this._proxy(target, key, _implementationType);
-                    debug("callbackify async function: ".concat(key));
-                    methods[key] = util.callbackify(eglWrapFunction).bind(target);
-                }
-                else {
-                    debug("copy non-async function: ".concat(key));
-                    methods[key] = fn.bind(target);
-                }
-            }
-        }
-        debug('callbackify()', methods);
-        return methods;
-    };
     ServerProxy.prototype.removeService = function (name) {
         assert(this._server, 'must be first init() server before server removeService()');
         this._server.removeService(this._loader.service(name));
@@ -218,52 +191,232 @@ var ServerProxy = /** @class */ (function () {
         debug('addMiddleware %s', fn._name || fn.name || '-');
         this._middleware.push(fn);
     };
-    ServerProxy.prototype._proxy = function (target, key, options) {
-        var _this = this;
-        var fn = compose(this._middleware);
-        return function (call) { return __awaiter(_this, void 0, void 0, function () {
-            var ctx, handleResponse;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        ctx = {
-                            // TODO: maybe need more details
-                            // method: target.constructor.name + '.' + key,
-                            path: call.call.handler.path || '',
-                            request: call.request,
-                            metadata: call.metadata.clone()
-                        };
-                        handleResponse = function () { return __awaiter(_this, void 0, void 0, function () {
-                            var _a;
-                            return __generator(this, function (_b) {
-                                switch (_b.label) {
-                                    case 0:
-                                        _a = ctx;
-                                        return [4 /*yield*/, target[key](call)];
-                                    case 1:
-                                        _a.response = _b.sent();
-                                        return [2 /*return*/];
-                                }
-                            });
-                        }); };
-                        return [4 /*yield*/, fn(ctx, handleResponse).catch(function (err) {
-                                if (typeof err.stack === 'string') {
-                                    var stack = err.stack.split('\n');
-                                    err.message += " [Error Message From Server, stack: ".concat(stack[1].trim(), "]");
-                                }
-                                else {
-                                    err.message += ' [Error Message From Server]';
-                                }
-                                throw new Error(err);
-                            })];
-                    case 1:
-                        _a.sent();
-                        debug(key, JSON.stringify(ctx));
-                        return [2 /*return*/, ctx.response];
+    // async func --- to --> callback type func
+    // use in grpc server side mostly
+    ServerProxy.prototype._callbackify = function (target, _a) {
+        var _b = _a === void 0 ? {} : _a, _c = _b.exclude, exclude = _c === void 0 ? [] : _c, inherit = _b.inherit, _implementationType = _b._implementationType;
+        assert(typeof target === 'object', 'Must callbackify an object');
+        assert(Array.isArray(exclude), 'options.exclude must be an array of strings');
+        var protoPropertyNames = Object.getOwnPropertyNames(Object.getPrototypeOf({}));
+        exclude.push.apply(exclude, protoPropertyNames);
+        var allPropertyNames = __spreadArray([], new Set(__spreadArray(__spreadArray(__spreadArray([], Object.keys(target), true), Object.getOwnPropertyNames(Object.getPrototypeOf(target)), true), (inherit && inherit.prototype ? Object.getOwnPropertyNames(inherit.prototype) : []), true)), true);
+        var methods = {};
+        for (var _i = 0, allPropertyNames_1 = allPropertyNames; _i < allPropertyNames_1.length; _i++) {
+            var key = allPropertyNames_1[_i];
+            var fn = target[key];
+            if (typeof fn === 'function' && key !== 'constructor' && !exclude.includes(key)) {
+                if (util.types.isAsyncFunction(fn)) {
+                    var eglWrapFunction = this._proxy(target, key, _implementationType[key]);
+                    debug("callbackify async function: ".concat(key));
+                    methods[key] = eglWrapFunction;
                 }
-            });
-        }); };
+                else {
+                    debug("copy non-async function: ".concat(key));
+                    methods[key] = fn;
+                }
+            }
+        }
+        debug('callbackify()', methods);
+        return methods;
+    };
+    ServerProxy.prototype._proxy = function (target, key, options) {
+        if (options === void 0) { options = {}; }
+        var requestStream = options.requestStream, responseStream = options.responseStream;
+        var fn = compose(this._middleware);
+        // unary
+        if (!requestStream && !responseStream) {
+            return this._callUnaryProxyMethod(target, key, fn);
+        }
+        // client stream
+        if (requestStream && !responseStream) {
+            return this._callClientStreamProxyMethod(target, key, fn);
+        }
+        // server stream
+        if (!requestStream && responseStream) {
+            return this._callServerStreamProxyMethod(target, key, fn);
+        }
+        if (requestStream && responseStream) {
+            return this._callDuplexStreamProxyMethod(target, key, fn);
+        }
+    };
+    ServerProxy.prototype._createContext = function (call) {
+        return {
+            // TODO: maybe need more details
+            // method: target.constructor.name + '.' + key,
+            path: call.call.handler.path || '',
+            request: call.request,
+            metadata: call.metadata.clone()
+        };
+    };
+    ServerProxy.prototype._callUnaryProxyMethod = function (target, key, composeFunc) {
+        var _this = this;
+        return function (call, callback) {
+            var ctx = _this._createContext(call);
+            Promise.resolve().then(function () { return __awaiter(_this, void 0, void 0, function () {
+                var handleResponse;
+                var _this = this;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            handleResponse = function () { return __awaiter(_this, void 0, void 0, function () {
+                                var _a;
+                                return __generator(this, function (_b) {
+                                    switch (_b.label) {
+                                        case 0:
+                                            _a = ctx;
+                                            return [4 /*yield*/, target[key](call)];
+                                        case 1:
+                                            _a.response = _b.sent();
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); };
+                            return [4 /*yield*/, composeFunc(ctx, handleResponse).catch(function (err) {
+                                    callback(_this._createInternalErrorStatus(err));
+                                })];
+                        case 1:
+                            _a.sent();
+                            callback(null, ctx.response);
+                            return [2 /*return*/];
+                    }
+                });
+            }); });
+        };
+    };
+    ServerProxy.prototype._callClientStreamProxyMethod = function (target, key, composeFunc) {
+        var _this = this;
+        return function (call, callback) {
+            var ctx = _this._createContext(call);
+            call.readAll = function () {
+                return pEvent.iterator(call, 'data', {
+                    resolutionEvents: ['end']
+                });
+            };
+            Promise.resolve().then(function () { return __awaiter(_this, void 0, void 0, function () {
+                var handleResponse;
+                var _this = this;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            handleResponse = function () { return __awaiter(_this, void 0, void 0, function () {
+                                var _a;
+                                return __generator(this, function (_b) {
+                                    switch (_b.label) {
+                                        case 0:
+                                            _a = ctx;
+                                            return [4 /*yield*/, target[key](call)];
+                                        case 1:
+                                            _a.response = _b.sent();
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); };
+                            return [4 /*yield*/, composeFunc(ctx, handleResponse).catch(function (err) {
+                                    callback(_this._createInternalErrorStatus(err));
+                                })];
+                        case 1:
+                            _a.sent();
+                            callback(null, ctx.response);
+                            return [2 /*return*/];
+                    }
+                });
+            }); });
+        };
+    };
+    ServerProxy.prototype._callServerStreamProxyMethod = function (target, key, composeFunc) {
+        var _this = this;
+        return function (call) {
+            var ctx = _this._createContext(call);
+            call.writeAll = function (messages) {
+                if (Array.isArray(messages)) {
+                    messages.forEach(function (message) {
+                        call.write(message);
+                    });
+                }
+            };
+            call.writeEnd = call.end;
+            Promise.resolve().then(function () { return __awaiter(_this, void 0, void 0, function () {
+                var handleResponse;
+                var _this = this;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            handleResponse = function () { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, target[key](call)];
+                                        case 1:
+                                            _a.sent();
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); };
+                            return [4 /*yield*/, composeFunc(ctx, handleResponse).catch(function (err) {
+                                    call.destroy(_this._createInternalErrorStatus(err));
+                                })];
+                        case 1:
+                            _a.sent();
+                            call.end();
+                            return [2 /*return*/];
+                    }
+                });
+            }); });
+        };
+    };
+    ServerProxy.prototype._callDuplexStreamProxyMethod = function (target, key, composeFunc) {
+        var _this = this;
+        return function (call) {
+            var ctx = _this._createContext(call);
+            call.writeAll = function (messages) {
+                if (Array.isArray(messages)) {
+                    messages.forEach(function (message) {
+                        call.write(message);
+                    });
+                }
+            };
+            call.readAll = function () {
+                return pEvent.iterator(call, 'data', {
+                    resolutionEvents: ['end']
+                });
+            };
+            Promise.resolve().then(function () { return __awaiter(_this, void 0, void 0, function () {
+                var handleResponse;
+                var _this = this;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            handleResponse = function () { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0: return [4 /*yield*/, target[key](call)];
+                                        case 1:
+                                            _a.sent();
+                                            return [2 /*return*/];
+                                    }
+                                });
+                            }); };
+                            return [4 /*yield*/, composeFunc(ctx, handleResponse).catch(function (err) {
+                                    call.destroy(_this._createInternalErrorStatus(err));
+                                })];
+                        case 1:
+                            _a.sent();
+                            call.end();
+                            return [2 /*return*/];
+                    }
+                });
+            }); });
+        };
+    };
+    ServerProxy.prototype._createInternalErrorStatus = function (err) {
+        err.code = err.code || 13;
+        if (typeof err.stack === 'string') {
+            var stack = err.stack.split('\n');
+            err.messages += " [Error Message From Server, stack: ".concat(stack[1].trim(), "]");
+        }
+        else {
+            err.messages += ' [Error Message From Server]';
+        }
+        return err;
     };
     return ServerProxy;
 }());

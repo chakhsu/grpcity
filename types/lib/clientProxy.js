@@ -254,13 +254,13 @@ var ClientProxy = /** @class */ (function () {
                     });
                 }
             };
+            call.writeEnd = call.end;
             call.on('error', function (err) {
                 throw _this._handlerError(err, basicMeta);
             });
             // readAll() needs to execute writeAll() or write() first before it can be executed
             var result = {};
             call.readAll = function () {
-                call.end();
                 call.on('metadata', function (metadata) {
                     debug('serverStreamMethod get metadata', metadata);
                     result.metadata = metadata;
