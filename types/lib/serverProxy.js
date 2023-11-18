@@ -189,26 +189,35 @@ var ServerProxy = /** @class */ (function () {
         assert(this._server, 'must be first init() server before server removeService()');
         this._server.removeService(this._loader.service(name));
     };
-    // 只支持传入一个方法
-    ServerProxy.prototype.addMiddleware = function (fn) {
+    ServerProxy.prototype.addMiddleware = function () {
+        var _this = this;
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+        }
+        assert(args.length >= 1, 'server addMiddleware() takes at least one argument.');
+        if (args.length === 1) {
+            if (Array.isArray(args[0])) {
+                args[0].forEach(function (fn) {
+                    _this._use(fn);
+                });
+            }
+            else {
+                this._use(args[0]);
+            }
+        }
+        else {
+            args.forEach(function (fn) {
+                _this._use(fn);
+            });
+        }
+    };
+    ServerProxy.prototype._use = function (fn) {
         if (typeof fn !== 'function')
             throw new TypeError('grpcity loader server middleware must be a function!');
         debug('addMiddleware %s', fn._name || fn.name || '-');
         this._middleware.push(fn);
     };
-    // 支持传入方法数组或者一个方法
-    ServerProxy.prototype.addMiddlewares = function (fns) {
-        var _this = this;
-        if (Array.isArray(fns)) {
-            fns.forEach(function (fn) {
-                _this.addMiddleware(fn);
-            });
-        }
-        else {
-            this.addMiddleware(fns);
-        }
-    };
-    // 洋葱模型：提供 rpc method 中间件前后处理的能力
     ServerProxy.prototype._proxy = function (target, key, options) {
         var _this = this;
         var fn = compose(this._middleware);
@@ -219,8 +228,7 @@ var ServerProxy = /** @class */ (function () {
                 switch (_a.label) {
                     case 0:
                         ctx = {
-                            // 上下文的补充
-                            // TODO: 可能需要更多上下文字段
+                            // TODO: maybe need more details
                             // method: target.constructor.name + '.' + key,
                             path: call.call.handler.path || '',
                             request: call.request,

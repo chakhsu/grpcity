@@ -74,8 +74,8 @@ declare class GrpcLoader {
             _implementationType: any;
         }): {};
         removeService(name: any): void;
-        addMiddleware(fn: any): void;
-        addMiddlewares(fns: any): void;
+        addMiddleware(...args: any[]): void;
+        _use(fn: any): void;
         _proxy(target: any, key: any, options: any): (call: any) => Promise<any>;
     };
 }

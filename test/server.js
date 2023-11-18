@@ -96,7 +96,10 @@ const start = async (addr) => {
   })
 
   const server = loader.initServer()
-  server.addMiddlewares([middlewareA, middlewareB])
+  server.addMiddleware(middlewareA, middlewareB)
+  // server.addMiddleware([middlewareA, middlewareB])
+  // server.addMiddleware(middlewareA)
+  // server.addMiddleware(middlewareB)
 
   const servicers = [new Greeter(loader), new Hellor(loader)]
   await Promise.all(servicers.map(async s => s.init(server)))
