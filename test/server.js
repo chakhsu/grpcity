@@ -16,10 +16,10 @@ class Greeter {
     server.addService('test.helloworld.Greeter', this, { exclude: ['init'] })
   }
 
-  async SayHello (ctx) {
-    const metadata = ctx.metadata.clone()
+  async SayHello (call) {
+    const metadata = call.metadata.clone()
     metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
-    ctx.sendMetadata(metadata)
+    call.sendMetadata(metadata)
     if (metadata.get('x-throw-error').length > 0) {
       throw new Error('throw error because x-throw-error')
     }
@@ -30,11 +30,11 @@ class Greeter {
     await timeout(1000)
     this.count++
 
-    return { message: `hello, ${ctx.request.name || 'world'}`, name_count: this.count }
+    return { message: `hello, ${call.request.name || 'world'}`, name_count: this.count }
   }
 
-  async SayHello2 (ctx) {
-    return this.SayHello(ctx)
+  async SayHello2 (call) {
+    return this.SayHello(call)
   }
 }
 
@@ -47,10 +47,10 @@ class Hellor {
     server.addService('test.helloworld.Hellor', this, { exclude: ['init'] })
   }
 
-  async SayHello (ctx) {
-    const metadata = ctx.metadata.clone()
+  async SayHello (call) {
+    const metadata = call.metadata.clone()
     metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
-    ctx.sendMetadata(metadata)
+    call.sendMetadata(metadata)
     if (metadata.get('x-throw-error').length > 0) {
       throw new Error('throw error because x-throw-error')
     }
@@ -59,11 +59,11 @@ class Hellor {
       await new Promise((resolve) => setTimeout(resolve, 1000 * 10))
     }
 
-    return { message: `hello, ${ctx.request.name || 'world'}` }
+    return { message: `hello, ${call.request.name || 'world'}` }
   }
 
-  async SayHello2 (ctx) {
-    return this.SayHello(ctx)
+  async SayHello2 (call) {
+    return this.SayHello(call)
   }
 }
 

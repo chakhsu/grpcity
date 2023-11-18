@@ -12,10 +12,10 @@ describe('Grpc Loader', () => {
       server.addService('test.helloworld.Greeter', this, { exclude: ['init'] })
     }
 
-    async SayHello (ctx) {
-      const metadata = ctx.metadata.clone()
+    async SayHello (call) {
+      const metadata = call.metadata.clone()
       metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
-      ctx.sendMetadata(metadata)
+      call.sendMetadata(metadata)
       if (metadata.get('x-throw-error').length > 0) {
         throw new Error('throw error because x-throw-error')
       }
@@ -26,11 +26,11 @@ describe('Grpc Loader', () => {
 
       expect(this).to.be.an('object')
 
-      return { message: `hello, ${ctx.request.name || 'world'}` }
+      return { message: `hello, ${call.request.name || 'world'}` }
     }
 
-    async SayHello2 (ctx) {
-      return this.SayHello(ctx)
+    async SayHello2 (call) {
+      return this.SayHello(call)
     }
   }
 
@@ -117,7 +117,7 @@ describe('Grpc Loader', () => {
         'x-business-id': ['grpcity', 'testing'],
         'x-timestamp-client': 'begin=' + timestampClientSend.toISOString()
       })
-      const ctx = client.call.sayHello({ name: 'grpc' }, meta, (err, result) => {
+      const call = client.call.sayHello({ name: 'grpc' }, meta, (err, result) => {
         if (err) {
           reject(err)
           return
@@ -128,7 +128,7 @@ describe('Grpc Loader', () => {
         resolve()
       })
 
-      ctx.on('metadata', metadata => {
+      call.on('metadata', metadata => {
         expect(metadata.get('x-cache-control')).to.be.an('array').deep.eq(['max-age=100'])
         expect(metadata.get('x-business-id')).to.be.an('array').deep.eq(['grpcity, testing'])
 
