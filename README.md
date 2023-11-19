@@ -80,10 +80,10 @@ import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default new GrpcLoader({
-    location: path.join(__dirname, './'),
-    files: [
-        'greeter.proto'
-    ]
+  location: path.join(__dirname, './'),
+  files: [
+    'greeter.proto'
+  ]
 })
 ```
 
@@ -95,27 +95,22 @@ Then, create `server.js` and write the following code in it:
 import loader from './loader.js'
 
 class Greeter {
-    init(server) {
-        server.addService('helloworld.Greeter', this, { exclude: ['init'] })
+  async sayGreet(ctx) {
+    const { message } = ctx.request
+    return {
+      message: `hello ${message || 'world'}`
     }
-
-    async sayGreet(ctx) {
-        const { message } = ctx.request
-        return {
-            message: `hello ${message || 'world'}`
-        }
-    }
+  }
 }
 
 const start = async (addr) => {
-    await loader.init()
+  await loader.init()
 
-    const server = loader.initServer()
-    const servicers = [new Greeter()]
-    await Promise.all(servicers.map(async s => s.init(server)))
+  const server = loader.initServer()
+  server.addService('helloworld.Greeter', new Greeter())
 
-    await server.listen(addr)
-    console.log('gRPC Server is started: ', addr)
+  await server.listen(addr)
+  console.log('gRPC Server is started: ', addr)
 }
 
 start('127.0.0.1:9099')
@@ -129,17 +124,17 @@ Finally, create `client.js` and write the following code in it:
 import loader from "./loader.js"
 
 const start = async (addr) => {
-    await loader.init()
+  await loader.init()
 
-    await loader.initClients({
-        services: {
-            'helloworld.Greeter': addr
-        }
-    })
+  await loader.initClients({
+    services: {
+      'helloworld.Greeter': addr
+    }
+  })
 
-    const client = loader.client('helloworld.Greeter')
-    const result = await client.sayGreet({ message: 'greeter' })
-    console.log('sayGreet', result.response)
+  const client = loader.client('helloworld.Greeter')
+  const result = await client.sayGreet({ message: 'greeter' })
+  console.log('sayGreet', result.response)
 }
 
 start('127.0.0.1:9099')
