@@ -38,7 +38,7 @@ const start = async (addr) => {
 
   // client to stream server
   const serverStreamHelloCall = client.serverStreamHello({ message: 'Hello! How are you?' }, meta)
-  const serverReadAllResult = await serverStreamHelloCall.readAll()
+  const serverReadAllResult = serverStreamHelloCall.readAll()
   for await (const data of serverReadAllResult) {
     console.log(data)
   }

@@ -6,14 +6,6 @@ function timeout (ms) {
 }
 
 class Stream {
-  constructor () {
-    this.count = 0
-  }
-
-  async init (server) {
-    server.addService('stream.Hellor', this, { exclude: ['init'] })
-  }
-
   async unaryHello (call) {
     console.log(call.request.message)
     return { message: 'hello ' + call.request.message }
@@ -84,9 +76,7 @@ const start = async (addr) => {
   })
 
   const server = loader.initServer()
-
-  const servicers = [new Stream()]
-  await Promise.all(servicers.map(async s => s.init(server)))
+  server.addService('stream.Hellor', new Stream())
 
   await server.listen(addr)
   console.log('start:', addr)
