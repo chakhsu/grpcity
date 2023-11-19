@@ -18,9 +18,9 @@
 
 ### Introduction
 
-gPRCity is a simple, easy-to-use, and advanced gRPC microservices library based on Node.js.
+`gRPCity` is a gRPC microservices library running on Node.js. It combines `proto-loader` and `grpc-js` to offer an exceptionally easy way to load proto files. It simplifies many complex technical concepts, allowing clients and servers to be implemented with just a few functions. Additionally, it provides numerous advanced features to meet the needs of most development scenarios.
 
-> The name is derived from "gRPC + City = gRPCity", symbolizing the author's hope that this library can support the development of business cities. Taking a technological perspective as the foundation, it enables everyone to focus on business and better support delivery. Here, I would like to recommend a game called "Cities: Skylines 2." It is a city simulation game that allows players to experience the excitement and challenges of creating and maintaining a real city firsthand.
+> The name is derived from "gRPC + City = gRPCity", symbolizing the author's hope that this library can support the development of business cities. Taking a technological perspective as the foundation, it enables everyone to focus on business and better support delivery.
 
 Here is the feature:
 
