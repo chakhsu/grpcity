@@ -243,7 +243,7 @@ module.exports = /** @class */ (function () {
         this._reflectedRoot = root;
         return root.lookupType(name);
     };
-    // 支持 async 语法的客户端，对 {name, host, port} 组成的客户端进行缓存
+    // async method client, cached by { name, host, port }
     GrpcLoader.prototype.client = function (name, _a) {
         var _b = _a === void 0 ? {} : _a, _c = _b.host, host = _c === void 0 ? undefined : _c, _d = _b.port, port = _d === void 0 ? undefined : _d, _e = _b.timeout, timeout = _e === void 0 ? undefined : _e, _f = _b.credentials, credentials = _f === void 0 ? undefined : _f, _g = _b.channelOptions, channelOptions = _g === void 0 ? {} : _g;
         var isDefaultClient = !(host && port);
@@ -261,14 +261,15 @@ module.exports = /** @class */ (function () {
             return proxy;
         }
     };
-    // 原始 callback 语法的客户端，对 {name, host, port} 组成的客户端进行缓存
+    // callback method client, cached by { name, host, port }
     GrpcLoader.prototype.realClient = function (name, _a) {
         var _b = _a === void 0 ? {} : _a, _c = _b.host, host = _c === void 0 ? undefined : _c, _d = _b.port, port = _d === void 0 ? undefined : _d, _e = _b.credentials, credentials = _e === void 0 ? undefined : _e, _f = _b.channelOptions, channelOptions = _f === void 0 ? {} : _f;
         var isDefaultClient = !(host && port);
         var client = this._makeClient(isDefaultClient, name, "".concat(host, ":").concat(port), credentials, channelOptions);
         return client;
     };
-    // 支持 async 语法的客户端, 但是不做客户端缓存 (用于配合外部服务注册和发现的功能使用)
+    // async method client, no cache.
+    // (used in conjunction with external service registration and discovery functionality)
     GrpcLoader.prototype.clientWithoutCache = function (name, _a) {
         var _b = _a === void 0 ? {} : _a, addr = _b.addr, _c = _b.timeout, timeout = _c === void 0 ? undefined : _c, _d = _b.credentials, credentials = _d === void 0 ? undefined : _d, _e = _b.channelOptions, channelOptions = _e === void 0 ? {} : _e;
         var client = this._makeClientWithoutCache(false, name, addr, credentials, channelOptions);
