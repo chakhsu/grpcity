@@ -7,8 +7,7 @@ const timeout = (ms) => {
 }
 
 class Greeter {
-  constructor (loader) {
-    this._loader = loader
+  constructor () {
     this.count = 0
   }
 
@@ -39,10 +38,6 @@ class Greeter {
 }
 
 class Hellor {
-  constructor (loader) {
-    this._loader = loader
-  }
-
   async init (server) {
     server.addService('test.helloworld.Hellor', this, { exclude: ['init'] })
   }
@@ -101,7 +96,7 @@ const start = async (addr) => {
   // server.addMiddleware(middlewareA)
   // server.addMiddleware(middlewareB)
 
-  const servicers = [new Greeter(loader), new Hellor(loader)]
+  const servicers = [new Greeter(), new Hellor()]
   await Promise.all(servicers.map(async s => s.init(server)))
 
   const credentials = server.makeServerCredentials(

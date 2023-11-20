@@ -2,13 +2,8 @@ const GrpcLoader = require('../../index.js')
 const path = require('path')
 
 class Stream {
-  constructor (loader) {
-    this._loader = loader
+  constructor () {
     this.count = 0
-  }
-
-  async init (server) {
-    server.addService('stream.Hellor', this, { exclude: ['init'] })
   }
 
   unaryHello (call, callback) {
@@ -79,9 +74,7 @@ const start = async (addr) => {
   })
 
   const server = loader.initServer()
-
-  const servicers = [new Stream(loader)]
-  await Promise.all(servicers.map(async s => s.init(server)))
+  server.addService('stream.Hellor', new Stream())
 
   await server.listen(addr)
   console.log('start:', addr)
