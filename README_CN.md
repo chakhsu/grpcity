@@ -1,22 +1,8 @@
-# gRPCity
-
-<p align="left">
-  <a aria-label="Github build status" href="https://github.com/chakhsu/grpcity/actions">
-    <img alt="build-status" src="https://github.com/chakhsu/grpcity/actions/workflows/tests.yml/badge.svg">
-  </a>
-  <a aria-label="NPM version" href="https://www.npmjs.com/package/grpcity">
-    <img alt="npm-version" src="https://badgen.net/npm/v/grpcity">
-  </a>
-  <a aria-label="License" href="https://github.com/chakhsu/grpcity/blob/main/LICENSE">
-    <img alt="npm-license" src="https://badgen.net/npm/license/grpcity">
-  </a>
-</p>
-
-`gRPC + City = gRPCity`: A simple and easy to use library for Node.js and gRPC.
+# gRPCity ![build-status](https://github.com/chakhsu/grpcity/actions/workflows/tests.yml/badge.svg) ![npm](https://img.shields.io/npm/v/grpcity) ![license](https://img.shields.io/npm/l/grpcity)
 
 [English](./README.md) | [简体中文](./README_CN.md)
 
-### 介绍
+## 介绍
 
 `gRPCity` 是一个运行在 Node.js 的 gRPC 微服务库，结合了 `proto-loader` 和 `grpc-js`，提供了非常简易的方式去加载 proto 文件，简化了很多难以理解的技术概念，只需要几个函数就可以轻松实现客户端和服务端，同时也提供非常多高级的功能满足大多数开发场景。
 
@@ -43,15 +29,15 @@
 
 可通过访问 [grpcity.js.org](https://grpcity.js.org) 查看完整的文档和示例。
 
-### 快速开始
+## 快速开始
 
-#### 安装
+### 安装
 
 ```bash
 npm i grpcity
 ```
 
-#### Proto
+### Proto
 
 首先，创建`greeter.proto`文件，编写下面的内容到其中：
 
@@ -69,7 +55,7 @@ message Message {
 }
 ```
 
-#### Loader
+### Loader
 
 然后，创建`loader.js`, 编写下面的代码到其中：
 
@@ -87,7 +73,7 @@ export default new GrpcLoader({
 })
 ```
 
-#### Server
+### Server
 
 其次，创建`server.js`, 编写下面的代码到其中：
 
@@ -116,7 +102,7 @@ const start = async (addr) => {
 start('127.0.0.1:9099')
 ```
 
-#### Client
+### Client
 
 最后，创建`client.js`, 编写下面的代码到其中：
 
@@ -152,6 +138,6 @@ node ./client.js
 可通过访问 [grpcity.js.org](https://grpcity.js.org) 查看完整的文档和示例。
 
 
-### License
+## License
 
 Released under the MIT License.

@@ -1,22 +1,8 @@
-# gRPCity
-
-<p align="left">
-  <a aria-label="Github build status" href="https://github.com/chakhsu/grpcity/actions">
-    <img alt="build-status" src="https://github.com/chakhsu/grpcity/actions/workflows/tests.yml/badge.svg">
-  </a>
-  <a aria-label="NPM version" href="https://www.npmjs.com/package/grpcity">
-    <img alt="npm-version" src="https://badgen.net/npm/v/grpcity">
-  </a>
-  <a aria-label="License" href="https://github.com/chakhsu/grpcity/blob/main/LICENSE">
-    <img alt="npm-license" src="https://badgen.net/npm/license/grpcity">
-  </a>
-</p>
-
-`gRPC + City = gRPCity`: A simple and easy to use library for Node.js and gRPC.
+# gRPCity ![build-status](https://github.com/chakhsu/grpcity/actions/workflows/tests.yml/badge.svg) ![npm](https://img.shields.io/npm/v/grpcity) ![license](https://img.shields.io/npm/l/grpcity)
 
 [English](./README.md) | [简体中文](./README_CN.md)
 
-### Introduction
+## Introduction
 
 `gRPCity` is a gRPC microservices library running on Node.js. It combines `proto-loader` and `grpc-js` to offer an exceptionally easy way to load proto files. It simplifies many complex technical concepts, allowing clients and servers to be implemented with just a few functions. Additionally, it provides numerous advanced features to meet the needs of most development scenarios.
 
@@ -43,15 +29,15 @@ Here is the feature:
 
 View full documentation and examples on [grpcity.js.org](https://grpcity.js.org).
 
-### Quick Start
+## Quick Start
 
-#### Install
+### Install
 
 ```bash
 npm i grpcity
 ```
 
-#### Proto
+### Proto
 
 First, create the `greeter.proto` file and write the following content in it:
 
@@ -69,7 +55,7 @@ message Message {
 }
 ```
 
-#### Loader
+### Loader
 
 Next, create `loader.js` and write the following code in it:
 
@@ -87,7 +73,7 @@ export default new GrpcLoader({
 })
 ```
 
-#### Server
+### Server
 
 Then, create `server.js` and write the following code in it:
 
@@ -116,7 +102,7 @@ const start = async (addr) => {
 start('127.0.0.1:9099')
 ```
 
-#### Client
+### Client
 
 Finally, create `client.js` and write the following code in it:
 
@@ -151,6 +137,6 @@ node ./client.js
 
 View full documentation and examples on [grpcity.js.org](https://grpcity.js.org).
 
-### License
+## License
 
 Released under the MIT License.
