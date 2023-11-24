@@ -1,4 +1,4 @@
-const GrpcLoader = require('..')
+const GrpcLoader = require('../types')
 const path = require('path')
 const fs = require('fs')
 
