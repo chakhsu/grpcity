@@ -1,3 +1,5 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 // gRPC options, doc: https://grpc.github.io/grpc/core/group__grpc__arg__keys.html
 module.exports = {
     // grpc library options accept only numeric and string types
@@ -30,3 +32,4 @@ module.exports = {
         }
     })
 };
+//# sourceMappingURL=defaultChannelOptions.js.map

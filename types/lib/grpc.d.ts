@@ -5,49 +5,49 @@ declare class GrpcLoader {
     _clientMap: Map<any, any>;
     _clientAddrMap: Map<any, any>;
     init({ services, isDev, packagePrefix, loadOptions, channelOptions, appName }?: {
-        services?: any;
-        isDev?: boolean;
-        packagePrefix?: string;
-        loadOptions?: {};
-        channelOptions?: {};
+        services?: undefined;
+        isDev?: boolean | undefined;
+        packagePrefix?: string | undefined;
+        loadOptions?: {} | undefined;
+        channelOptions?: {} | undefined;
         appName: any;
     }): Promise<void>;
-    _isDev: boolean;
-    _packagePrefix: string;
+    _isDev: boolean | undefined;
+    _packagePrefix: string | undefined;
     _appName: any;
     _packageDefinition: any;
-    _types: grpc.GrpcObject;
+    _types: grpc.GrpcObject | undefined;
     initClients({ services, channelOptions, credentials }: {
         services: any;
-        channelOptions?: {};
-        credentials?: any;
+        channelOptions?: {} | undefined;
+        credentials?: undefined;
     }): Promise<void>;
-    _initDefaultClient: boolean;
+    _initDefaultClient: boolean | undefined;
     closeClients(): void;
     makeCredentials(rootCerts: any, privateKey: any, certChain: any, verifyOptions: any): grpc.ChannelCredentials;
-    _insecureCredentials: grpc.ChannelCredentials;
+    _insecureCredentials: grpc.ChannelCredentials | undefined;
     service(name: any): any;
     type(name: any): any;
     message(name: any): any;
     _reflectedRoot: any;
     client(name: any, { host, port, timeout, credentials, channelOptions }?: {
-        host?: any;
-        port?: any;
-        timeout?: any;
-        credentials?: any;
-        channelOptions?: {};
+        host?: undefined;
+        port?: undefined;
+        timeout?: undefined;
+        credentials?: undefined;
+        channelOptions?: {} | undefined;
     }): any;
     realClient(name: any, { host, port, credentials, channelOptions }?: {
-        host?: any;
-        port?: any;
-        credentials?: any;
-        channelOptions?: {};
+        host?: undefined;
+        port?: undefined;
+        credentials?: undefined;
+        channelOptions?: {} | undefined;
     }): any;
     clientWithoutCache(name: any, { addr, timeout, credentials, channelOptions }?: {
         addr: any;
-        timeout?: any;
-        credentials?: any;
-        channelOptions?: {};
+        timeout?: undefined;
+        credentials?: undefined;
+        channelOptions?: {} | undefined;
     }): {
         call: {};
     };
@@ -58,25 +58,25 @@ declare class GrpcLoader {
         _middleware: any[];
         _init(loader: any, ...args: any[]): any;
         _loader: any;
-        _server: grpc.Server;
-        listen(addr: any, credentials?: any): Promise<void>;
+        _server: grpc.Server | undefined;
+        listen(addr: any, credentials?: undefined): Promise<void>;
         shutdown(): Promise<void>;
         forceShutdown(): void;
         makeServerCredentials(rootCerts: any, keyCertPairs: any, checkClientCertificate: any): grpc.ServerCredentials;
-        _insecureServerCredentials: grpc.ServerCredentials;
+        _insecureServerCredentials: grpc.ServerCredentials | undefined;
         addService(name: any, implementation: any, { exclude, inherit }?: {
-            exclude?: any[];
+            exclude?: any[] | undefined;
             inherit: any;
         }): void;
         removeService(name: any): void;
         addMiddleware(...args: any[]): void;
         _use(fn: any): void;
         _callbackify(target: any, { exclude, inherit, _implementationType }?: {
-            exclude?: any[];
+            exclude?: any[] | undefined;
             inherit: any;
             _implementationType: any;
         }): {};
-        _proxy(target: any, key: any, options?: {}): (call: any, callback: any) => void;
+        _proxy(target: any, key: any, options?: {}): ((call: any, callback: any) => void) | undefined;
         _createContext(call: any): {
             path: any;
             request: any;

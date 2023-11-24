@@ -4,25 +4,25 @@ declare class ServerProxy {
     _middleware: any[];
     _init(loader: any, ...args: any[]): this;
     _loader: any;
-    _server: grpc.Server;
-    listen(addr: any, credentials?: any): Promise<void>;
+    _server: grpc.Server | undefined;
+    listen(addr: any, credentials?: undefined): Promise<void>;
     shutdown(): Promise<void>;
     forceShutdown(): void;
     makeServerCredentials(rootCerts: any, keyCertPairs: any, checkClientCertificate: any): grpc.ServerCredentials;
-    _insecureServerCredentials: grpc.ServerCredentials;
+    _insecureServerCredentials: grpc.ServerCredentials | undefined;
     addService(name: any, implementation: any, { exclude, inherit }?: {
-        exclude?: any[];
+        exclude?: any[] | undefined;
         inherit: any;
     }): void;
     removeService(name: any): void;
     addMiddleware(...args: any[]): void;
     _use(fn: any): void;
     _callbackify(target: any, { exclude, inherit, _implementationType }?: {
-        exclude?: any[];
+        exclude?: any[] | undefined;
         inherit: any;
         _implementationType: any;
     }): {};
-    _proxy(target: any, key: any, options?: {}): (call: any, callback: any) => void;
+    _proxy(target: any, key: any, options?: {}): ((call: any, callback: any) => void) | undefined;
     _createContext(call: any): {
         path: any;
         request: any;

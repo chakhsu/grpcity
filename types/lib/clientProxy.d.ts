@@ -1,7 +1,7 @@
 declare const _exports: ClientProxy;
 export = _exports;
 declare class ClientProxy {
-    _proxy(client: any, defaultOptions?: {}, appName?: any): {
+    _proxy(client: any, defaultOptions?: {}, appName?: undefined): {
         call: {};
     };
     _getFuncStreamWay(func: any): {
