@@ -1,0 +1,13 @@
+{
+  "extends": "@tsconfig/node14/tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2018",
+    "lib": ["ES2018"],
+    "outDir": "types",
+    "sourceMap": true,
+    "declaration": true,
+    "stripInternal": true,
+    "allowJs": true
+  },
+  "include": ["index.js"]
+}
