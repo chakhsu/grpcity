@@ -4,10 +4,10 @@
     "target": "ES2018",
     "lib": ["ES2018"],
     "outDir": "types",
-    "sourceMap": true,
+    "sourceMap": false,
     "declaration": true,
     "stripInternal": true,
     "allowJs": true
   },
-  "include": ["index.js"]
+  "include": ["lib/index.js"]
 }
