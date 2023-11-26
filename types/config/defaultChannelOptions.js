@@ -32,4 +32,3 @@ module.exports = {
         }
     })
 };
-//# sourceMappingURL=defaultChannelOptions.js.map

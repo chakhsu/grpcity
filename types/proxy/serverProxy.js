@@ -3,10 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const grpc = require('@grpc/grpc-js');
 const assert = require('assert');
 const util = require('util');
-const compose = require('koa-compose');
 const _ = require('lodash');
 const Joi = require('joi');
-const pEvent = require('p-event');
+const iterator = require('../util/iterator');
+const compose = require('../util/compose');
 const debug = require('debug')('grpcity:serverProxy');
 const addressSchema = Joi.alternatives([
     Joi.string().regex(/:/, 'host and port like 127.0.0.1:9090'),
@@ -110,7 +110,6 @@ class ServerProxy {
     _use(fn) {
         if (typeof fn !== 'function')
             throw new TypeError('grpcity loader server middleware must be a function!');
-        debug('addMiddleware %s', fn._name || fn.name || '-');
         this._middleware.push(fn);
     }
     // async func --- to --> callback type func
@@ -191,7 +190,7 @@ class ServerProxy {
         return (call, callback) => {
             const ctx = this._createContext(call);
             call.readAll = () => {
-                return pEvent.iterator(call, 'data', {
+                return iterator(call, 'data', {
                     resolutionEvents: ['end']
                 });
             };
@@ -239,7 +238,7 @@ class ServerProxy {
                 }
             };
             call.readAll = () => {
-                return pEvent.iterator(call, 'data', {
+                return iterator(call, 'data', {
                     resolutionEvents: ['end']
                 });
             };
@@ -267,4 +266,3 @@ class ServerProxy {
     }
 }
 module.exports = new ServerProxy();
-//# sourceMappingURL=serverProxy.js.map

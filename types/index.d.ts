@@ -1,4 +1,4 @@
 declare const _exports: {
-    new (protoFileOptions: any): import("./lib/grpc.js");
+    new (protoFileOptions: any): import("./grpc.js");
 };
 export = _exports;

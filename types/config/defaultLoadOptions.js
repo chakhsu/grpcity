@@ -8,4 +8,3 @@ module.exports = {
     defaults: false,
     oneofs: true
 };
-//# sourceMappingURL=defaultLoadOptions.js.map

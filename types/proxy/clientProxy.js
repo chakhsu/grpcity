@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const { Metadata } = require('@grpc/grpc-js');
 const os = require('os');
-const pEvent = require('p-event');
+const iterator = require('../util/iterator');
 const debug = require('debug')('grpcity:clientProxy');
 class ClientProxy {
     _proxy(client, defaultOptions = {}, appName = undefined) {
@@ -155,7 +155,7 @@ class ClientProxy {
                     debug('serverStreamMethod get status', status);
                     result.status = status;
                 });
-                return pEvent.iterator(call, 'data', {
+                return iterator(call, 'data', {
                     resolutionEvents: ['status', 'end']
                 });
             };
@@ -201,7 +201,7 @@ class ClientProxy {
                     debug('serverStreamMethod get status', status);
                     result.status = status;
                 });
-                return pEvent.iterator(call, 'data', {
+                return iterator(call, 'data', {
                     resolutionEvents: ['status', 'end']
                 });
             };
@@ -258,4 +258,3 @@ class ClientProxy {
     }
 }
 module.exports = new ClientProxy();
-//# sourceMappingURL=clientProxy.js.map
