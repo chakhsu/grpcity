@@ -9,5 +9,5 @@
     "stripInternal": true,
     "allowJs": true
   },
-  "include": ["lib/index.js"]
+  "include": ["lib/*.js"]
 }
