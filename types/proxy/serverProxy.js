@@ -5,16 +5,10 @@ const assert = require('assert');
 const util = require('util');
 const _ = require('lodash');
 const Joi = require('joi');
+const serverSchemas = require('../schema/server');
 const iterator = require('../util/iterator');
 const compose = require('../util/compose');
 const debug = require('debug')('grpcity:serverProxy');
-const addressSchema = Joi.alternatives([
-    Joi.string().regex(/:/, 'host and port like 127.0.0.1:9090'),
-    Joi.object().keys({
-        host: Joi.string().required(),
-        port: Joi.number().integer().min(0).max(65535).required()
-    })
-]);
 class ServerProxy {
     constructor() {
         this._middleware = [];
@@ -30,7 +24,7 @@ class ServerProxy {
     }
     async listen(addr, credentials = undefined) {
         assert(this._server, 'must be first init() server before server listen()');
-        Joi.assert(addr, addressSchema, 'server listen() params Error');
+        Joi.assert(addr, serverSchemas.address, 'server listen() params Error');
         debug('server listen options', addr);
         const url = _.isString(addr) ? addr : `${addr.host}:${addr.port}`;
         const bindPort = await new Promise((resolve, reject) => {
@@ -159,6 +153,7 @@ class ServerProxy {
         if (!requestStream && responseStream) {
             return this._callServerStreamProxyMethod(target, key, fn);
         }
+        // duplex stream
         if (requestStream && responseStream) {
             return this._callDuplexStreamProxyMethod(target, key, fn);
         }
