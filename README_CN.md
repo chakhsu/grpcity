@@ -1,4 +1,4 @@
-# gRPCity ![build-status](https://github.com/chakhsu/grpcity/actions/workflows/tests.yml/badge.svg) ![npm](https://img.shields.io/npm/v/grpcity) ![license](https://img.shields.io/npm/l/grpcity)
+# gRPCity ![build-status](https://github.com/chakhsu/grpcity/actions/workflows/tests.yml/badge.svg) ![npm](https://img.shields.io/npm/v/grpcity) ![license](https://img.shields.io/npm/l/grpcity) ![code-style](https://img.shields.io/badge/code_style-standard-brightgreen.svg)
 
 [English](./README.md) | [简体中文](./README_CN.md)
 
