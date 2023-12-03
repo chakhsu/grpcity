@@ -4,9 +4,13 @@
 
 ## 介绍
 
-`gRPCity` 是一个运行在 Node.js 的 gRPC 微服务库，结合了 `proto-loader` 和 `grpc-js`，提供了非常简易的方式去加载 proto 文件，简化了很多难以理解的技术概念，只需要几个函数就可以轻松实现客户端和服务端，同时也提供非常多高级的功能满足大多数开发场景。
+`gRPCity` 是一个运行在 Node.js 的 gRPC 微服务库，结合了 `proto-loader` 和
+`grpc-js`，提供了非常简易的方式去加载 proto 文件，简化了很多难以理解的技术概念，
+只需要几个函数就可以轻松实现客户端和服务端，同时也提供非常多高级的功能满足大多数
+开发场景。
 
-> 名字来源于: gRPC + City = gRPCity，寄托了作者希望这个库能支撑了业务城市的建设，以技术底座的视角，让大家聚焦业务，更好地支撑交付。
+> 名字来源于: gRPC + City = gRPCity，寄托了作者希望这个库能支撑了业务城市的建
+> 设，以技术底座的视角，让大家聚焦业务，更好地支撑交付。
 
 特性如下：
 
@@ -67,9 +71,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default new GrpcLoader({
   location: path.join(__dirname, './'),
-  files: [
-    'greeter.proto'
-  ]
+  files: ['greeter.proto']
 })
 ```
 
@@ -89,7 +91,7 @@ class Greeter {
   }
 }
 
-const start = async (addr) => {
+const start = async addr => {
   await loader.init()
 
   const server = loader.initServer()
@@ -107,9 +109,9 @@ start('127.0.0.1:9099')
 最后，创建`client.js`, 编写下面的代码到其中：
 
 ```js
-import loader from "./loader.js"
+import loader from './loader.js'
 
-const start = async (addr) => {
+const start = async addr => {
   await loader.init()
 
   await loader.initClients({
@@ -136,7 +138,6 @@ node ./client.js
 ---
 
 可通过访问 [grpcity.js.org](https://grpcity.js.org) 查看完整的文档和示例。
-
 
 ## License
 
