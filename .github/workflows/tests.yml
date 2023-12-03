@@ -35,5 +35,3 @@ jobs:
         run: pnpm i
       - name: Test
         run: pnpm test
-      - name: Clean
-        run: pnpm clean
