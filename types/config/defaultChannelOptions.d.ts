@@ -1,2 +1,2 @@
-import { ChannelOptions } from "@grpc/grpc-js";
-export declare const defaultChannelOptions: ChannelOptions;
+import { ChannelOptions } from '@grpc/grpc-js'
+export declare const defaultChannelOptions: ChannelOptions

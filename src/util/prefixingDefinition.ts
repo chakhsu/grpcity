@@ -1,24 +1,24 @@
 export default (packageDefinition: any, packagePrefix: any) => {
   for (const qualifiedName in packageDefinition) {
-    const definition = packageDefinition[qualifiedName];
-    const newPackage = `${packagePrefix}.${qualifiedName}`;
+    const definition = packageDefinition[qualifiedName]
+    const newPackage = `${packagePrefix}.${qualifiedName}`
     if (
       definition.format &&
       definition.type &&
       definition.fileDescriptorProtos
     ) {
-      packageDefinition[newPackage] = definition;
+      packageDefinition[newPackage] = definition
     } else {
-      const newDefinition: any = {};
+      const newDefinition: any = {}
       for (const method in definition) {
-        const service = definition[method];
+        const service = definition[method]
         newDefinition[method] = Object.assign({}, service, {
-          path: service.path.replace(/^\//, `/${packagePrefix}.`),
-        });
+          path: service.path.replace(/^\//, `/${packagePrefix}.`)
+        })
       }
-      packageDefinition[newPackage] = newDefinition;
+      packageDefinition[newPackage] = newDefinition
     }
   }
 
-  return packageDefinition;
-};
+  return packageDefinition
+}

@@ -7,5 +7,5 @@ export const defaultLoadOptions: Options = {
   longs: String,
   enums: String,
   defaults: false,
-  oneofs: true,
-};
+  oneofs: true
+}

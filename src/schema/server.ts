@@ -1,4 +1,4 @@
-import Joi from 'joi';
+import Joi from 'joi'
 
 const serverSchemas = {
   address: Joi.alternatives([
@@ -8,6 +8,6 @@ const serverSchemas = {
       port: Joi.number().integer().min(0).max(65535).required()
     })
   ])
-};
+}
 
-export default serverSchemas;
+export default serverSchemas

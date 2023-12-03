@@ -1,17 +1,17 @@
 const GrpcLoader = require('../../types')
 const path = require('path')
 
-function timeout (ms) {
+function timeout(ms) {
   return new Promise((resolve, reject) => setTimeout(resolve, ms))
 }
 
 class Stream {
-  async unaryHello (call) {
+  async unaryHello(call) {
     console.log(call.request.message)
     return { message: 'hello ' + call.request.message }
   }
 
-  async clientStreamHello (call) {
+  async clientStreamHello(call) {
     const metadata = call.metadata.clone()
     metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
     call.sendMetadata(metadata)
@@ -22,7 +22,7 @@ class Stream {
     return { message: "Hello! I'm fine, thank you!" }
   }
 
-  async serverStreamHello (call) {
+  async serverStreamHello(call) {
     const metadata = call.metadata.clone()
     metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
     call.sendMetadata(metadata)
@@ -30,14 +30,11 @@ class Stream {
     console.log(call.request.message)
     call.write({ message: 'Hello! I got you message.' })
     call.write({ message: "I'm fine, thank you" })
-    call.writeAll([
-      { message: 'other thing x' },
-      { message: 'other thing y' }
-    ])
+    call.writeAll([{ message: 'other thing x' }, { message: 'other thing y' }])
     call.end()
   }
 
-  async mutualStreamHello (call) {
+  async mutualStreamHello(call) {
     const metadata = call.metadata.clone()
     metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
     call.sendMetadata(metadata)
@@ -49,13 +46,10 @@ class Stream {
       if (data.message === 'Hello!') {
         call.write({ message: 'Hello too.' })
       } else if (data.message === 'How are you?') {
-        call.write({ message: 'I\'m fine, thank you' })
+        call.write({ message: "I'm fine, thank you" })
         await timeout(1000)
         call.write({ message: 'delay 1s' })
-        call.writeAll([
-          { message: 'emm... ' },
-          { message: 'emm......' }
-        ])
+        call.writeAll([{ message: 'emm... ' }, { message: 'emm......' }])
       } else {
         call.write({ message: 'pardon?' })
       }
@@ -65,7 +59,7 @@ class Stream {
   }
 }
 
-const start = async (addr) => {
+const start = async addr => {
   const loader = new GrpcLoader({
     location: path.resolve(__dirname, './'),
     files: ['stream.proto']

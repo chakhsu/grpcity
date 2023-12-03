@@ -2,20 +2,20 @@ const GrpcLoader = require('../types')
 const path = require('path')
 const fs = require('fs')
 
-const timeout = (ms) => {
+const timeout = ms => {
   return new Promise((resolve, reject) => setTimeout(resolve, ms))
 }
 
 class Greeter {
-  constructor () {
+  constructor() {
     this.count = 0
   }
 
-  async init (server) {
+  async init(server) {
     server.addService('test.helloworld.Greeter', this, { exclude: ['init'] })
   }
 
-  async SayHello (call) {
+  async SayHello(call) {
     const metadata = call.metadata.clone()
     metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
     call.sendMetadata(metadata)
@@ -24,25 +24,28 @@ class Greeter {
     }
 
     if (metadata.get('x-long-delay').length > 0) {
-      await new Promise((resolve) => setTimeout(resolve, 1000 * 10))
+      await new Promise(resolve => setTimeout(resolve, 1000 * 10))
     }
     await timeout(1000)
     this.count++
 
-    return { message: `hello, ${call.request.name || 'world'}`, name_count: this.count }
+    return {
+      message: `hello, ${call.request.name || 'world'}`,
+      name_count: this.count
+    }
   }
 
-  async SayHello2 (call) {
+  async SayHello2(call) {
     return this.SayHello(call)
   }
 }
 
 class Hellor {
-  async init (server) {
+  async init(server) {
     server.addService('test.helloworld.Hellor', this, { exclude: ['init'] })
   }
 
-  async SayHello (call) {
+  async SayHello(call) {
     const metadata = call.metadata.clone()
     metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
     call.sendMetadata(metadata)
@@ -51,13 +54,13 @@ class Hellor {
     }
 
     if (metadata.get('x-long-delay').length > 0) {
-      await new Promise((resolve) => setTimeout(resolve, 1000 * 10))
+      await new Promise(resolve => setTimeout(resolve, 1000 * 10))
     }
 
     return { message: `hello, ${call.request.name || 'world'}` }
   }
 
-  async SayHello2 (call) {
+  async SayHello2(call) {
     return this.SayHello(call)
   }
 }
@@ -80,7 +83,7 @@ const middlewareB = async (ctx, next) => {
   console.log('middlewareB: 2', ctx, endTime, endTime - beginTime)
 }
 
-const start = async (addr) => {
+const start = async addr => {
   const loader = new GrpcLoader({
     location: path.resolve(__dirname, 'protos'),
     files: ['test/helloworld/helloworld.proto']
@@ -100,10 +103,17 @@ const start = async (addr) => {
   await Promise.all(servicers.map(async s => s.init(server)))
 
   const credentials = server.makeServerCredentials(
-    fs.readFileSync(path.resolve(__dirname, 'certs/ca.crt')), [{
-      private_key: fs.readFileSync(path.resolve(__dirname, 'certs/server.key')),
-      cert_chain: fs.readFileSync(path.resolve(__dirname, 'certs/server.crt'))
-    }], true)
+    fs.readFileSync(path.resolve(__dirname, 'certs/ca.crt')),
+    [
+      {
+        private_key: fs.readFileSync(
+          path.resolve(__dirname, 'certs/server.key')
+        ),
+        cert_chain: fs.readFileSync(path.resolve(__dirname, 'certs/server.crt'))
+      }
+    ],
+    true
+  )
 
   await server.listen(addr, credentials)
   console.log('start:', addr)

@@ -2,9 +2,9 @@ name: build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
 
 permissions:
   contents: read
@@ -20,16 +20,16 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        cache: 'npm'
-        node-version: ${{ matrix.node-version }}
-    # Use separate run commands so command status handled correctly on Windows
-    - name: npm install
-      run: npm ci
-    - name: npm test
-      run: npm test
-    - name: npm run lint
-      run: npm run lint
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          cache: 'npm'
+          node-version: ${{ matrix.node-version }}
+      # Use separate run commands so command status handled correctly on Windows
+      - name: npm install
+        run: npm ci
+      - name: npm test
+        run: npm test
+      - name: npm run lint
+        run: npm run lint

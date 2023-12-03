@@ -4,22 +4,37 @@
 
 ## Introduction
 
-`gRPCity` is a gRPC microservices library running on Node.js. It combines `proto-loader` and `grpc-js` to offer an exceptionally easy way to load proto files. It simplifies many complex technical concepts, allowing clients and servers to be implemented with just a few functions. Additionally, it provides numerous advanced features to meet the needs of most development scenarios.
+`gRPCity` is a gRPC microservices library running on Node.js. It combines
+`proto-loader` and `grpc-js` to offer an exceptionally easy way to load proto
+files. It simplifies many complex technical concepts, allowing clients and
+servers to be implemented with just a few functions. Additionally, it provides
+numerous advanced features to meet the needs of most development scenarios.
 
-> The name is derived from "gRPC + City = gRPCity", symbolizing the author's hope that this library can support the development of business cities. Taking a technological perspective as the foundation, it enables everyone to focus on business and better support delivery.
+> The name is derived from "gRPC + City = gRPCity", symbolizing the author's
+> hope that this library can support the development of business cities. Taking
+> a technological perspective as the foundation, it enables everyone to focus on
+> business and better support delivery.
 
 Here is the feature:
 
-- **API**: The communication protocol is based on gRPC and defined using Protobuf.
-- **Protobuf**: Supports only dynamic loading of pb, simplifying the loading process of pb files.
-- **Client**: Configured once and can be called anytime, anywhere, supporting multi-server invocation.
-- **Server**: Simplifies the initialization process, starting the server in three steps, supporting multi-server startup.
+- **API**: The communication protocol is based on gRPC and defined using
+  Protobuf.
+- **Protobuf**: Supports only dynamic loading of pb, simplifying the loading
+  process of pb files.
+- **Client**: Configured once and can be called anytime, anywhere, supporting
+  multi-server invocation.
+- **Server**: Simplifies the initialization process, starting the server in
+  three steps, supporting multi-server startup.
 - **No-Route**: No routing, RPC is inherently bound to methods.
-- **Middleware**: Integrates middleware mechanism similar to Koa, providing pre and post-processing capabilities for RPC.
+- **Middleware**: Integrates middleware mechanism similar to Koa, providing pre
+  and post-processing capabilities for RPC.
 - **Metadata**: Standardizes the transmission and retrieval of metadata.
-- **Error**: Provides dedicated Error objects to ensure targeted handling of exceptions after catching.
-- **Promise**: Supports promisify internally in RPC methods while also preserving callbackify.
-- **Config**: Aligned with official configurations, supports pb load configuration and gRPC channel configuration.
+- **Error**: Provides dedicated Error objects to ensure targeted handling of
+  exceptions after catching.
+- **Promise**: Supports promisify internally in RPC methods while also
+  preserving callbackify.
+- **Config**: Aligned with official configurations, supports pb load
+  configuration and gRPC channel configuration.
 - **Pattern**: Singleton pattern ensures the uniqueness of instance objects.
 - **Typescript**: Supported, ensuring compatibility between TS and JS.
 
@@ -27,7 +42,8 @@ Here is the feature:
 
 ---
 
-View full documentation and examples on [grpcity.js.org](https://grpcity.js.org).
+View full documentation and examples on
+[grpcity.js.org](https://grpcity.js.org).
 
 ## Quick Start
 
@@ -67,9 +83,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default new GrpcLoader({
   location: path.join(__dirname, './'),
-  files: [
-    'greeter.proto'
-  ]
+  files: ['greeter.proto']
 })
 ```
 
@@ -89,7 +103,7 @@ class Greeter {
   }
 }
 
-const start = async (addr) => {
+const start = async addr => {
   await loader.init()
 
   const server = loader.initServer()
@@ -107,9 +121,9 @@ start('127.0.0.1:9099')
 Finally, create `client.js` and write the following code in it:
 
 ```js
-import loader from "./loader.js"
+import loader from './loader.js'
 
-const start = async (addr) => {
+const start = async addr => {
   await loader.init()
 
   await loader.initClients({
@@ -135,7 +149,8 @@ node ./client.js
 
 ---
 
-View full documentation and examples on [grpcity.js.org](https://grpcity.js.org).
+View full documentation and examples on
+[grpcity.js.org](https://grpcity.js.org).
 
 ## License
 

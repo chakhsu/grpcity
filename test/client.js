@@ -2,7 +2,7 @@ const GrpcLoader = require('../types')
 const path = require('path')
 const fs = require('fs')
 
-const start = async (addr) => {
+const start = async addr => {
   const loader = new GrpcLoader({
     location: path.resolve(__dirname, 'protos'),
     files: ['test/helloworld/helloworld.proto']
@@ -33,8 +33,14 @@ const start = async (addr) => {
   })
 
   // greeterClient
-  const greeterClient = loader.client('test.helloworld.Greeter', { credentials })
-  const { status, metadata, response: result } = await greeterClient.sayHello({ name: 'greeter' }, meta)
+  const greeterClient = loader.client('test.helloworld.Greeter', {
+    credentials
+  })
+  const {
+    status,
+    metadata,
+    response: result
+  } = await greeterClient.sayHello({ name: 'greeter' }, meta)
   console.log('greeterClient.sayHello', result)
   console.log('greeterClient.sayHello metadata', metadata)
   console.log('greeterClient.sayHello status', status)
@@ -50,7 +56,9 @@ const start = async (addr) => {
   loader.closeClients()
 
   try {
-    const { response: result4 } = await hellorClient.sayHello({ name: 'hellor4' })
+    const { response: result4 } = await hellorClient.sayHello({
+      name: 'hellor4'
+    })
     console.log('hellorClient.sayHello, must not log here', result4)
   } catch (error) {
     // reconnect
@@ -61,7 +69,9 @@ const start = async (addr) => {
       credentials
     })
     const newHellorClient = loader.client('test.helloworld.Hellor')
-    const { response: result5 } = await newHellorClient.sayHello({ name: 'hellor5' })
+    const { response: result5 } = await newHellorClient.sayHello({
+      name: 'hellor5'
+    })
     console.log('newHellorClient.sayHello', result5)
   }
 }

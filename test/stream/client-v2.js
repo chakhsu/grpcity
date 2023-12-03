@@ -1,7 +1,7 @@
 const GrpcLoader = require('../../types')
 const path = require('path')
 
-const start = async (addr) => {
+const start = async addr => {
   const loader = new GrpcLoader({
     location: path.resolve(__dirname, './'),
     files: ['stream.proto']
@@ -37,7 +37,10 @@ const start = async (addr) => {
   console.log(writeResult)
 
   // client to stream server
-  const serverStreamHelloCall = client.serverStreamHello({ message: 'Hello! How are you?' }, meta)
+  const serverStreamHelloCall = client.serverStreamHello(
+    { message: 'Hello! How are you?' },
+    meta
+  )
   const serverReadAllResult = serverStreamHelloCall.readAll()
   for await (const data of serverReadAllResult) {
     console.log(data)

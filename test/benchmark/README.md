@@ -17,6 +17,7 @@ ghz --insecure \
 ```
 
 result:
+
 ```
 Summary:
   Count:        10000
@@ -67,6 +68,7 @@ ghz --insecure \
 ```
 
 result:
+
 ```
 Summary:
   Count:        10000

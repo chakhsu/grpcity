@@ -1,5 +1,5 @@
-import Joi from 'joi';
+import Joi from 'joi'
 declare const serverSchemas: {
-    address: Joi.AlternativesSchema<any>;
-};
-export default serverSchemas;
+  address: Joi.AlternativesSchema<any>
+}
+export default serverSchemas
