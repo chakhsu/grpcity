@@ -1,2 +1,2 @@
-declare function _exports(packageDefinition: any, packagePrefix: any): any;
-export = _exports;
+declare const _default: (packageDefinition: any, packagePrefix: any) => any
+export default _default

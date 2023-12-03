@@ -1,5 +1,2 @@
-export let keepCase: boolean;
-export let longs: StringConstructor;
-export let enums: StringConstructor;
-export let defaults: boolean;
-export let oneofs: boolean;
+import { Options } from '@grpc/proto-loader'
+export declare const defaultLoadOptions: Options

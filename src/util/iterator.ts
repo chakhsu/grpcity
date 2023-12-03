@@ -1,8 +1,12 @@
 const symbolAsyncIterator = Symbol.asyncIterator || '@@asyncIterator'
 
-const normalizeEmitter = emitter => {
-  const addListener = emitter.on || emitter.addListener || emitter.addEventListener
-  const removeListener = emitter.off || emitter.removeListener || emitter.removeEventListener
+const normalizeEmitter = (
+  emitter: any
+): { addListener: Function; removeListener: Function } => {
+  const addListener =
+    emitter.on || emitter.addListener || emitter.addEventListener
+  const removeListener =
+    emitter.off || emitter.removeListener || emitter.removeEventListener
 
   if (!addListener || !removeListener) {
     throw new TypeError('Emitter is not compatible')
@@ -14,9 +18,9 @@ const normalizeEmitter = emitter => {
   }
 }
 
-const toArray = value => Array.isArray(value) ? value : [value]
+const toArray = (value: any): any[] => (Array.isArray(value) ? value : [value])
 
-module.exports = (emitter, event, options) => {
+export default (emitter: any, event: string | string[], options: any) => {
   if (typeof options === 'function') {
     options = { filter: options }
   }
@@ -33,18 +37,21 @@ module.exports = (emitter, event, options) => {
   }
 
   const { limit } = options
-  const isValidLimit = limit >= 0 && (limit === Infinity || Number.isInteger(limit))
+  const isValidLimit =
+    limit >= 0 && (limit === Infinity || Number.isInteger(limit))
   if (!isValidLimit) {
-    throw new TypeError('The `limit` option should be a non-negative integer or Infinity')
+    throw new TypeError(
+      'The `limit` option should be a non-negative integer or Infinity'
+    )
   }
 
   if (limit === 0) {
     // Return an empty async iterator to avoid any further cost
     return {
-      [Symbol.asyncIterator] () {
+      [Symbol.asyncIterator](): any {
         return this
       },
-      async next () {
+      async next(): Promise<{ done: boolean; value: any }> {
         return {
           done: true,
           value: undefined
@@ -56,22 +63,21 @@ module.exports = (emitter, event, options) => {
   const { addListener, removeListener } = normalizeEmitter(emitter)
 
   let isDone = false
-  let error
+  let error: any
   let hasPendingError = false
-  const nextQueue = []
-  const valueQueue = []
+  const nextQueue: { resolve: Function; reject: Function }[] = []
+  const valueQueue: any[] = []
   let eventCount = 0
   let isLimitReached = false
 
-  const valueHandler = (...args) => {
+  const valueHandler = (...args: any[]): void => {
     eventCount++
     isLimitReached = eventCount === limit
 
     const value = options.multiArgs ? args : args[0]
 
     if (nextQueue.length > 0) {
-      const { resolve } = nextQueue.shift()
-
+      const { resolve } = nextQueue.shift()!
       resolve({ done: false, value })
 
       if (isLimitReached) {
@@ -88,31 +94,31 @@ module.exports = (emitter, event, options) => {
     }
   }
 
-  const cancel = () => {
+  const cancel = (): void => {
     isDone = true
     for (const event of events) {
       removeListener(event, valueHandler)
     }
 
-    for (const rejectionEvent of options.rejectionEvents) {
+    for (const rejectionEvent of options.rejectionEvents!) {
       removeListener(rejectionEvent, rejectHandler)
     }
 
-    for (const resolutionEvent of options.resolutionEvents) {
+    for (const resolutionEvent of options.resolutionEvents!) {
       removeListener(resolutionEvent, resolveHandler)
     }
 
     while (nextQueue.length > 0) {
-      const { resolve } = nextQueue.shift()
+      const { resolve } = nextQueue.shift()!
       resolve({ done: true, value: undefined })
     }
   }
 
-  const rejectHandler = (...args) => {
+  const rejectHandler = (...args: any[]): void => {
     error = options.multiArgs ? args : args[0]
 
     if (nextQueue.length > 0) {
-      const { reject } = nextQueue.shift()
+      const { reject } = nextQueue.shift()!
       reject(error)
     } else {
       hasPendingError = true
@@ -121,7 +127,7 @@ module.exports = (emitter, event, options) => {
     cancel()
   }
 
-  const resolveHandler = (...args) => {
+  const resolveHandler = (...args: any[]): void => {
     const value = options.multiArgs ? args : args[0]
 
     if (options.filter && !options.filter(value)) {
@@ -129,7 +135,7 @@ module.exports = (emitter, event, options) => {
     }
 
     if (nextQueue.length > 0) {
-      const { resolve } = nextQueue.shift()
+      const { resolve } = nextQueue.shift()!
       resolve({ done: true, value })
     } else {
       valueQueue.push(value)
@@ -142,19 +148,19 @@ module.exports = (emitter, event, options) => {
     addListener(event, valueHandler)
   }
 
-  for (const rejectionEvent of options.rejectionEvents) {
+  for (const rejectionEvent of options.rejectionEvents!) {
     addListener(rejectionEvent, rejectHandler)
   }
 
-  for (const resolutionEvent of options.resolutionEvents) {
+  for (const resolutionEvent of options.resolutionEvents!) {
     addListener(resolutionEvent, resolveHandler)
   }
 
   return {
-    [symbolAsyncIterator] () {
+    [symbolAsyncIterator](): any {
       return this
     },
-    async next () {
+    async next(): Promise<{ done: boolean; value: any }> {
       if (valueQueue.length > 0) {
         const value = valueQueue.shift()
         return {
@@ -175,9 +181,11 @@ module.exports = (emitter, event, options) => {
         }
       }
 
-      return new Promise((resolve, reject) => nextQueue.push({ resolve, reject }))
+      return new Promise((resolve, reject) =>
+        nextQueue.push({ resolve, reject })
+      )
     },
-    async return (value) {
+    async return(value: any): Promise<{ done: boolean; value: any }> {
       cancel()
       return {
         done: isDone,

@@ -1,19 +1,24 @@
-const grpc = require('@grpc/grpc-js')
-const assert = require('assert')
-const util = require('util')
-const _ = require('lodash')
-const Joi = require('joi')
-const serverSchemas = require('../schema/server')
-const iterator = require('../util/iterator')
-const compose = require('../util/compose')
-const debug = require('debug')('grpcity:serverProxy')
+import assert from 'node:assert'
+import * as util from 'node:util'
+import * as grpc from '@grpc/grpc-js'
+import * as _ from 'lodash'
+import * as Joi from 'joi'
+import serverSchemas from '../schema/server'
+import iterator from '../util/iterator'
+import { compose, MiddlewareFunction } from '../util/compose'
 
 class ServerProxy {
-  constructor () {
+  private _middleware: MiddlewareFunction[]
+
+  private _loader?: any
+  private _server?: grpc.Server
+  private _insecureServerCredentials?: grpc.ServerCredentials
+
+  constructor() {
     this._middleware = []
   }
 
-  _init (loader, ...args) {
+  _init(loader: any, ...args: any[]): this {
     if (!this._loader) {
       this._loader = loader
     }
@@ -23,30 +28,34 @@ class ServerProxy {
     return this
   }
 
-  async listen (addr, credentials = undefined) {
+  async listen(
+    addr: any,
+    credentials: grpc.ServerCredentials | undefined = undefined
+  ): Promise<void> {
     assert(this._server, 'must be first init() server before server listen()')
     Joi.assert(addr, serverSchemas.address, 'server listen() params Error')
-    debug('server listen options', addr)
 
     const url = _.isString(addr) ? addr : `${addr.host}:${addr.port}`
-    const bindPort = await new Promise((resolve, reject) => {
-      this._server.bindAsync(url, credentials || this.makeServerCredentials(), (err, result) => (
-        err ? reject(err) : resolve(result))
+    const bindPort = await new Promise<number>((resolve, reject) => {
+      this._server!.bindAsync(
+        url,
+        credentials || this.makeServerCredentials(),
+        (err, result) => (err ? reject(err) : resolve(result))
       )
     })
-    const port = addr.port ? addr.port : Number(addr.match(/:(\d+)/)[1])
+    const port = addr.port ? addr.port : Number(addr.match(/:(\d+)/)![1])
     assert(bindPort === port, 'server bind port not to be right')
 
-    this._server.start()
+    this._server!.start()
   }
 
-  async shutdown () {
+  async shutdown(): Promise<void> {
     if (!this._server) {
       return
     }
 
-    await new Promise((resolve, reject) => {
-      this._server.tryShutdown(err => {
+    await new Promise<void>((resolve, reject) => {
+      this._server!.tryShutdown(err => {
         if (err) {
           reject(err)
         } else {
@@ -59,46 +68,71 @@ class ServerProxy {
     delete this._loader
   }
 
-  forceShutdown () {
+  forceShutdown(): void {
     if (!this._server) {
       return
     }
 
-    this._server.forceShutdown()
+    this._server!.forceShutdown()
     delete this._server
     delete this._loader
   }
 
-  makeServerCredentials (rootCerts, keyCertPairs, checkClientCertificate) {
-    if (rootCerts) {
-      return grpc.ServerCredentials.createSsl(rootCerts, keyCertPairs, checkClientCertificate)
+  makeServerCredentials(
+    rootCerts?: Buffer,
+    keyCertPairs?: grpc.KeyCertPair[],
+    checkClientCertificate?: boolean
+  ): grpc.ServerCredentials {
+    if (rootCerts && keyCertPairs) {
+      return grpc.ServerCredentials.createSsl(
+        rootCerts,
+        keyCertPairs,
+        checkClientCertificate
+      )
     } else {
       if (!this._insecureServerCredentials) {
-        this._insecureServerCredentials = grpc.ServerCredentials.createInsecure()
+        this._insecureServerCredentials =
+          grpc.ServerCredentials.createInsecure()
       }
       return this._insecureServerCredentials
     }
   }
 
-  addService (name, implementation, { exclude = [], inherit } = {}) {
+  addService(
+    name: string,
+    implementation: any,
+    { exclude = [], inherit }: { exclude?: string[]; inherit?: any } = {}
+  ): void {
     const service = this._loader.service(name)
 
-    const options = { exclude, inherit, _implementationType: {} }
+    const options: any = { exclude, inherit, _implementationType: {} }
     Object.keys(service).forEach(key => {
       const { requestStream, responseStream } = service[key]
-      options._implementationType[service[key].originalName] = { requestStream, responseStream }
+      options._implementationType[service[key].originalName] = {
+        requestStream,
+        responseStream
+      }
     })
 
-    this._server.addService(service, this._callbackify(implementation, options))
+    this._server!.addService(
+      service,
+      this._callbackify(implementation, options)
+    )
   }
 
-  removeService (name) {
-    assert(this._server, 'must be first init() server before server removeService()')
-    this._server.removeService(this._loader.service(name))
+  removeService(name: string): void {
+    assert(
+      this._server,
+      'must be first init() server before server removeService()'
+    )
+    this._server!.removeService(this._loader.service(name))
   }
 
-  addMiddleware (...args) {
-    assert(args.length >= 1, 'server addMiddleware() takes at least one argument.')
+  addMiddleware(...args: MiddlewareFunction[]): void {
+    assert(
+      args.length >= 1,
+      'server addMiddleware() takes at least one argument.'
+    )
     if (args.length === 1) {
       if (Array.isArray(args[0])) {
         args[0].forEach(fn => {
@@ -114,48 +148,68 @@ class ServerProxy {
     }
   }
 
-  _use (fn) {
-    if (typeof fn !== 'function') throw new TypeError('grpcity loader server middleware must be a function!')
+  private _use(fn: MiddlewareFunction): void {
+    if (typeof fn !== 'function')
+      throw new TypeError(
+        'grpcity loader server middleware must be a function!'
+      )
     this._middleware.push(fn)
   }
 
-  // async func --- to --> callback type func
-  // use in grpc server side mostly
-  _callbackify (target, { exclude = [], inherit, _implementationType } = {}) {
+  private _callbackify(
+    target: any,
+    {
+      exclude = [],
+      inherit,
+      _implementationType
+    }: { exclude?: string[]; inherit?: any; _implementationType: any }
+  ): any {
     assert(typeof target === 'object', 'Must callbackify an object')
-    assert(Array.isArray(exclude), 'options.exclude must be an array of strings')
+    assert(
+      Array.isArray(exclude),
+      'options.exclude must be an array of strings'
+    )
 
-    const protoPropertyNames = Object.getOwnPropertyNames(Object.getPrototypeOf({}))
+    const protoPropertyNames = Object.getOwnPropertyNames(
+      Object.getPrototypeOf({})
+    )
     exclude.push(...protoPropertyNames)
 
     const allPropertyNames = [
       ...new Set([
         ...Object.keys(target),
         ...Object.getOwnPropertyNames(Object.getPrototypeOf(target)),
-        ...(inherit && inherit.prototype ? Object.getOwnPropertyNames(inherit.prototype) : [])
+        ...(inherit && inherit.prototype
+          ? Object.getOwnPropertyNames(inherit.prototype)
+          : [])
       ])
     ]
 
-    const methods = {}
+    const methods: { [key: string]: any } = {}
     for (const key of allPropertyNames) {
       const fn = target[key]
-      if (typeof fn === 'function' && key !== 'constructor' && !exclude.includes(key)) {
+      if (
+        typeof fn === 'function' &&
+        key !== 'constructor' &&
+        !exclude.includes(key)
+      ) {
         if (util.types.isAsyncFunction(fn)) {
-          const eglWrapFunction = this._proxy(target, key, _implementationType[key])
-          debug(`callbackify async function: ${key}`)
+          const eglWrapFunction = this._proxy(
+            target,
+            key,
+            _implementationType[key]
+          )
           methods[key] = eglWrapFunction
         } else {
-          debug(`copy non-async function: ${key}`)
           methods[key] = fn
         }
       }
     }
 
-    debug('callbackify()', methods)
     return methods
   }
 
-  _proxy (target, key, options = {}) {
+  private _proxy(target: any, key: string, options: any = {}): any {
     const { requestStream, responseStream } = options
 
     const fn = compose(this._middleware)
@@ -178,7 +232,7 @@ class ServerProxy {
     }
   }
 
-  _createContext (call) {
+  private _createContext(call: any): any {
     return {
       // TODO: maybe need more details
       // method: target.constructor.name + '.' + key,
@@ -188,7 +242,11 @@ class ServerProxy {
     }
   }
 
-  _callUnaryProxyMethod (target, key, composeFunc) {
+  private _callUnaryProxyMethod(
+    target: any,
+    key: string,
+    composeFunc: Function
+  ): grpc.handleUnaryCall<any, any> {
     return (call, callback) => {
       const ctx = this._createContext(call)
 
@@ -196,7 +254,7 @@ class ServerProxy {
         const handleResponse = async () => {
           ctx.response = await target[key](call)
         }
-        await composeFunc(ctx, handleResponse).catch(err => {
+        await composeFunc(ctx, handleResponse).catch((err: Error) => {
           callback(this._createInternalErrorStatus(err))
         })
         callback(null, ctx.response)
@@ -204,8 +262,12 @@ class ServerProxy {
     }
   }
 
-  _callClientStreamProxyMethod (target, key, composeFunc) {
-    return (call, callback) => {
+  private _callClientStreamProxyMethod(
+    target: any,
+    key: string,
+    composeFunc: Function
+  ): any {
+    return (call: any, callback: Function) => {
       const ctx = this._createContext(call)
 
       call.readAll = () => {
@@ -218,7 +280,7 @@ class ServerProxy {
         const handleResponse = async () => {
           ctx.response = await target[key](call)
         }
-        await composeFunc(ctx, handleResponse).catch(err => {
+        await composeFunc(ctx, handleResponse).catch((err: Error) => {
           callback(this._createInternalErrorStatus(err))
         })
         callback(null, ctx.response)
@@ -226,11 +288,15 @@ class ServerProxy {
     }
   }
 
-  _callServerStreamProxyMethod (target, key, composeFunc) {
-    return (call) => {
+  private _callServerStreamProxyMethod(
+    target: any,
+    key: string,
+    composeFunc: Function
+  ): any {
+    return (call: any) => {
       const ctx = this._createContext(call)
 
-      call.writeAll = (messages) => {
+      call.writeAll = (messages: any[]) => {
         if (Array.isArray(messages)) {
           messages.forEach(message => {
             call.write(message)
@@ -243,7 +309,7 @@ class ServerProxy {
         const handleResponse = async () => {
           await target[key](call)
         }
-        await composeFunc(ctx, handleResponse).catch(err => {
+        await composeFunc(ctx, handleResponse).catch((err: Error) => {
           call.destroy(this._createInternalErrorStatus(err))
         })
         call.end()
@@ -251,11 +317,15 @@ class ServerProxy {
     }
   }
 
-  _callDuplexStreamProxyMethod (target, key, composeFunc) {
-    return (call) => {
+  private _callDuplexStreamProxyMethod(
+    target: any,
+    key: string,
+    composeFunc: Function
+  ): any {
+    return (call: any) => {
       const ctx = this._createContext(call)
 
-      call.writeAll = (messages) => {
+      call.writeAll = (messages: any[]) => {
         if (Array.isArray(messages)) {
           messages.forEach(message => {
             call.write(message)
@@ -272,7 +342,7 @@ class ServerProxy {
         const handleResponse = async () => {
           await target[key](call)
         }
-        await composeFunc(ctx, handleResponse).catch(err => {
+        await composeFunc(ctx, handleResponse).catch((err: Error) => {
           call.destroy(this._createInternalErrorStatus(err))
         })
         call.end()
@@ -280,7 +350,7 @@ class ServerProxy {
     }
   }
 
-  _createInternalErrorStatus (err) {
+  private _createInternalErrorStatus(err: any): any {
     err.code = err.code || 13
     if (typeof err.stack === 'string') {
       const stack = err.stack.split('\n')
@@ -292,4 +362,4 @@ class ServerProxy {
   }
 }
 
-module.exports = new ServerProxy()
+export default ServerProxy

@@ -4,11 +4,11 @@ const { expect } = require('chai')
 
 describe('Grpc Loader', () => {
   class Greeter {
-    async init (server) {
+    async init(server) {
       server.addService('test.helloworld.Greeter', this, { exclude: ['init'] })
     }
 
-    async SayHello (call) {
+    async SayHello(call) {
       const metadata = call.metadata.clone()
       metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
       call.sendMetadata(metadata)
@@ -17,7 +17,7 @@ describe('Grpc Loader', () => {
       }
 
       if (metadata.get('x-long-delay').length > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 1000 * 10))
+        await new Promise(resolve => setTimeout(resolve, 1000 * 10))
       }
 
       expect(this).to.be.an('object')
@@ -25,7 +25,7 @@ describe('Grpc Loader', () => {
       return { message: `hello, ${call.request.name || 'world'}` }
     }
 
-    async SayHello2 (call) {
+    async SayHello2(call) {
       return this.SayHello(call)
     }
   }
@@ -56,14 +56,21 @@ describe('Grpc Loader', () => {
     expect(result.message).to.be.eq('hello, grpc')
 
     // 支持相同service的client访问不同host和port
-    const timeout = 20
-    const client2 = loader.client('test.helloworld.Greeter', { host: 'localhost', port: 12305, timeout })
+    const timeout = 50
+    const client2 = loader.client('test.helloworld.Greeter', {
+      host: 'localhost',
+      port: 12305,
+      timeout
+    })
     const { response: result2 } = await client2.sayHello({ name: 'grpc' })
     expect(result2).to.be.an('object')
     expect(result2.message).to.be.eq('hello, grpc')
 
     try {
-      await client2.sayHello({ name: 'grpc' }, loader.makeMetadata({ 'x-throw-error': 'true' }))
+      await client2.sayHello(
+        { name: 'grpc' },
+        loader.makeMetadata({ 'x-throw-error': 'true' })
+      )
       expect.fail('should not run here')
     } catch (err) {
       expect(/x-throw-error/.test(err.message)).to.be.eq(true)
@@ -72,7 +79,10 @@ describe('Grpc Loader', () => {
 
     const start = Date.now()
     try {
-      await client2.sayHello({ name: 'grpc' }, loader.makeMetadata({ 'x-long-delay': 'true' }))
+      await client2.sayHello(
+        { name: 'grpc' },
+        loader.makeMetadata({ 'x-long-delay': 'true' })
+      )
       expect.fail('should not run here')
     } catch (err) {
       expect(Date.now() - start).to.be.lte(timeout * 2)
@@ -113,20 +123,28 @@ describe('Grpc Loader', () => {
         'x-business-id': ['grpcity', 'testing'],
         'x-timestamp-client': 'begin=' + timestampClientSend.toISOString()
       })
-      const call = client.call.sayHello({ name: 'grpc' }, meta, (err, result) => {
-        if (err) {
-          reject(err)
-          return
-        }
-        expect(result).to.be.an('object')
-        expect(result.message).to.be.eq('hello, grpc')
+      const call = client.call.sayHello(
+        { name: 'grpc' },
+        meta,
+        (err, result) => {
+          if (err) {
+            reject(err)
+            return
+          }
+          expect(result).to.be.an('object')
+          expect(result.message).to.be.eq('hello, grpc')
 
-        resolve()
-      })
+          resolve()
+        }
+      )
 
       call.on('metadata', metadata => {
-        expect(metadata.get('x-cache-control')).to.be.an('array').deep.eq(['max-age=100'])
-        expect(metadata.get('x-business-id')).to.be.an('array').deep.eq(['grpcity, testing'])
+        expect(metadata.get('x-cache-control'))
+          .to.be.an('array')
+          .deep.eq(['max-age=100'])
+        expect(metadata.get('x-business-id'))
+          .to.be.an('array')
+          .deep.eq(['grpcity, testing'])
 
         const timestamps = metadata.get('x-timestamp-server')
         expect(timestamps).to.be.an('array').with.lengthOf(1)

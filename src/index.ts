@@ -1,82 +1,45 @@
-'use strict'
-var __createBinding =
-  (this && this.__createBinding) ||
-  (Object.create
-    ? function (o, m, k, k2) {
-        if (k2 === undefined) k2 = k
-        var desc = Object.getOwnPropertyDescriptor(m, k)
-        if (
-          !desc ||
-          ('get' in desc ? !m.__esModule : desc.writable || desc.configurable)
-        ) {
-          desc = {
-            enumerable: true,
-            get: function () {
-              return m[k]
-            }
-          }
-        }
-        Object.defineProperty(o, k2, desc)
-      }
-    : function (o, m, k, k2) {
-        if (k2 === undefined) k2 = k
-        o[k2] = m[k]
-      })
-var __setModuleDefault =
-  (this && this.__setModuleDefault) ||
-  (Object.create
-    ? function (o, v) {
-        Object.defineProperty(o, 'default', { enumerable: true, value: v })
-      }
-    : function (o, v) {
-        o['default'] = v
-      })
-var __importStar =
-  (this && this.__importStar) ||
-  function (mod) {
-    if (mod && mod.__esModule) return mod
-    var result = {}
-    if (mod != null)
-      for (var k in mod)
-        if (k !== 'default' && Object.prototype.hasOwnProperty.call(mod, k))
-          __createBinding(result, mod, k)
-    __setModuleDefault(result, mod)
-    return result
-  }
-var __importDefault =
-  (this && this.__importDefault) ||
-  function (mod) {
-    return mod && mod.__esModule ? mod : { default: mod }
-  }
-Object.defineProperty(exports, '__esModule', { value: true })
-const node_assert_1 = __importDefault(require('node:assert'))
-const grpc = __importStar(require('@grpc/grpc-js'))
-const protoLoader = __importStar(require('@grpc/proto-loader'))
-const protobuf = __importStar(require('protobufjs'))
-const Descriptor = __importStar(require('protobufjs/ext/descriptor'))
-const _ = __importStar(require('lodash'))
-const Joi = __importStar(require('joi'))
-const loader_1 = __importDefault(require('./schema/loader'))
-const prefixingDefinition_1 = __importDefault(
-  require('./util/prefixingDefinition')
-)
-const defaultChannelOptions_1 = require('./config/defaultChannelOptions')
-const defaultLoadOptions_1 = require('./config/defaultLoadOptions')
-const clientProxy_1 = __importDefault(require('./proxy/clientProxy'))
-const serverProxy_1 = __importDefault(require('./proxy/serverProxy'))
+import assert from 'node:assert'
+import * as grpc from '@grpc/grpc-js'
+import * as protoLoader from '@grpc/proto-loader'
+import * as protobuf from 'protobufjs'
+import * as Descriptor from 'protobufjs/ext/descriptor'
+import * as _ from 'lodash'
+import * as Joi from 'joi'
+
+import loaderSchemas from './schema/loader'
+import prefixingDefinition from './util/prefixingDefinition'
+import { defaultChannelOptions } from './config/defaultChannelOptions'
+import { defaultLoadOptions } from './config/defaultLoadOptions'
+import clientProxy from './proxy/clientProxy'
+import ServerProxy from './proxy/serverProxy'
+
 class GrpcLoader {
-  constructor(protoFileOptions) {
+  private _protoFiles: any[]
+  private _clientMap: Map<string, any>
+  private _clientAddrMap: Map<string, string>
+  private _types: any
+  private _packagePrefix?: string
+  private _appName?: string
+  private _packageDefinition: any
+  private _isDev?: boolean
+  private _reflectedRoot: any
+  private _insecureCredentials?: grpc.ChannelCredentials
+  private _initDefaultClient?: boolean
+
+  constructor(protoFileOptions: any) {
     Joi.assert(
       protoFileOptions,
-      loader_1.default.constructor,
+      loaderSchemas.constructor,
       'new GrpcLoader() params Error'
     )
+
     this._protoFiles = Array.isArray(protoFileOptions)
       ? protoFileOptions
       : [protoFileOptions]
     this._clientMap = new Map()
     this._clientAddrMap = new Map()
   }
+
   async init({
     services = undefined,
     isDev = false,
@@ -84,24 +47,23 @@ class GrpcLoader {
     loadOptions = {},
     channelOptions = {},
     appName
-  } = {}) {
+  }: any = {}) {
     Joi.assert(
       { services, loadOptions, isDev, channelOptions, appName },
-      loader_1.default.init,
+      loaderSchemas.init,
       'GrpcLoader.init() params Error'
     )
+
     if (this._types) {
       return
     }
+
     try {
-      loadOptions = Object.assign(
-        {},
-        defaultLoadOptions_1.defaultLoadOptions,
-        loadOptions
-      )
+      loadOptions = Object.assign({}, defaultLoadOptions, loadOptions)
       this._isDev = isDev
       this._packagePrefix = packagePrefix
       this._appName = appName
+
       loadOptions.includeDirs = this._protoFiles
         .map(p => p.location)
         .concat(loadOptions.includeDirs || [])
@@ -111,39 +73,47 @@ class GrpcLoader {
         }
         return result
       }, [])
+
       const packageDefinition = await protoLoader.load(files, loadOptions)
+
       if (this._packagePrefix) {
-        this._packageDefinition = (0, prefixingDefinition_1.default)(
+        this._packageDefinition = prefixingDefinition(
           packageDefinition,
           packagePrefix
         )
       } else {
         this._packageDefinition = packageDefinition
       }
+
       this._types = grpc.loadPackageDefinition(this._packageDefinition)
     } catch (err) {
       throw err
     }
+
     if (services) {
       await this.initClients({ services, channelOptions })
     }
   }
+
   async initClients({
     services,
     channelOptions = {},
     credentials = undefined
-  }) {
+  }: any) {
     Joi.assert(
       { services, channelOptions },
-      loader_1.default.initClients,
+      loaderSchemas.initClients,
       'GrpcLoader.initClients() Options Error'
     )
+
     if (this._initDefaultClient) {
       return
     }
+
     if (!this._packageDefinition) {
       await this.init()
     }
+
     const serviceNames = Object.keys(services)
     serviceNames.forEach(name => {
       const isDefaultClient = true
@@ -152,8 +122,10 @@ class GrpcLoader {
         : services[name].host + ':' + services[name].port
       this._makeClient(isDefaultClient, name, addr, credentials, channelOptions)
     })
+
     this._initDefaultClient = true
   }
+
   closeClients() {
     this._clientMap.forEach((client, key) => {
       if (client && typeof client.close === 'function') {
@@ -164,7 +136,13 @@ class GrpcLoader {
     this._clientAddrMap.clear()
     this._initDefaultClient = false
   }
-  makeCredentials(rootCerts, privateKey, certChain, verifyOptions) {
+
+  makeCredentials(
+    rootCerts?: any,
+    privateKey?: any,
+    certChain?: any,
+    verifyOptions?: any
+  ) {
     if (rootCerts && privateKey && certChain) {
       return grpc.credentials.createSsl(
         rootCerts,
@@ -179,56 +157,66 @@ class GrpcLoader {
       return this._insecureCredentials
     }
   }
-  service(name) {
-    ;(0, node_assert_1.default)(
+
+  service(name: string) {
+    assert(
       this._types,
       'Must called init() first. proto file has not been loaded.'
     )
     const fullName = this._isDev ? `${this._packagePrefix}.${name}` : name
     const service = _.get(this._types, `${fullName}.service`)
-    ;(0, node_assert_1.default)(
+    assert(
       service,
       `Cannot find service with name: ${fullName}, please check if the protos file is configured incorrectly or if the corresponding proto file is missing.`
     )
     return service
   }
-  type(name) {
-    ;(0, node_assert_1.default)(
+
+  type(name: string) {
+    assert(
       this._types,
       'Must called init() first. proto file has not been loaded.'
     )
     const fullName = this._isDev ? `${this._packagePrefix}.${name}` : name
     const type = _.get(this._types, `${fullName}`)
-    ;(0, node_assert_1.default)(
+    assert(
       type,
       `Cannot find type with name: ${fullName}, please check if the protos file is configured incorrectly or if the corresponding proto file is missing.`
     )
     return type
   }
-  message(name) {
+
+  message(name: string) {
     let root = this._reflectedRoot
+
     if (root) {
       const found = root.lookupType(name)
       if (found) {
         return found
       }
     }
-    const descriptor = this.type(name).fileDescriptorProtos.map(proto =>
+
+    const descriptor = this.type(name).fileDescriptorProtos.map((proto: any) =>
       Descriptor.FileDescriptorProto.decode(proto)
     )
-    root = protobuf.Root.fromDescriptor({ file: descriptor })
+    root = (protobuf.Root as protobuf.RootConstructor).fromDescriptor({
+      file: descriptor
+    })
+
     this._reflectedRoot = root
+
     return root.lookupType(name)
   }
+
   client(
-    name,
+    name: string,
     {
       host = undefined,
       port = undefined,
       timeout = undefined,
       credentials = undefined,
       channelOptions = {}
-    } = {}
+    }: any = {}
   ) {
     const isDefaultClient = !(host && port)
     const addr = `${host}:${port}`
@@ -236,6 +224,7 @@ class GrpcLoader {
       ? 'defaultAddr'
       : addr.replace(/\./g, '-')
     const cacheKey = `proxy.${cacheKeyPrefix}.${name}.${timeout}`
+
     if (this._clientMap.has(cacheKey)) {
       return this._clientMap.get(cacheKey)
     } else {
@@ -247,19 +236,20 @@ class GrpcLoader {
         channelOptions
       )
       const appName = this._appName
-      const proxy = clientProxy_1.default._proxy(client, { timeout }, appName)
+      const proxy = clientProxy._proxy(client, { timeout }, appName)
       this._clientMap.set(cacheKey, proxy)
       return proxy
     }
   }
+
   realClient(
-    name,
+    name: string,
     {
       host = undefined,
       port = undefined,
       credentials = undefined,
       channelOptions = {}
-    } = {}
+    }: any = {}
   ) {
     const isDefaultClient = !(host && port)
     const client = this._makeClient(
@@ -271,14 +261,15 @@ class GrpcLoader {
     )
     return client
   }
+
   clientWithoutCache(
-    name,
+    name: string,
     {
       addr,
       timeout = undefined,
       credentials = undefined,
       channelOptions = {}
-    } = {}
+    }: any = {}
   ) {
     const client = this._makeClientWithoutCache(
       false,
@@ -288,22 +279,30 @@ class GrpcLoader {
       channelOptions
     )
     const appName = this._appName
-    const proxy = clientProxy_1.default._proxy(client, { timeout }, appName)
+    const proxy = clientProxy._proxy(client, { timeout }, appName)
     return proxy
   }
-  _makeClient(isDefaultClient, name, addr, credentials, channelOptions = {}) {
+
+  private _makeClient(
+    isDefaultClient: boolean,
+    name: string,
+    addr: string,
+    credentials: any,
+    channelOptions: any = {}
+  ) {
     const ctBool = !!credentials
     const cacheKeyPrefix = isDefaultClient
       ? 'defaultAddr'
       : addr.replace(/\./g, '-')
     const cacheKeyWithCt = `${cacheKeyPrefix}.${name}.${ctBool}`
     const cacheKey = `${cacheKeyPrefix}.${name}`
+
     if (this._clientMap.has(cacheKey)) {
       return this._clientMap.get(cacheKey)
     } else if (this._clientMap.has(cacheKeyWithCt)) {
       return this._clientMap.get(cacheKeyWithCt)
     } else {
-      let cacheAddr = addr
+      let cacheAddr: string = addr
       if (addr === 'undefined:undefined') {
         cacheAddr = this._clientAddrMap.get(name) || addr
       }
@@ -319,18 +318,16 @@ class GrpcLoader {
       return client
     }
   }
-  _makeClientWithoutCache(
-    isDefaultClient,
-    name,
-    addr,
-    credentials,
-    channelOptions = {}
+
+  private _makeClientWithoutCache(
+    isDefaultClient: boolean,
+    name: string,
+    addr: string,
+    credentials: any,
+    channelOptions: any = {}
   ) {
-    channelOptions = Object.assign(
-      {},
-      defaultChannelOptions_1.defaultChannelOptions,
-      channelOptions
-    )
+    channelOptions = Object.assign({}, defaultChannelOptions, channelOptions)
+
     const ServiceProto = this.type(name)
     const client = new ServiceProto(
       addr,
@@ -339,14 +336,15 @@ class GrpcLoader {
     )
     return client
   }
-  makeMetadata(initialValues) {
-    ;(0, node_assert_1.default)(
+
+  makeMetadata(initialValues: any) {
+    assert(
       this._types,
       'Must called init() first. proto file has not been loaded.'
     )
     const meta = new grpc.Metadata()
     if (typeof initialValues === 'object') {
-      Object.entries(initialValues).forEach(([key, value]) => {
+      Object.entries(initialValues).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value)) {
           value.map(v => meta.add(key, _.isString(v) ? v : Buffer.from(v)))
         } else {
@@ -356,14 +354,16 @@ class GrpcLoader {
     }
     return meta
   }
-  initServer(...args) {
-    ;(0, node_assert_1.default)(
+
+  initServer(...args: any[]) {
+    assert(
       this._types,
       'Must called init() first. proto file has not been loaded.'
     )
-    const server = new serverProxy_1.default()
+    const server = new ServerProxy()
     return server._init(this, ...args)
   }
 }
-exports.default = GrpcLoader
+
+export default GrpcLoader
 module.exports = GrpcLoader

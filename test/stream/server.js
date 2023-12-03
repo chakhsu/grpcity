@@ -2,21 +2,21 @@ const GrpcLoader = require('../../types')
 const path = require('path')
 
 class Stream {
-  constructor () {
+  constructor() {
     this.count = 0
   }
 
-  unaryHello (call, callback) {
+  unaryHello(call, callback) {
     console.log(call.request.message)
     callback(null, { message: 'hello ' + call.request.message })
   }
 
-  clientStreamHello (call, callback) {
+  clientStreamHello(call, callback) {
     const metadata = call.metadata.clone()
     metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
     call.sendMetadata(metadata)
 
-    call.on('data', (data) => {
+    call.on('data', data => {
       console.log(data)
     })
     call.on('end', () => {
@@ -24,7 +24,7 @@ class Stream {
     })
   }
 
-  serverStreamHello (call) {
+  serverStreamHello(call) {
     const metadata = call.metadata.clone()
     metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
     call.sendMetadata(metadata)
@@ -35,18 +35,18 @@ class Stream {
     call.end()
   }
 
-  mutualStreamHello (call) {
+  mutualStreamHello(call) {
     const metadata = call.metadata.clone()
     metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
     call.sendMetadata(metadata)
 
     call.write({ message: 'emmm...' })
-    call.on('data', (chunk) => {
+    call.on('data', chunk => {
       console.log(chunk.message)
       if (chunk.message === 'Hello!') {
         call.write({ message: 'Hello too.' })
       } else if (chunk.message === 'How are you?') {
-        call.write({ message: 'I\'m fine, thank you' })
+        call.write({ message: "I'm fine, thank you" })
         setTimeout(() => {
           call.write({ message: 'delay 1s' })
         }, 1000)
@@ -63,7 +63,7 @@ class Stream {
   }
 }
 
-const start = async (addr) => {
+const start = async addr => {
   const loader = new GrpcLoader({
     location: path.resolve(__dirname, './'),
     files: ['stream.proto']

@@ -1,102 +1,91 @@
-'use strict'
-var __createBinding =
-  (this && this.__createBinding) ||
-  (Object.create
-    ? function (o, m, k, k2) {
-        if (k2 === undefined) k2 = k
-        var desc = Object.getOwnPropertyDescriptor(m, k)
-        if (
-          !desc ||
-          ('get' in desc ? !m.__esModule : desc.writable || desc.configurable)
-        ) {
-          desc = {
-            enumerable: true,
-            get: function () {
-              return m[k]
-            }
-          }
-        }
-        Object.defineProperty(o, k2, desc)
-      }
-    : function (o, m, k, k2) {
-        if (k2 === undefined) k2 = k
-        o[k2] = m[k]
-      })
-var __setModuleDefault =
-  (this && this.__setModuleDefault) ||
-  (Object.create
-    ? function (o, v) {
-        Object.defineProperty(o, 'default', { enumerable: true, value: v })
-      }
-    : function (o, v) {
-        o['default'] = v
-      })
-var __importStar =
-  (this && this.__importStar) ||
-  function (mod) {
-    if (mod && mod.__esModule) return mod
-    var result = {}
-    if (mod != null)
-      for (var k in mod)
-        if (k !== 'default' && Object.prototype.hasOwnProperty.call(mod, k))
-          __createBinding(result, mod, k)
-    __setModuleDefault(result, mod)
-    return result
-  }
-var __importDefault =
-  (this && this.__importDefault) ||
-  function (mod) {
-    return mod && mod.__esModule ? mod : { default: mod }
-  }
-Object.defineProperty(exports, '__esModule', { value: true })
-const grpc_js_1 = require('@grpc/grpc-js')
-const os = __importStar(require('node:os'))
-const iterator_1 = __importDefault(require('../util/iterator'))
+import {
+  Metadata,
+  MetadataValue,
+  UntypedServiceImplementation
+} from '@grpc/grpc-js'
+import * as os from 'node:os'
+import iterator from '../util/iterator'
+
 class ClientProxy {
-  _getFuncStreamWay(func) {
+  private _getFuncStreamWay(func: any): {
+    requestStream: boolean
+    responseStream: boolean
+  } {
     const { requestStream, responseStream } = func
     return { requestStream, responseStream }
   }
-  _prepareMetadata(metadata, options, basicMeta) {
-    if (metadata instanceof grpc_js_1.Metadata) {
+
+  private _prepareMetadata(
+    metadata: Metadata | Record<string, unknown>,
+    options: Record<string, unknown>,
+    basicMeta: Record<string, unknown>
+  ): [Metadata, Record<string, unknown>] {
+    if (metadata instanceof Metadata) {
       options = { ...options }
     } else {
       options = { ...metadata }
-      metadata = new grpc_js_1.Metadata()
+      metadata = new Metadata()
     }
+
     if (basicMeta.hostname) {
-      metadata.add('x-client-hostname', basicMeta.hostname)
+      metadata.add('x-client-hostname', basicMeta.hostname as MetadataValue)
     }
+
     if (basicMeta.appName) {
-      metadata.add('x-client-app-name', basicMeta.appName)
+      metadata.add('x-client-app-name', basicMeta.appName as MetadataValue)
     }
+
     return [metadata, options]
   }
-  _handlerError(err, basicMeta) {
-    const newError = new Error()
+
+  private _handlerError(err: any, basicMeta: Record<string, unknown>) {
+    const newError = new Error() as {
+      name: string
+      code: string
+      message: string
+      stack: string
+    }
+
     newError.name = 'GrpcClientError'
     newError.code = err.code
     newError.message = `${basicMeta.fullServiceName} (${err.message})`
-    const stacks = newError.stack.split('\n')
+
+    const stacks = newError.stack!.split('\n')
     newError.stack = [
       stacks[0],
       ...stacks.slice(2),
       '    ...',
-      ...err.stack.split('\n').slice(1, 3)
+      ...(err.stack!.split('\n').slice(1, 3) as string[])
     ].join('\n')
+
     return newError
   }
-  _setDeadline(options, defaultOptions, basicMeta) {
+
+  private _setDeadline(
+    options: { deadline?: Date; timeout?: number },
+    defaultOptions: Record<string, unknown>,
+    basicMeta: { fullServiceName?: string }
+  ): { deadline?: Date } {
     if (!options.deadline) {
       const timeout = options.timeout || defaultOptions.timeout
-      const deadline = new Date(Date.now() + timeout)
+      const deadline = new Date(Date.now() + (timeout as number))
       options.deadline = deadline
       delete options.timeout
     }
     return options
   }
-  _promisifyUnaryMethod(client, func, defaultOptions, basicMeta) {
-    const asyncUnaryMethod = async (request, metadata, options) => {
+
+  private _promisifyUnaryMethod(
+    client: UntypedServiceImplementation,
+    func: any,
+    defaultOptions: Record<string, unknown>,
+    basicMeta: Record<string, unknown>
+  ): any {
+    const asyncUnaryMethod = async (
+      request: any,
+      metadata: Metadata,
+      options: Record<string, unknown>
+    ): Promise<any> => {
       if (typeof options === 'function') {
         throw new Error(
           'gRPCity: AsyncFunction should not contain a callback function'
@@ -106,22 +95,26 @@ class ClientProxy {
           'gRPCity: AsyncFunction should not contain a callback function'
         )
       }
+
       ;[metadata, options] = this._prepareMetadata(metadata, options, basicMeta)
       options = this._setDeadline(options, defaultOptions, basicMeta)
+
       return new Promise((resolve, reject) => {
-        const result = {}
-        const argumentsList = [request, metadata, options]
-        argumentsList.push((err, response) => {
+        const result: { response?: any; metadata?: any; status?: any } = {}
+        const argumentsList: Array<any> = [request, metadata, options]
+        argumentsList.push((err: any, response: any) => {
           if (err) {
             reject(this._handlerError(err, basicMeta))
           }
           result.response = response
         })
+
         const call = func.apply(client, argumentsList)
-        call.on('metadata', metadata => {
+
+        call.on('metadata', (metadata: any) => {
           result.metadata = metadata
         })
-        call.on('status', status => {
+        call.on('status', (status: any) => {
           result.status = status
           resolve(result)
         })
@@ -129,8 +122,17 @@ class ClientProxy {
     }
     return asyncUnaryMethod
   }
-  _promisifyClientStreamMethod(client, func, defaultOptions, basicMeta) {
-    const clientStreamMethod = (metadata, options) => {
+
+  private _promisifyClientStreamMethod(
+    client: UntypedServiceImplementation,
+    func: any,
+    defaultOptions: Record<string, unknown>,
+    basicMeta: Record<string, unknown>
+  ): any {
+    const clientStreamMethod = (
+      metadata: Metadata,
+      options: Record<string, unknown>
+    ): any => {
       if (typeof options === 'function') {
         throw new Error(
           'gRPCity: asyncStreamFunction should not contain a callback function'
@@ -140,18 +142,23 @@ class ClientProxy {
           'gRPCity: asyncStreamFunction should not contain a callback function'
         )
       }
+
       ;[metadata, options] = this._prepareMetadata(metadata, options, basicMeta)
       options = this._setDeadline(options, defaultOptions, basicMeta)
-      const result = {}
-      const argumentsList = [metadata, options]
-      argumentsList.push((err, response) => {
+
+      const result: { response?: any; metadata?: any; status?: any } = {}
+
+      const argumentsList: Array<any> = [metadata, options]
+      argumentsList.push((err: any, response: any) => {
         if (err) {
           throw this._handlerError(err, basicMeta)
         }
         result.response = response
       })
+
       const call = func.apply(client, argumentsList)
-      call.writeAll = messages => {
+
+      call.writeAll = (messages: any[]) => {
         if (Array.isArray(messages)) {
           messages.forEach(message => {
             call.write(message)
@@ -160,23 +167,35 @@ class ClientProxy {
       }
       call.writeEnd = async () => {
         call.end()
-        await new Promise((resolve, reject) => {
-          call.on('metadata', metadata => {
+        await new Promise<void>((resolve, reject) => {
+          call.on('metadata', (metadata: any) => {
             result.metadata = metadata
           })
-          call.on('status', status => {
+          call.on('status', (status: any) => {
             result.status = status
             resolve()
           })
         })
         return result
       }
+
       return call
     }
+
     return clientStreamMethod
   }
-  _promisifyServerStreamMethod(client, func, defaultOptions, basicMeta) {
-    const serverStreamMethod = (request, metadata, options) => {
+
+  private _promisifyServerStreamMethod(
+    client: UntypedServiceImplementation,
+    func: any,
+    defaultOptions: Record<string, unknown>,
+    basicMeta: { fullServiceName?: string }
+  ): any {
+    const serverStreamMethod = (
+      request: any,
+      metadata: Metadata,
+      options: Record<string, unknown>
+    ): any => {
       if (typeof options === 'function') {
         throw new Error(
           'gRPCity: asyncStreamFunction should not contain a callback function'
@@ -186,33 +205,48 @@ class ClientProxy {
           'gRPCity: asyncStreamFunction should not contain a callback function'
         )
       }
+
       ;[metadata, options] = this._prepareMetadata(metadata, options, basicMeta)
       options = this._setDeadline(options, defaultOptions, basicMeta)
+
       const call = func.apply(client, [request, metadata, options])
-      call.on('error', err => {
+
+      call.on('error', (err: Error) => {
         throw this._handlerError(err, basicMeta)
       })
-      const result = {}
+
+      const result: { metadata?: any; status?: any } = {}
       call.readAll = () => {
-        call.on('metadata', metadata => {
+        call.on('metadata', (metadata: any) => {
           result.metadata = metadata
         })
-        call.on('status', status => {
+        call.on('status', (status: any) => {
           result.status = status
         })
-        return (0, iterator_1.default)(call, 'data', {
+        return iterator(call, 'data', {
           resolutionEvents: ['status', 'end']
         })
       }
       call.readEnd = () => {
         return result
       }
+
       return call
     }
+
     return serverStreamMethod
   }
-  _promisifyDuplexStreamMethod(client, func, defaultOptions, basicMeta) {
-    const duplexStreamMethod = (metadata, options) => {
+
+  private _promisifyDuplexStreamMethod(
+    client: UntypedServiceImplementation,
+    func: any,
+    defaultOptions: Record<string, unknown>,
+    basicMeta: { fullServiceName?: string }
+  ): any {
+    const duplexStreamMethod = (
+      metadata: Metadata,
+      options: Record<string, unknown>
+    ): any => {
       if (typeof options === 'function') {
         throw new Error(
           'gRPCity: asyncStreamFunction should not contain a callback function'
@@ -222,10 +256,13 @@ class ClientProxy {
           'gRPCity: asyncStreamFunction should not contain a callback function'
         )
       }
+
       ;[metadata, options] = this._prepareMetadata(metadata, options, basicMeta)
       options = this._setDeadline(options, defaultOptions, basicMeta)
+
       const call = func.apply(client, [metadata, options])
-      call.writeAll = messages => {
+
+      call.writeAll = (messages: any[]) => {
         if (Array.isArray(messages)) {
           messages.forEach(message => {
             call.write(message)
@@ -233,50 +270,72 @@ class ClientProxy {
         }
       }
       call.writeEnd = call.end
-      call.on('error', err => {
+
+      call.on('error', (err: Error) => {
         throw this._handlerError(err, basicMeta)
       })
-      const result = {}
+
+      const result: { metadata?: any; status?: any } = {}
       call.readAll = () => {
-        call.on('metadata', metadata => {
+        call.on('metadata', (metadata: any) => {
           result.metadata = metadata
         })
-        call.on('status', status => {
+        call.on('status', (status: any) => {
           result.status = status
         })
-        return (0, iterator_1.default)(call, 'data', {
+        return iterator(call, 'data', {
           resolutionEvents: ['status', 'end']
         })
       }
       call.readEnd = () => {
         return result
       }
+
       return call
     }
+
     return duplexStreamMethod
   }
-  _keepCallbackMethod(client, func) {
-    const callbackMethod = (...argumentsList) => {
+
+  private _keepCallbackMethod(
+    client: UntypedServiceImplementation,
+    func: any
+  ): (...argumentsList: any[]) => any {
+    const callbackMethod = (...argumentsList: any[]) => {
       return func.apply(client, argumentsList)
     }
     return callbackMethod
   }
-  _proxy(client, defaultOptions = {}, appName) {
+
+  _proxy(
+    client: UntypedServiceImplementation,
+    defaultOptions: Record<string, any> = {},
+    appName?: string
+  ): any {
     defaultOptions = defaultOptions || {}
     defaultOptions.timeout = defaultOptions.timeout || 1000 * 10
+
     const prototype = Object.getPrototypeOf(client)
-    const methodNames = Object.keys(prototype)
+
+    const methodNames: any = Object.keys(prototype)
       .filter(key => prototype[key] && prototype[key].path)
-      .reduce((names, key) => {
+      .reduce((names: any, key) => {
         names[key.toUpperCase()] = prototype[key].path
         return names
       }, {})
-    const basicMeta = { hostname: os.hostname(), appName }
+
+    const basicMeta: Record<string, unknown> = {
+      hostname: os.hostname(),
+      appName
+    }
+
     const target = Object.entries(prototype).reduce(
-      (target, [name, func]) => {
+      (target: any, [name, func]) => {
         if (name !== 'constructor' && typeof func === 'function') {
           basicMeta.fullServiceName = `${methodNames[name.toUpperCase()]}`
+
           const { requestStream, responseStream } = this._getFuncStreamWay(func)
+
           if (!requestStream && !responseStream) {
             // promisify unary method
             target[name] = this._promisifyUnaryMethod(
@@ -286,6 +345,7 @@ class ClientProxy {
               basicMeta
             )
           }
+
           // stream
           if (requestStream && !responseStream) {
             // promisify only client stream method
@@ -314,14 +374,18 @@ class ClientProxy {
               basicMeta
             )
           }
+
           // keep callback method
           target.call[name] = this._keepCallbackMethod(client, func)
         }
+
         return target
       },
       { call: {} }
     )
+
     return target
   }
 }
-exports.default = new ClientProxy()
+
+export default new ClientProxy()
