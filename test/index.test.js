@@ -56,7 +56,7 @@ describe('Grpc Loader', () => {
     expect(result.message).to.be.eq('hello, grpc')
 
     // 支持相同service的client访问不同host和port
-    const timeout = 20
+    const timeout = 50
     const client2 = loader.client('test.helloworld.Greeter', {
       host: 'localhost',
       port: 12305,

@@ -1,6 +1,6 @@
 {
   "name": "grpcity",
-  "version": "1.3.0-beta.1",
+  "version": "1.3.0",
   "description": "A powerful and complete gRPC framework for Node.js",
   "author": "Chakhsu.Lau",
   "license": "MIT",
@@ -21,7 +21,7 @@
     "url": "https://github.com/chakhsu/grpcity/issues"
   },
   "main": "./types/index.js",
-  "typings": "./types/index.d.ts",
+  "types": "./types/index.d.ts",
   "engines": {
     "node": ">=16"
   },
