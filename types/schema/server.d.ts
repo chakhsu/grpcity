@@ -1,2 +1,5 @@
-import Joi = require("joi");
-export let address: Joi.AlternativesSchema<any>;
+import Joi from 'joi';
+declare const serverSchemas: {
+    address: Joi.AlternativesSchema<any>;
+};
+export default serverSchemas;

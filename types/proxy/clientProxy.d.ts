@@ -1,19 +1,15 @@
-declare const _exports: ClientProxy;
-export = _exports;
+import { UntypedServiceImplementation } from '@grpc/grpc-js';
 declare class ClientProxy {
-    _proxy(client: any, defaultOptions?: {}, appName?: undefined): {
-        call: {};
-    };
-    _getFuncStreamWay(func: any): {
-        requestStream: any;
-        responseStream: any;
-    };
-    _promisifyUnaryMethod(client: any, func: any, defaultOptions: any, basicMeta: any): (request: any, metadata: any, options: any) => Promise<any>;
-    _promisifyClientStreamMethod(client: any, func: any, defaultOptions: any, basicMeta: any): (metadata: any, options: any) => any;
-    _promisifyServerStreamMethod(client: any, func: any, defaultOptions: any, basicMeta: any): (request: any, metadata: any, options: any) => any;
-    _promisifyDuplexStreamMethod(client: any, func: any, defaultOptions: any, basicMeta: any): (metadata: any, options: any) => any;
-    _keepCallbackMethod(client: any, func: any): (...argumentsList: any[]) => any;
-    _prepareMetadata(metadata: any, options: any, basicMeta: any): any[];
-    _handlerError(err: any, basicMeta: any): Error;
-    _setDeadline(options: any, defaultOptions: any, basicMeta: any): any;
+    private _getFuncStreamWay;
+    private _prepareMetadata;
+    private _handlerError;
+    private _setDeadline;
+    private _promisifyUnaryMethod;
+    private _promisifyClientStreamMethod;
+    private _promisifyServerStreamMethod;
+    private _promisifyDuplexStreamMethod;
+    private _keepCallbackMethod;
+    _proxy(client: UntypedServiceImplementation, defaultOptions?: Record<string, any>, appName?: string): any;
 }
+declare const _default: ClientProxy;
+export default _default;

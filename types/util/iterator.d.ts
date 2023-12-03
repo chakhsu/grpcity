@@ -1,30 +1,20 @@
-declare function _exports(emitter: any, event: any, options: any): {
-    [Symbol.asyncIterator](): {
-        [Symbol.asyncIterator](): any;
-        next(): Promise<{
-            done: boolean;
-            value: undefined;
-        }>;
-    };
+declare const _default: (emitter: any, event: string | string[], options: any) => {
+    [Symbol.asyncIterator](): any;
     next(): Promise<{
         done: boolean;
-        value: undefined;
+        value: any;
     }>;
     return?: undefined;
 } | {
-    [x: symbol]: () => {
-        [x: symbol]: any;
-        next(): Promise<any>;
-        return(value: any): Promise<{
-            done: boolean;
-            value: any;
-        }>;
-    };
-    next(): Promise<any>;
+    [x: symbol]: () => any;
+    next(): Promise<{
+        done: boolean;
+        value: any;
+    }>;
     return(value: any): Promise<{
         done: boolean;
         value: any;
     }>;
     [Symbol.asyncIterator]?: undefined;
 };
-export = _exports;
+export default _default;

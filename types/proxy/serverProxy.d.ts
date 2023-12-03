@@ -1,37 +1,31 @@
-declare const _exports: ServerProxy;
-export = _exports;
+/// <reference types="node" />
+import * as grpc from '@grpc/grpc-js';
+import { MiddlewareFunction } from '../util/compose';
 declare class ServerProxy {
-    _middleware: any[];
+    private _middleware;
+    private _loader?;
+    private _server?;
+    private _insecureServerCredentials?;
+    constructor();
     _init(loader: any, ...args: any[]): this;
-    _loader: any;
-    _server: grpc.Server | undefined;
-    listen(addr: any, credentials?: undefined): Promise<void>;
+    listen(addr: any, credentials?: grpc.ServerCredentials | undefined): Promise<void>;
     shutdown(): Promise<void>;
     forceShutdown(): void;
-    makeServerCredentials(rootCerts: any, keyCertPairs: any, checkClientCertificate: any): grpc.ServerCredentials;
-    _insecureServerCredentials: grpc.ServerCredentials | undefined;
-    addService(name: any, implementation: any, { exclude, inherit }?: {
-        exclude?: any[] | undefined;
-        inherit: any;
+    makeServerCredentials(rootCerts?: Buffer, keyCertPairs?: grpc.KeyCertPair[], checkClientCertificate?: boolean): grpc.ServerCredentials;
+    addService(name: string, implementation: any, { exclude, inherit }?: {
+        exclude?: string[];
+        inherit?: any;
     }): void;
-    removeService(name: any): void;
-    addMiddleware(...args: any[]): void;
-    _use(fn: any): void;
-    _callbackify(target: any, { exclude, inherit, _implementationType }?: {
-        exclude?: any[] | undefined;
-        inherit: any;
-        _implementationType: any;
-    }): {};
-    _proxy(target: any, key: any, options?: {}): ((call: any, callback: any) => void) | undefined;
-    _createContext(call: any): {
-        path: any;
-        request: any;
-        metadata: any;
-    };
-    _callUnaryProxyMethod(target: any, key: any, composeFunc: any): (call: any, callback: any) => void;
-    _callClientStreamProxyMethod(target: any, key: any, composeFunc: any): (call: any, callback: any) => void;
-    _callServerStreamProxyMethod(target: any, key: any, composeFunc: any): (call: any) => void;
-    _callDuplexStreamProxyMethod(target: any, key: any, composeFunc: any): (call: any) => void;
-    _createInternalErrorStatus(err: any): any;
+    removeService(name: string): void;
+    addMiddleware(...args: MiddlewareFunction[]): void;
+    private _use;
+    private _callbackify;
+    private _proxy;
+    private _createContext;
+    private _callUnaryProxyMethod;
+    private _callClientStreamProxyMethod;
+    private _callServerStreamProxyMethod;
+    private _callDuplexStreamProxyMethod;
+    private _createInternalErrorStatus;
 }
-import grpc = require("@grpc/grpc-js");
+export default ServerProxy;
