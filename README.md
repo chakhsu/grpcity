@@ -103,7 +103,7 @@ class Greeter {
   }
 }
 
-const start = async addr => {
+const start = async (addr) => {
   await loader.init()
 
   const server = loader.initServer()
@@ -123,7 +123,7 @@ Finally, create `client.js` and write the following code in it:
 ```js
 import loader from './loader.js'
 
-const start = async addr => {
+const start = async (addr) => {
   await loader.init()
 
   await loader.initClients({

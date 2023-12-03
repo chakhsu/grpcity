@@ -1,7 +1,7 @@
 'use strict'
 Object.defineProperty(exports, '__esModule', { value: true })
 const symbolAsyncIterator = Symbol.asyncIterator || '@@asyncIterator'
-const normalizeEmitter = emitter => {
+const normalizeEmitter = (emitter) => {
   const addListener =
     emitter.on || emitter.addListener || emitter.addEventListener
   const removeListener =
@@ -14,7 +14,7 @@ const normalizeEmitter = emitter => {
     removeListener: removeListener.bind(emitter)
   }
 }
-const toArray = value => (Array.isArray(value) ? value : [value])
+const toArray = (value) => (Array.isArray(value) ? value : [value])
 exports.default = (emitter, event, options) => {
   if (typeof options === 'function') {
     options = { filter: options }

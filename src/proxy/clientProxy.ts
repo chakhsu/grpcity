@@ -160,7 +160,7 @@ class ClientProxy {
 
       call.writeAll = (messages: any[]) => {
         if (Array.isArray(messages)) {
-          messages.forEach(message => {
+          messages.forEach((message) => {
             call.write(message)
           })
         }
@@ -264,7 +264,7 @@ class ClientProxy {
 
       call.writeAll = (messages: any[]) => {
         if (Array.isArray(messages)) {
-          messages.forEach(message => {
+          messages.forEach((message) => {
             call.write(message)
           })
         }
@@ -318,7 +318,7 @@ class ClientProxy {
     const prototype = Object.getPrototypeOf(client)
 
     const methodNames: any = Object.keys(prototype)
-      .filter(key => prototype[key] && prototype[key].path)
+      .filter((key) => prototype[key] && prototype[key].path)
       .reduce((names: any, key) => {
         names[key.toUpperCase()] = prototype[key].path
         return names

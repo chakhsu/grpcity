@@ -118,10 +118,10 @@ class ClientProxy {
           result.response = response
         })
         const call = func.apply(client, argumentsList)
-        call.on('metadata', metadata => {
+        call.on('metadata', (metadata) => {
           result.metadata = metadata
         })
-        call.on('status', status => {
+        call.on('status', (status) => {
           result.status = status
           resolve(result)
         })
@@ -151,9 +151,9 @@ class ClientProxy {
         result.response = response
       })
       const call = func.apply(client, argumentsList)
-      call.writeAll = messages => {
+      call.writeAll = (messages) => {
         if (Array.isArray(messages)) {
-          messages.forEach(message => {
+          messages.forEach((message) => {
             call.write(message)
           })
         }
@@ -161,10 +161,10 @@ class ClientProxy {
       call.writeEnd = async () => {
         call.end()
         await new Promise((resolve, reject) => {
-          call.on('metadata', metadata => {
+          call.on('metadata', (metadata) => {
             result.metadata = metadata
           })
-          call.on('status', status => {
+          call.on('status', (status) => {
             result.status = status
             resolve()
           })
@@ -189,15 +189,15 @@ class ClientProxy {
       ;[metadata, options] = this._prepareMetadata(metadata, options, basicMeta)
       options = this._setDeadline(options, defaultOptions, basicMeta)
       const call = func.apply(client, [request, metadata, options])
-      call.on('error', err => {
+      call.on('error', (err) => {
         throw this._handlerError(err, basicMeta)
       })
       const result = {}
       call.readAll = () => {
-        call.on('metadata', metadata => {
+        call.on('metadata', (metadata) => {
           result.metadata = metadata
         })
-        call.on('status', status => {
+        call.on('status', (status) => {
           result.status = status
         })
         return (0, iterator_1.default)(call, 'data', {
@@ -225,23 +225,23 @@ class ClientProxy {
       ;[metadata, options] = this._prepareMetadata(metadata, options, basicMeta)
       options = this._setDeadline(options, defaultOptions, basicMeta)
       const call = func.apply(client, [metadata, options])
-      call.writeAll = messages => {
+      call.writeAll = (messages) => {
         if (Array.isArray(messages)) {
-          messages.forEach(message => {
+          messages.forEach((message) => {
             call.write(message)
           })
         }
       }
       call.writeEnd = call.end
-      call.on('error', err => {
+      call.on('error', (err) => {
         throw this._handlerError(err, basicMeta)
       })
       const result = {}
       call.readAll = () => {
-        call.on('metadata', metadata => {
+        call.on('metadata', (metadata) => {
           result.metadata = metadata
         })
-        call.on('status', status => {
+        call.on('status', (status) => {
           result.status = status
         })
         return (0, iterator_1.default)(call, 'data', {
@@ -266,7 +266,7 @@ class ClientProxy {
     defaultOptions.timeout = defaultOptions.timeout || 1000 * 10
     const prototype = Object.getPrototypeOf(client)
     const methodNames = Object.keys(prototype)
-      .filter(key => prototype[key] && prototype[key].path)
+      .filter((key) => prototype[key] && prototype[key].path)
       .reduce((names, key) => {
         names[key.toUpperCase()] = prototype[key].path
         return names

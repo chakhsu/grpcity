@@ -10,7 +10,7 @@ exports.compose = void 0
  * @return {Function}
  * @api public
  */
-const compose = middleware => {
+const compose = (middleware) => {
   if (!Array.isArray(middleware))
     throw new TypeError('Middleware stack must be an array!')
   for (const fn of middleware) {

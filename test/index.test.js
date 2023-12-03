@@ -17,7 +17,7 @@ describe('Grpc Loader', () => {
       }
 
       if (metadata.get('x-long-delay').length > 0) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * 10))
+        await new Promise((resolve) => setTimeout(resolve, 1000 * 10))
       }
 
       expect(this).to.be.an('object')
@@ -41,7 +41,7 @@ describe('Grpc Loader', () => {
 
     const server = loader.initServer()
     const servicers = [new Greeter()]
-    await Promise.all(servicers.map(async s => s.init(server)))
+    await Promise.all(servicers.map(async (s) => s.init(server)))
     const addr = { host: '127.0.0.1', port: 12305 }
     await server.listen(addr)
 
@@ -105,7 +105,7 @@ describe('Grpc Loader', () => {
 
     const server = loader.initServer()
     const servicers = [new Greeter()]
-    await Promise.all(servicers.map(async s => s.init(server)))
+    await Promise.all(servicers.map(async (s) => s.init(server)))
     const addr = { host: '127.0.0.1', port: 12306 }
     await server.listen(addr)
 
@@ -138,7 +138,7 @@ describe('Grpc Loader', () => {
         }
       )
 
-      call.on('metadata', metadata => {
+      call.on('metadata', (metadata) => {
         expect(metadata.get('x-cache-control'))
           .to.be.an('array')
           .deep.eq(['max-age=100'])

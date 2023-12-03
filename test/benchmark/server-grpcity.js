@@ -2,12 +2,12 @@ const GrpcLoader = require('../../types')
 const path = require('path')
 
 const implementation = {
-  sayHello: async call => {
+  sayHello: async (call) => {
     return { message: 'Hello ' + call.request.name }
   }
 }
 
-const start = async addr => {
+const start = async (addr) => {
   const loader = new GrpcLoader({
     location: path.resolve(__dirname, './'),
     files: ['helloworld.proto']

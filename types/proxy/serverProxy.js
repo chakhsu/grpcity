@@ -96,7 +96,7 @@ class ServerProxy {
       return
     }
     await new Promise((resolve, reject) => {
-      this._server.tryShutdown(err => {
+      this._server.tryShutdown((err) => {
         if (err) {
           reject(err)
         } else {
@@ -133,7 +133,7 @@ class ServerProxy {
   addService(name, implementation, { exclude = [], inherit } = {}) {
     const service = this._loader.service(name)
     const options = { exclude, inherit, _implementationType: {} }
-    Object.keys(service).forEach(key => {
+    Object.keys(service).forEach((key) => {
       const { requestStream, responseStream } = service[key]
       options._implementationType[service[key].originalName] = {
         requestStream,
@@ -156,14 +156,14 @@ class ServerProxy {
     )
     if (args.length === 1) {
       if (Array.isArray(args[0])) {
-        args[0].forEach(fn => {
+        args[0].forEach((fn) => {
           this._use(fn)
         })
       } else {
         this._use(args[0])
       }
     } else {
-      args.forEach(fn => {
+      args.forEach((fn) => {
         this._use(fn)
       })
     }
@@ -255,7 +255,7 @@ class ServerProxy {
         const handleResponse = async () => {
           ctx.response = await target[key](call)
         }
-        await composeFunc(ctx, handleResponse).catch(err => {
+        await composeFunc(ctx, handleResponse).catch((err) => {
           callback(this._createInternalErrorStatus(err))
         })
         callback(null, ctx.response)
@@ -274,7 +274,7 @@ class ServerProxy {
         const handleResponse = async () => {
           ctx.response = await target[key](call)
         }
-        await composeFunc(ctx, handleResponse).catch(err => {
+        await composeFunc(ctx, handleResponse).catch((err) => {
           callback(this._createInternalErrorStatus(err))
         })
         callback(null, ctx.response)
@@ -282,11 +282,11 @@ class ServerProxy {
     }
   }
   _callServerStreamProxyMethod(target, key, composeFunc) {
-    return call => {
+    return (call) => {
       const ctx = this._createContext(call)
-      call.writeAll = messages => {
+      call.writeAll = (messages) => {
         if (Array.isArray(messages)) {
-          messages.forEach(message => {
+          messages.forEach((message) => {
             call.write(message)
           })
         }
@@ -296,7 +296,7 @@ class ServerProxy {
         const handleResponse = async () => {
           await target[key](call)
         }
-        await composeFunc(ctx, handleResponse).catch(err => {
+        await composeFunc(ctx, handleResponse).catch((err) => {
           call.destroy(this._createInternalErrorStatus(err))
         })
         call.end()
@@ -304,11 +304,11 @@ class ServerProxy {
     }
   }
   _callDuplexStreamProxyMethod(target, key, composeFunc) {
-    return call => {
+    return (call) => {
       const ctx = this._createContext(call)
-      call.writeAll = messages => {
+      call.writeAll = (messages) => {
         if (Array.isArray(messages)) {
-          messages.forEach(message => {
+          messages.forEach((message) => {
             call.write(message)
           })
         }
@@ -322,7 +322,7 @@ class ServerProxy {
         const handleResponse = async () => {
           await target[key](call)
         }
-        await composeFunc(ctx, handleResponse).catch(err => {
+        await composeFunc(ctx, handleResponse).catch((err) => {
           call.destroy(this._createInternalErrorStatus(err))
         })
         call.end()

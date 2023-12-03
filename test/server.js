@@ -2,7 +2,7 @@ const GrpcLoader = require('../types')
 const path = require('path')
 const fs = require('fs')
 
-const timeout = ms => {
+const timeout = (ms) => {
   return new Promise((resolve, reject) => setTimeout(resolve, ms))
 }
 
@@ -24,7 +24,7 @@ class Greeter {
     }
 
     if (metadata.get('x-long-delay').length > 0) {
-      await new Promise(resolve => setTimeout(resolve, 1000 * 10))
+      await new Promise((resolve) => setTimeout(resolve, 1000 * 10))
     }
     await timeout(1000)
     this.count++
@@ -54,7 +54,7 @@ class Hellor {
     }
 
     if (metadata.get('x-long-delay').length > 0) {
-      await new Promise(resolve => setTimeout(resolve, 1000 * 10))
+      await new Promise((resolve) => setTimeout(resolve, 1000 * 10))
     }
 
     return { message: `hello, ${call.request.name || 'world'}` }
@@ -83,7 +83,7 @@ const middlewareB = async (ctx, next) => {
   console.log('middlewareB: 2', ctx, endTime, endTime - beginTime)
 }
 
-const start = async addr => {
+const start = async (addr) => {
   const loader = new GrpcLoader({
     location: path.resolve(__dirname, 'protos'),
     files: ['test/helloworld/helloworld.proto']
@@ -100,7 +100,7 @@ const start = async addr => {
   // server.addMiddleware(middlewareB)
 
   const servicers = [new Greeter(), new Hellor()]
-  await Promise.all(servicers.map(async s => s.init(server)))
+  await Promise.all(servicers.map(async (s) => s.init(server)))
 
   const credentials = server.makeServerCredentials(
     fs.readFileSync(path.resolve(__dirname, 'certs/ca.crt')),

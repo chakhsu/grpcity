@@ -65,7 +65,7 @@ class GrpcLoader {
       this._appName = appName
 
       loadOptions.includeDirs = this._protoFiles
-        .map(p => p.location)
+        .map((p) => p.location)
         .concat(loadOptions.includeDirs || [])
       const files = this._protoFiles.reduce((result, p) => {
         if (p.files && p.files.length > 0) {
@@ -115,7 +115,7 @@ class GrpcLoader {
     }
 
     const serviceNames = Object.keys(services)
-    serviceNames.forEach(name => {
+    serviceNames.forEach((name) => {
       const isDefaultClient = true
       const addr = _.isString(services[name])
         ? services[name]
@@ -346,7 +346,7 @@ class GrpcLoader {
     if (typeof initialValues === 'object') {
       Object.entries(initialValues).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value)) {
-          value.map(v => meta.add(key, _.isString(v) ? v : Buffer.from(v)))
+          value.map((v) => meta.add(key, _.isString(v) ? v : Buffer.from(v)))
         } else {
           meta.add(key, _.isString(value) ? value : Buffer.from(value))
         }

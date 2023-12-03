@@ -16,7 +16,7 @@ class Stream {
     metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
     call.sendMetadata(metadata)
 
-    call.on('data', data => {
+    call.on('data', (data) => {
       console.log(data)
     })
     call.on('end', () => {
@@ -41,7 +41,7 @@ class Stream {
     call.sendMetadata(metadata)
 
     call.write({ message: 'emmm...' })
-    call.on('data', chunk => {
+    call.on('data', (chunk) => {
       console.log(chunk.message)
       if (chunk.message === 'Hello!') {
         call.write({ message: 'Hello too.' })
@@ -63,7 +63,7 @@ class Stream {
   }
 }
 
-const start = async addr => {
+const start = async (addr) => {
   const loader = new GrpcLoader({
     location: path.resolve(__dirname, './'),
     files: ['stream.proto']

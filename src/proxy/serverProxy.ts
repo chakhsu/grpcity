@@ -55,7 +55,7 @@ class ServerProxy {
     }
 
     await new Promise<void>((resolve, reject) => {
-      this._server!.tryShutdown(err => {
+      this._server!.tryShutdown((err) => {
         if (err) {
           reject(err)
         } else {
@@ -106,7 +106,7 @@ class ServerProxy {
     const service = this._loader.service(name)
 
     const options: any = { exclude, inherit, _implementationType: {} }
-    Object.keys(service).forEach(key => {
+    Object.keys(service).forEach((key) => {
       const { requestStream, responseStream } = service[key]
       options._implementationType[service[key].originalName] = {
         requestStream,
@@ -135,14 +135,14 @@ class ServerProxy {
     )
     if (args.length === 1) {
       if (Array.isArray(args[0])) {
-        args[0].forEach(fn => {
+        args[0].forEach((fn) => {
           this._use(fn)
         })
       } else {
         this._use(args[0])
       }
     } else {
-      args.forEach(fn => {
+      args.forEach((fn) => {
         this._use(fn)
       })
     }
@@ -298,7 +298,7 @@ class ServerProxy {
 
       call.writeAll = (messages: any[]) => {
         if (Array.isArray(messages)) {
-          messages.forEach(message => {
+          messages.forEach((message) => {
             call.write(message)
           })
         }
@@ -327,7 +327,7 @@ class ServerProxy {
 
       call.writeAll = (messages: any[]) => {
         if (Array.isArray(messages)) {
-          messages.forEach(message => {
+          messages.forEach((message) => {
             call.write(message)
           })
         }

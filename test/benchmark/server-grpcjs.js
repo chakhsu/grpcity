@@ -18,7 +18,7 @@ const implementation = {
   }
 }
 
-const start = addr => {
+const start = (addr) => {
   const server = new grpc.Server()
   server.addService(helloProto.Greeter.service, implementation)
   server.bindAsync(addr, grpc.ServerCredentials.createInsecure(), () => {

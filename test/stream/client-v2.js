@@ -1,7 +1,7 @@
 const GrpcLoader = require('../../types')
 const path = require('path')
 
-const start = async addr => {
+const start = async (addr) => {
   const loader = new GrpcLoader({
     location: path.resolve(__dirname, './'),
     files: ['stream.proto']

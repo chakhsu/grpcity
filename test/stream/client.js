@@ -1,7 +1,7 @@
 const GrpcLoader = require('../../types')
 const path = require('path')
 
-const start = async addr => {
+const start = async (addr) => {
   const loader = new GrpcLoader({
     location: path.resolve(__dirname, './'),
     files: ['stream.proto']
@@ -53,7 +53,7 @@ const start = async addr => {
   const serverStreamHelloCall = client.call.serverStreamHello({
     message: 'Hello! How are you?'
   })
-  serverStreamHelloCall.on('data', chunk => {
+  serverStreamHelloCall.on('data', (chunk) => {
     console.log(chunk)
   })
   serverStreamHelloCall.on('end', () => {
@@ -66,7 +66,7 @@ const start = async addr => {
   mutualStreamHelloCall.write({ message: 'How are you?' })
   mutualStreamHelloCall.write({ message: 'other thing x' })
 
-  mutualStreamHelloCall.on('data', data => {
+  mutualStreamHelloCall.on('data', (data) => {
     console.log(data)
     if (data.message === 'delay 1s') {
       mutualStreamHelloCall.write({ message: 'ok, I known you delay 1s' })

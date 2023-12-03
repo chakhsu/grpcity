@@ -91,7 +91,7 @@ class Greeter {
   }
 }
 
-const start = async addr => {
+const start = async (addr) => {
   await loader.init()
 
   const server = loader.initServer()
@@ -111,7 +111,7 @@ start('127.0.0.1:9099')
 ```js
 import loader from './loader.js'
 
-const start = async addr => {
+const start = async (addr) => {
   await loader.init()
 
   await loader.initClients({
