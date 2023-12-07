@@ -36,11 +36,7 @@ const start = async (addr) => {
   const greeterClient = loader.client('test.helloworld.Greeter', {
     credentials
   })
-  const {
-    status,
-    metadata,
-    response: result
-  } = await greeterClient.sayHello({ name: 'greeter' }, meta)
+  const { status, metadata, response: result } = await greeterClient.sayHello({ name: 'greeter' }, meta)
   console.log('greeterClient.sayHello', result)
   console.log('greeterClient.sayHello metadata', metadata)
   console.log('greeterClient.sayHello status', status)

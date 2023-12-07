@@ -1,7 +1,4 @@
-export type MiddlewareFunction = (
-  context: any,
-  next: () => Promise<any>
-) => Promise<any>
+export type MiddlewareFunction = (context: any, next: () => Promise<any>) => Promise<any>
 /**
  * Compose `middleware` returning
  * a fully valid middleware comprised
@@ -11,6 +8,4 @@ export type MiddlewareFunction = (
  * @return {Function}
  * @api public
  */
-export declare const compose: (
-  middleware: MiddlewareFunction[]
-) => (context: any, next: () => Promise<any>) => Promise<any>
+export declare const compose: (middleware: MiddlewareFunction[]) => (context: any, next: () => Promise<any>) => Promise<any>

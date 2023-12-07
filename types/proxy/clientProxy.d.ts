@@ -9,11 +9,7 @@ declare class ClientProxy {
   private _promisifyServerStreamMethod
   private _promisifyDuplexStreamMethod
   private _keepCallbackMethod
-  _proxy(
-    client: UntypedServiceImplementation,
-    defaultOptions?: Record<string, any>,
-    appName?: string
-  ): any
+  _proxy(client: UntypedServiceImplementation, defaultOptions?: Record<string, any>, appName?: string): any
 }
 declare const _default: ClientProxy
 export default _default

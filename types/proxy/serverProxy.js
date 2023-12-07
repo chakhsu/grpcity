@@ -5,10 +5,7 @@ var __createBinding =
     ? function (o, m, k, k2) {
         if (k2 === undefined) k2 = k
         var desc = Object.getOwnPropertyDescriptor(m, k)
-        if (
-          !desc ||
-          ('get' in desc ? !m.__esModule : desc.writable || desc.configurable)
-        ) {
+        if (!desc || ('get' in desc ? !m.__esModule : desc.writable || desc.configurable)) {
           desc = {
             enumerable: true,
             get: function () {
@@ -36,10 +33,7 @@ var __importStar =
   function (mod) {
     if (mod && mod.__esModule) return mod
     var result = {}
-    if (mod != null)
-      for (var k in mod)
-        if (k !== 'default' && Object.prototype.hasOwnProperty.call(mod, k))
-          __createBinding(result, mod, k)
+    if (mod != null) for (var k in mod) if (k !== 'default' && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k)
     __setModuleDefault(result, mod)
     return result
   }
@@ -71,24 +65,14 @@ class ServerProxy {
     return this
   }
   async listen(addr, credentials = undefined) {
-    ;(0, node_assert_1.default)(
-      this._server,
-      'must be first init() server before server listen()'
-    )
+    ;(0, node_assert_1.default)(this._server, 'must be first init() server before server listen()')
     Joi.assert(addr, server_1.default.address, 'server listen() params Error')
     const url = _.isString(addr) ? addr : `${addr.host}:${addr.port}`
     const bindPort = await new Promise((resolve, reject) => {
-      this._server.bindAsync(
-        url,
-        credentials || this.makeServerCredentials(),
-        (err, result) => (err ? reject(err) : resolve(result))
-      )
+      this._server.bindAsync(url, credentials || this.makeServerCredentials(), (err, result) => (err ? reject(err) : resolve(result)))
     })
     const port = addr.port ? addr.port : Number(addr.match(/:(\d+)/)[1])
-    ;(0, node_assert_1.default)(
-      bindPort === port,
-      'server bind port not to be right'
-    )
+    ;(0, node_assert_1.default)(bindPort === port, 'server bind port not to be right')
     this._server.start()
   }
   async shutdown() {
@@ -117,15 +101,10 @@ class ServerProxy {
   }
   makeServerCredentials(rootCerts, keyCertPairs, checkClientCertificate) {
     if (rootCerts && keyCertPairs) {
-      return grpc.ServerCredentials.createSsl(
-        rootCerts,
-        keyCertPairs,
-        checkClientCertificate
-      )
+      return grpc.ServerCredentials.createSsl(rootCerts, keyCertPairs, checkClientCertificate)
     } else {
       if (!this._insecureServerCredentials) {
-        this._insecureServerCredentials =
-          grpc.ServerCredentials.createInsecure()
+        this._insecureServerCredentials = grpc.ServerCredentials.createInsecure()
       }
       return this._insecureServerCredentials
     }
@@ -143,17 +122,11 @@ class ServerProxy {
     this._server.addService(service, this._callbackify(implementation, options))
   }
   removeService(name) {
-    ;(0, node_assert_1.default)(
-      this._server,
-      'must be first init() server before server removeService()'
-    )
+    ;(0, node_assert_1.default)(this._server, 'must be first init() server before server removeService()')
     this._server.removeService(this._loader.service(name))
   }
   addMiddleware(...args) {
-    ;(0, node_assert_1.default)(
-      args.length >= 1,
-      'server addMiddleware() takes at least one argument.'
-    )
+    ;(0, node_assert_1.default)(args.length >= 1, 'server addMiddleware() takes at least one argument.')
     if (args.length === 1) {
       if (Array.isArray(args[0])) {
         args[0].forEach((fn) => {
@@ -169,48 +142,23 @@ class ServerProxy {
     }
   }
   _use(fn) {
-    if (typeof fn !== 'function')
-      throw new TypeError(
-        'grpcity loader server middleware must be a function!'
-      )
+    if (typeof fn !== 'function') throw new TypeError('grpcity loader server middleware must be a function!')
     this._middleware.push(fn)
   }
   _callbackify(target, { exclude = [], inherit, _implementationType }) {
-    ;(0, node_assert_1.default)(
-      typeof target === 'object',
-      'Must callbackify an object'
-    )
-    ;(0, node_assert_1.default)(
-      Array.isArray(exclude),
-      'options.exclude must be an array of strings'
-    )
-    const protoPropertyNames = Object.getOwnPropertyNames(
-      Object.getPrototypeOf({})
-    )
+    ;(0, node_assert_1.default)(typeof target === 'object', 'Must callbackify an object')
+    ;(0, node_assert_1.default)(Array.isArray(exclude), 'options.exclude must be an array of strings')
+    const protoPropertyNames = Object.getOwnPropertyNames(Object.getPrototypeOf({}))
     exclude.push(...protoPropertyNames)
     const allPropertyNames = [
-      ...new Set([
-        ...Object.keys(target),
-        ...Object.getOwnPropertyNames(Object.getPrototypeOf(target)),
-        ...(inherit && inherit.prototype
-          ? Object.getOwnPropertyNames(inherit.prototype)
-          : [])
-      ])
+      ...new Set([...Object.keys(target), ...Object.getOwnPropertyNames(Object.getPrototypeOf(target)), ...(inherit && inherit.prototype ? Object.getOwnPropertyNames(inherit.prototype) : [])])
     ]
     const methods = {}
     for (const key of allPropertyNames) {
       const fn = target[key]
-      if (
-        typeof fn === 'function' &&
-        key !== 'constructor' &&
-        !exclude.includes(key)
-      ) {
+      if (typeof fn === 'function' && key !== 'constructor' && !exclude.includes(key)) {
         if (util.types.isAsyncFunction(fn)) {
-          const eglWrapFunction = this._proxy(
-            target,
-            key,
-            _implementationType[key]
-          )
+          const eglWrapFunction = this._proxy(target, key, _implementationType[key])
           methods[key] = eglWrapFunction
         } else {
           methods[key] = fn

@@ -1,12 +1,8 @@
 const symbolAsyncIterator = Symbol.asyncIterator || '@@asyncIterator'
 
-const normalizeEmitter = (
-  emitter: any
-): { addListener: Function; removeListener: Function } => {
-  const addListener =
-    emitter.on || emitter.addListener || emitter.addEventListener
-  const removeListener =
-    emitter.off || emitter.removeListener || emitter.removeEventListener
+const normalizeEmitter = (emitter: any): { addListener: Function; removeListener: Function } => {
+  const addListener = emitter.on || emitter.addListener || emitter.addEventListener
+  const removeListener = emitter.off || emitter.removeListener || emitter.removeEventListener
 
   if (!addListener || !removeListener) {
     throw new TypeError('Emitter is not compatible')
@@ -37,12 +33,9 @@ export default (emitter: any, event: string | string[], options: any) => {
   }
 
   const { limit } = options
-  const isValidLimit =
-    limit >= 0 && (limit === Infinity || Number.isInteger(limit))
+  const isValidLimit = limit >= 0 && (limit === Infinity || Number.isInteger(limit))
   if (!isValidLimit) {
-    throw new TypeError(
-      'The `limit` option should be a non-negative integer or Infinity'
-    )
+    throw new TypeError('The `limit` option should be a non-negative integer or Infinity')
   }
 
   if (limit === 0) {
@@ -181,9 +174,7 @@ export default (emitter: any, event: string | string[], options: any) => {
         }
       }
 
-      return new Promise((resolve, reject) =>
-        nextQueue.push({ resolve, reject })
-      )
+      return new Promise((resolve, reject) => nextQueue.push({ resolve, reject }))
     },
     async return(value: any): Promise<{ done: boolean; value: any }> {
       cancel()

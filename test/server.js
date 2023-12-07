@@ -106,9 +106,7 @@ const start = async (addr) => {
     fs.readFileSync(path.resolve(__dirname, 'certs/ca.crt')),
     [
       {
-        private_key: fs.readFileSync(
-          path.resolve(__dirname, 'certs/server.key')
-        ),
+        private_key: fs.readFileSync(path.resolve(__dirname, 'certs/server.key')),
         cert_chain: fs.readFileSync(path.resolve(__dirname, 'certs/server.crt'))
       }
     ],

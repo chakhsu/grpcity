@@ -67,10 +67,7 @@ describe('Grpc Loader', () => {
     expect(result2.message).to.be.eq('hello, grpc')
 
     try {
-      await client2.sayHello(
-        { name: 'grpc' },
-        loader.makeMetadata({ 'x-throw-error': 'true' })
-      )
+      await client2.sayHello({ name: 'grpc' }, loader.makeMetadata({ 'x-throw-error': 'true' }))
       expect.fail('should not run here')
     } catch (err) {
       expect(/x-throw-error/.test(err.message)).to.be.eq(true)
@@ -79,10 +76,7 @@ describe('Grpc Loader', () => {
 
     const start = Date.now()
     try {
-      await client2.sayHello(
-        { name: 'grpc' },
-        loader.makeMetadata({ 'x-long-delay': 'true' })
-      )
+      await client2.sayHello({ name: 'grpc' }, loader.makeMetadata({ 'x-long-delay': 'true' }))
       expect.fail('should not run here')
     } catch (err) {
       expect(Date.now() - start).to.be.lte(timeout * 2)
@@ -123,28 +117,20 @@ describe('Grpc Loader', () => {
         'x-business-id': ['grpcity', 'testing'],
         'x-timestamp-client': 'begin=' + timestampClientSend.toISOString()
       })
-      const call = client.call.sayHello(
-        { name: 'grpc' },
-        meta,
-        (err, result) => {
-          if (err) {
-            reject(err)
-            return
-          }
-          expect(result).to.be.an('object')
-          expect(result.message).to.be.eq('hello, grpc')
-
-          resolve()
+      const call = client.call.sayHello({ name: 'grpc' }, meta, (err, result) => {
+        if (err) {
+          reject(err)
+          return
         }
-      )
+        expect(result).to.be.an('object')
+        expect(result.message).to.be.eq('hello, grpc')
+
+        resolve()
+      })
 
       call.on('metadata', (metadata) => {
-        expect(metadata.get('x-cache-control'))
-          .to.be.an('array')
-          .deep.eq(['max-age=100'])
-        expect(metadata.get('x-business-id'))
-          .to.be.an('array')
-          .deep.eq(['grpcity, testing'])
+        expect(metadata.get('x-cache-control')).to.be.an('array').deep.eq(['max-age=100'])
+        expect(metadata.get('x-business-id')).to.be.an('array').deep.eq(['grpcity, testing'])
 
         const timestamps = metadata.get('x-timestamp-server')
         expect(timestamps).to.be.an('array').with.lengthOf(1)

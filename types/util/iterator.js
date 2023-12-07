@@ -2,10 +2,8 @@
 Object.defineProperty(exports, '__esModule', { value: true })
 const symbolAsyncIterator = Symbol.asyncIterator || '@@asyncIterator'
 const normalizeEmitter = (emitter) => {
-  const addListener =
-    emitter.on || emitter.addListener || emitter.addEventListener
-  const removeListener =
-    emitter.off || emitter.removeListener || emitter.removeEventListener
+  const addListener = emitter.on || emitter.addListener || emitter.addEventListener
+  const removeListener = emitter.off || emitter.removeListener || emitter.removeEventListener
   if (!addListener || !removeListener) {
     throw new TypeError('Emitter is not compatible')
   }
@@ -29,12 +27,9 @@ exports.default = (emitter, event, options) => {
     ...options
   }
   const { limit } = options
-  const isValidLimit =
-    limit >= 0 && (limit === Infinity || Number.isInteger(limit))
+  const isValidLimit = limit >= 0 && (limit === Infinity || Number.isInteger(limit))
   if (!isValidLimit) {
-    throw new TypeError(
-      'The `limit` option should be a non-negative integer or Infinity'
-    )
+    throw new TypeError('The `limit` option should be a non-negative integer or Infinity')
   }
   if (limit === 0) {
     // Return an empty async iterator to avoid any further cost
@@ -145,9 +140,7 @@ exports.default = (emitter, event, options) => {
           value: undefined
         }
       }
-      return new Promise((resolve, reject) =>
-        nextQueue.push({ resolve, reject })
-      )
+      return new Promise((resolve, reject) => nextQueue.push({ resolve, reject }))
     },
     async return(value) {
       cancel()

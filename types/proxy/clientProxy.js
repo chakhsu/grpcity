@@ -5,10 +5,7 @@ var __createBinding =
     ? function (o, m, k, k2) {
         if (k2 === undefined) k2 = k
         var desc = Object.getOwnPropertyDescriptor(m, k)
-        if (
-          !desc ||
-          ('get' in desc ? !m.__esModule : desc.writable || desc.configurable)
-        ) {
+        if (!desc || ('get' in desc ? !m.__esModule : desc.writable || desc.configurable)) {
           desc = {
             enumerable: true,
             get: function () {
@@ -36,10 +33,7 @@ var __importStar =
   function (mod) {
     if (mod && mod.__esModule) return mod
     var result = {}
-    if (mod != null)
-      for (var k in mod)
-        if (k !== 'default' && Object.prototype.hasOwnProperty.call(mod, k))
-          __createBinding(result, mod, k)
+    if (mod != null) for (var k in mod) if (k !== 'default' && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k)
     __setModuleDefault(result, mod)
     return result
   }
@@ -78,12 +72,7 @@ class ClientProxy {
     newError.code = err.code
     newError.message = `${basicMeta.fullServiceName} (${err.message})`
     const stacks = newError.stack.split('\n')
-    newError.stack = [
-      stacks[0],
-      ...stacks.slice(2),
-      '    ...',
-      ...err.stack.split('\n').slice(1, 3)
-    ].join('\n')
+    newError.stack = [stacks[0], ...stacks.slice(2), '    ...', ...err.stack.split('\n').slice(1, 3)].join('\n')
     return newError
   }
   _setDeadline(options, defaultOptions, basicMeta) {
@@ -98,13 +87,9 @@ class ClientProxy {
   _promisifyUnaryMethod(client, func, defaultOptions, basicMeta) {
     const asyncUnaryMethod = async (request, metadata, options) => {
       if (typeof options === 'function') {
-        throw new Error(
-          'gRPCity: AsyncFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: AsyncFunction should not contain a callback function')
       } else if (typeof metadata === 'function') {
-        throw new Error(
-          'gRPCity: AsyncFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: AsyncFunction should not contain a callback function')
       }
       ;[metadata, options] = this._prepareMetadata(metadata, options, basicMeta)
       options = this._setDeadline(options, defaultOptions, basicMeta)
@@ -132,13 +117,9 @@ class ClientProxy {
   _promisifyClientStreamMethod(client, func, defaultOptions, basicMeta) {
     const clientStreamMethod = (metadata, options) => {
       if (typeof options === 'function') {
-        throw new Error(
-          'gRPCity: asyncStreamFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
       } else if (typeof metadata === 'function') {
-        throw new Error(
-          'gRPCity: asyncStreamFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
       }
       ;[metadata, options] = this._prepareMetadata(metadata, options, basicMeta)
       options = this._setDeadline(options, defaultOptions, basicMeta)
@@ -178,13 +159,9 @@ class ClientProxy {
   _promisifyServerStreamMethod(client, func, defaultOptions, basicMeta) {
     const serverStreamMethod = (request, metadata, options) => {
       if (typeof options === 'function') {
-        throw new Error(
-          'gRPCity: asyncStreamFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
       } else if (typeof metadata === 'function') {
-        throw new Error(
-          'gRPCity: asyncStreamFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
       }
       ;[metadata, options] = this._prepareMetadata(metadata, options, basicMeta)
       options = this._setDeadline(options, defaultOptions, basicMeta)
@@ -214,13 +191,9 @@ class ClientProxy {
   _promisifyDuplexStreamMethod(client, func, defaultOptions, basicMeta) {
     const duplexStreamMethod = (metadata, options) => {
       if (typeof options === 'function') {
-        throw new Error(
-          'gRPCity: asyncStreamFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
       } else if (typeof metadata === 'function') {
-        throw new Error(
-          'gRPCity: asyncStreamFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
       }
       ;[metadata, options] = this._prepareMetadata(metadata, options, basicMeta)
       options = this._setDeadline(options, defaultOptions, basicMeta)
@@ -271,7 +244,10 @@ class ClientProxy {
         names[key.toUpperCase()] = prototype[key].path
         return names
       }, {})
-    const basicMeta = { hostname: os.hostname(), appName }
+    const basicMeta = {
+      hostname: os.hostname(),
+      appName
+    }
     const target = Object.entries(prototype).reduce(
       (target, [name, func]) => {
         if (name !== 'constructor' && typeof func === 'function') {
@@ -279,40 +255,20 @@ class ClientProxy {
           const { requestStream, responseStream } = this._getFuncStreamWay(func)
           if (!requestStream && !responseStream) {
             // promisify unary method
-            target[name] = this._promisifyUnaryMethod(
-              client,
-              func,
-              defaultOptions,
-              basicMeta
-            )
+            target[name] = this._promisifyUnaryMethod(client, func, defaultOptions, basicMeta)
           }
           // stream
           if (requestStream && !responseStream) {
             // promisify only client stream method
-            target[name] = this._promisifyClientStreamMethod(
-              client,
-              func,
-              defaultOptions,
-              basicMeta
-            )
+            target[name] = this._promisifyClientStreamMethod(client, func, defaultOptions, basicMeta)
           }
           if (!requestStream && responseStream) {
             // promisify only server stream method
-            target[name] = this._promisifyServerStreamMethod(
-              client,
-              func,
-              defaultOptions,
-              basicMeta
-            )
+            target[name] = this._promisifyServerStreamMethod(client, func, defaultOptions, basicMeta)
           }
           if (requestStream && responseStream) {
             // promisify duplex stream method
-            target[name] = this._promisifyDuplexStreamMethod(
-              client,
-              func,
-              defaultOptions,
-              basicMeta
-            )
+            target[name] = this._promisifyDuplexStreamMethod(client, func, defaultOptions, basicMeta)
           }
           // keep callback method
           target.call[name] = this._keepCallbackMethod(client, func)

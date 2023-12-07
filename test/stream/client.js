@@ -35,16 +35,13 @@ const start = async (addr) => {
   })
 
   // stream client to server
-  const clientStreamHelloCall = client.call.clientStreamHello(
-    meta,
-    (err, response) => {
-      if (err) {
-        console.log(err)
-      } else {
-        console.log(response)
-      }
+  const clientStreamHelloCall = client.call.clientStreamHello(meta, (err, response) => {
+    if (err) {
+      console.log(err)
+    } else {
+      console.log(response)
     }
-  )
+  })
   clientStreamHelloCall.write({ message: 'Hello!' })
   clientStreamHelloCall.write({ message: 'How are you?' })
   clientStreamHelloCall.end()

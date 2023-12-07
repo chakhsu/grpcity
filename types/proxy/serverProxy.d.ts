@@ -8,17 +8,10 @@ declare class ServerProxy {
   private _insecureServerCredentials?
   constructor()
   _init(loader: any, ...args: any[]): this
-  listen(
-    addr: any,
-    credentials?: grpc.ServerCredentials | undefined
-  ): Promise<void>
+  listen(addr: any, credentials?: grpc.ServerCredentials | undefined): Promise<void>
   shutdown(): Promise<void>
   forceShutdown(): void
-  makeServerCredentials(
-    rootCerts?: Buffer,
-    keyCertPairs?: grpc.KeyCertPair[],
-    checkClientCertificate?: boolean
-  ): grpc.ServerCredentials
+  makeServerCredentials(rootCerts?: Buffer, keyCertPairs?: grpc.KeyCertPair[], checkClientCertificate?: boolean): grpc.ServerCredentials
   addService(
     name: string,
     implementation: any,

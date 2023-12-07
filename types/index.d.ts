@@ -13,37 +13,16 @@ declare class GrpcLoader {
   private _insecureCredentials?
   private _initDefaultClient?
   constructor(protoFileOptions: any)
-  init({
-    services,
-    isDev,
-    packagePrefix,
-    loadOptions,
-    channelOptions,
-    appName
-  }?: any): Promise<void>
+  init({ services, isDev, packagePrefix, loadOptions, channelOptions, appName }?: any): Promise<void>
   initClients({ services, channelOptions, credentials }: any): Promise<void>
   closeClients(): void
-  makeCredentials(
-    rootCerts?: any,
-    privateKey?: any,
-    certChain?: any,
-    verifyOptions?: any
-  ): grpc.ChannelCredentials
+  makeCredentials(rootCerts?: any, privateKey?: any, certChain?: any, verifyOptions?: any): grpc.ChannelCredentials
   service(name: string): any
   type(name: string): any
   message(name: string): any
-  client(
-    name: string,
-    { host, port, timeout, credentials, channelOptions }?: any
-  ): any
-  realClient(
-    name: string,
-    { host, port, credentials, channelOptions }?: any
-  ): any
-  clientWithoutCache(
-    name: string,
-    { addr, timeout, credentials, channelOptions }?: any
-  ): any
+  client(name: string, { host, port, timeout, credentials, channelOptions }?: any): any
+  realClient(name: string, { host, port, credentials, channelOptions }?: any): any
+  clientWithoutCache(name: string, { addr, timeout, credentials, channelOptions }?: any): any
   private _makeClient
   private _makeClientWithoutCache
   makeMetadata(initialValues: any): grpc.Metadata

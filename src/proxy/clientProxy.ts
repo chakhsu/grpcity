@@ -1,8 +1,4 @@
-import {
-  Metadata,
-  MetadataValue,
-  UntypedServiceImplementation
-} from '@grpc/grpc-js'
+import { Metadata, MetadataValue, UntypedServiceImplementation } from '@grpc/grpc-js'
 import * as os from 'node:os'
 import iterator from '../util/iterator'
 
@@ -15,11 +11,7 @@ class ClientProxy {
     return { requestStream, responseStream }
   }
 
-  private _prepareMetadata(
-    metadata: Metadata | Record<string, unknown>,
-    options: Record<string, unknown>,
-    basicMeta: Record<string, unknown>
-  ): [Metadata, Record<string, unknown>] {
+  private _prepareMetadata(metadata: Metadata | Record<string, unknown>, options: Record<string, unknown>, basicMeta: Record<string, unknown>): [Metadata, Record<string, unknown>] {
     if (metadata instanceof Metadata) {
       options = { ...options }
     } else {
@@ -51,21 +43,12 @@ class ClientProxy {
     newError.message = `${basicMeta.fullServiceName} (${err.message})`
 
     const stacks = newError.stack!.split('\n')
-    newError.stack = [
-      stacks[0],
-      ...stacks.slice(2),
-      '    ...',
-      ...(err.stack!.split('\n').slice(1, 3) as string[])
-    ].join('\n')
+    newError.stack = [stacks[0], ...stacks.slice(2), '    ...', ...(err.stack!.split('\n').slice(1, 3) as string[])].join('\n')
 
     return newError
   }
 
-  private _setDeadline(
-    options: { deadline?: Date; timeout?: number },
-    defaultOptions: Record<string, unknown>,
-    basicMeta: { fullServiceName?: string }
-  ): { deadline?: Date } {
+  private _setDeadline(options: { deadline?: Date; timeout?: number }, defaultOptions: Record<string, unknown>, basicMeta: { fullServiceName?: string }): { deadline?: Date } {
     if (!options.deadline) {
       const timeout = options.timeout || defaultOptions.timeout
       const deadline = new Date(Date.now() + (timeout as number))
@@ -75,25 +58,12 @@ class ClientProxy {
     return options
   }
 
-  private _promisifyUnaryMethod(
-    client: UntypedServiceImplementation,
-    func: any,
-    defaultOptions: Record<string, unknown>,
-    basicMeta: Record<string, unknown>
-  ): any {
-    const asyncUnaryMethod = async (
-      request: any,
-      metadata: Metadata,
-      options: Record<string, unknown>
-    ): Promise<any> => {
+  private _promisifyUnaryMethod(client: UntypedServiceImplementation, func: any, defaultOptions: Record<string, unknown>, basicMeta: Record<string, unknown>): any {
+    const asyncUnaryMethod = async (request: any, metadata: Metadata, options: Record<string, unknown>): Promise<any> => {
       if (typeof options === 'function') {
-        throw new Error(
-          'gRPCity: AsyncFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: AsyncFunction should not contain a callback function')
       } else if (typeof metadata === 'function') {
-        throw new Error(
-          'gRPCity: AsyncFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: AsyncFunction should not contain a callback function')
       }
 
       ;[metadata, options] = this._prepareMetadata(metadata, options, basicMeta)
@@ -123,24 +93,12 @@ class ClientProxy {
     return asyncUnaryMethod
   }
 
-  private _promisifyClientStreamMethod(
-    client: UntypedServiceImplementation,
-    func: any,
-    defaultOptions: Record<string, unknown>,
-    basicMeta: Record<string, unknown>
-  ): any {
-    const clientStreamMethod = (
-      metadata: Metadata,
-      options: Record<string, unknown>
-    ): any => {
+  private _promisifyClientStreamMethod(client: UntypedServiceImplementation, func: any, defaultOptions: Record<string, unknown>, basicMeta: Record<string, unknown>): any {
+    const clientStreamMethod = (metadata: Metadata, options: Record<string, unknown>): any => {
       if (typeof options === 'function') {
-        throw new Error(
-          'gRPCity: asyncStreamFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
       } else if (typeof metadata === 'function') {
-        throw new Error(
-          'gRPCity: asyncStreamFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
       }
 
       ;[metadata, options] = this._prepareMetadata(metadata, options, basicMeta)
@@ -185,25 +143,12 @@ class ClientProxy {
     return clientStreamMethod
   }
 
-  private _promisifyServerStreamMethod(
-    client: UntypedServiceImplementation,
-    func: any,
-    defaultOptions: Record<string, unknown>,
-    basicMeta: { fullServiceName?: string }
-  ): any {
-    const serverStreamMethod = (
-      request: any,
-      metadata: Metadata,
-      options: Record<string, unknown>
-    ): any => {
+  private _promisifyServerStreamMethod(client: UntypedServiceImplementation, func: any, defaultOptions: Record<string, unknown>, basicMeta: { fullServiceName?: string }): any {
+    const serverStreamMethod = (request: any, metadata: Metadata, options: Record<string, unknown>): any => {
       if (typeof options === 'function') {
-        throw new Error(
-          'gRPCity: asyncStreamFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
       } else if (typeof metadata === 'function') {
-        throw new Error(
-          'gRPCity: asyncStreamFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
       }
 
       ;[metadata, options] = this._prepareMetadata(metadata, options, basicMeta)
@@ -237,24 +182,12 @@ class ClientProxy {
     return serverStreamMethod
   }
 
-  private _promisifyDuplexStreamMethod(
-    client: UntypedServiceImplementation,
-    func: any,
-    defaultOptions: Record<string, unknown>,
-    basicMeta: { fullServiceName?: string }
-  ): any {
-    const duplexStreamMethod = (
-      metadata: Metadata,
-      options: Record<string, unknown>
-    ): any => {
+  private _promisifyDuplexStreamMethod(client: UntypedServiceImplementation, func: any, defaultOptions: Record<string, unknown>, basicMeta: { fullServiceName?: string }): any {
+    const duplexStreamMethod = (metadata: Metadata, options: Record<string, unknown>): any => {
       if (typeof options === 'function') {
-        throw new Error(
-          'gRPCity: asyncStreamFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
       } else if (typeof metadata === 'function') {
-        throw new Error(
-          'gRPCity: asyncStreamFunction should not contain a callback function'
-        )
+        throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
       }
 
       ;[metadata, options] = this._prepareMetadata(metadata, options, basicMeta)
@@ -297,21 +230,14 @@ class ClientProxy {
     return duplexStreamMethod
   }
 
-  private _keepCallbackMethod(
-    client: UntypedServiceImplementation,
-    func: any
-  ): (...argumentsList: any[]) => any {
+  private _keepCallbackMethod(client: UntypedServiceImplementation, func: any): (...argumentsList: any[]) => any {
     const callbackMethod = (...argumentsList: any[]) => {
       return func.apply(client, argumentsList)
     }
     return callbackMethod
   }
 
-  _proxy(
-    client: UntypedServiceImplementation,
-    defaultOptions: Record<string, any> = {},
-    appName?: string
-  ): any {
+  _proxy(client: UntypedServiceImplementation, defaultOptions: Record<string, any> = {}, appName?: string): any {
     defaultOptions = defaultOptions || {}
     defaultOptions.timeout = defaultOptions.timeout || 1000 * 10
 
@@ -338,41 +264,21 @@ class ClientProxy {
 
           if (!requestStream && !responseStream) {
             // promisify unary method
-            target[name] = this._promisifyUnaryMethod(
-              client,
-              func,
-              defaultOptions,
-              basicMeta
-            )
+            target[name] = this._promisifyUnaryMethod(client, func, defaultOptions, basicMeta)
           }
 
           // stream
           if (requestStream && !responseStream) {
             // promisify only client stream method
-            target[name] = this._promisifyClientStreamMethod(
-              client,
-              func,
-              defaultOptions,
-              basicMeta
-            )
+            target[name] = this._promisifyClientStreamMethod(client, func, defaultOptions, basicMeta)
           }
           if (!requestStream && responseStream) {
             // promisify only server stream method
-            target[name] = this._promisifyServerStreamMethod(
-              client,
-              func,
-              defaultOptions,
-              basicMeta
-            )
+            target[name] = this._promisifyServerStreamMethod(client, func, defaultOptions, basicMeta)
           }
           if (requestStream && responseStream) {
             // promisify duplex stream method
-            target[name] = this._promisifyDuplexStreamMethod(
-              client,
-              func,
-              defaultOptions,
-              basicMeta
-            )
+            target[name] = this._promisifyDuplexStreamMethod(client, func, defaultOptions, basicMeta)
           }
 
           // keep callback method

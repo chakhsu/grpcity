@@ -37,10 +37,7 @@ const start = async (addr) => {
   console.log(writeResult)
 
   // client to stream server
-  const serverStreamHelloCall = client.serverStreamHello(
-    { message: 'Hello! How are you?' },
-    meta
-  )
+  const serverStreamHelloCall = client.serverStreamHello({ message: 'Hello! How are you?' }, meta)
   const serverReadAllResult = serverStreamHelloCall.readAll()
   for await (const data of serverReadAllResult) {
     console.log(data)
@@ -50,11 +47,7 @@ const start = async (addr) => {
 
   // stream client to stream server
   const mutualStreamHelloCall = client.mutualStreamHello(meta)
-  mutualStreamHelloCall.writeAll([
-    { message: 'Hello!' },
-    { message: 'How are you?' },
-    { message: 'other thing x' }
-  ])
+  mutualStreamHelloCall.writeAll([{ message: 'Hello!' }, { message: 'How are you?' }, { message: 'other thing x' }])
   mutualStreamHelloCall.write({ message: 'maybe' })
 
   const mutualReadAllResult = mutualStreamHelloCall.readAll()
