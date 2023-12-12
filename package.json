@@ -23,7 +23,8 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "files": [
-    "lib"
+    "lib",
+    "README_CN.md"
   ],
   "engines": {
     "node": ">=16"
