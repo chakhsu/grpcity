@@ -1,4 +1,4 @@
-const GrpcLoader = require('../../types')
+const GrpcLoader = require('../../lib')
 const path = require('path')
 
 function timeout(ms) {
