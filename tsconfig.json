@@ -1,7 +1,7 @@
 {
   "extends": "@tsconfig/node14/tsconfig.json",
   "compilerOptions": {
-    "outDir": "types",
+    "outDir": "lib",
     "sourceMap": false,
     "declaration": true,
     "stripInternal": true,

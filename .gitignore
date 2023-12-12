@@ -118,6 +118,12 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
+# TernJS port file
+.tern-port
+
+# Build files
+lib/
+
 ### Vim ###
 # Swap
 [._]*.s[a-v][a-z]
