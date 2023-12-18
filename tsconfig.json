@@ -1,11 +1,18 @@
 {
-  "extends": "@tsconfig/node14/tsconfig.json",
   "compilerOptions": {
-    "outDir": "lib",
-    "sourceMap": false,
+    "lib": ["ESNext"],
+    "rootDir": "src",
+    "types": ["node", "jest"],
+    "moduleResolution": "node",
+    "removeComments": true,
+    "declarationDir": "lib/types",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
     "declaration": true,
-    "stripInternal": true,
-    "allowJs": true
+    "declarationMap": true
   },
-  "include": ["src/*.ts"]
+  "include": ["src"],
+  "exclude": ["test"]
 }
