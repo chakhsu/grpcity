@@ -77,7 +77,7 @@ export class ProtoLoader {
     return new Server(this, options)
   }
 
-  makeClientCredentials(rootCerts?: any, privateKey?: any, certChain?: any, verifyOptions?: any) {
+  makeClientCredentials(rootCerts?: Buffer, privateKey?: Buffer, certChain?: Buffer, verifyOptions?: any) {
     if (rootCerts && privateKey && certChain) {
       return grpc.credentials.createSsl(rootCerts, privateKey, certChain, verifyOptions)
     } else {
