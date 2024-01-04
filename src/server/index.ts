@@ -84,7 +84,7 @@ export default class Server {
     this._server!.addService(service, callbackify(implementation, this._middleware, options))
   }
 
-  removeService(name: string): void {
+  remove(name: string): void {
     this._server!.removeService((this._loader as ProtoLoader).service(name))
   }
 
