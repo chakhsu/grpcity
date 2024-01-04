@@ -1,5 +1,6 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
+import { setDeadline } from './clientDeadline'
 import { UntypedServiceImplementation, Metadata, StatusObject } from '@grpc/grpc-js'
 
 export const clientStreamProxy = (
@@ -16,7 +17,7 @@ export const clientStreamProxy = (
     }
 
     metadata = combineMetadata(metadata || new Metadata(), defaultMetadata)
-    options = Object.assign({}, defaultOptions, options)
+    options = setDeadline(options, defaultOptions)
 
     const result: { response?: any; metadata?: Metadata; status?: StatusObject } = {}
 

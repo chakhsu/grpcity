@@ -1,5 +1,6 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
+import { setDeadline } from './clientDeadline'
 import iterator from '../utils/iterator'
 import { UntypedServiceImplementation, Metadata, StatusObject } from '@grpc/grpc-js'
 
@@ -17,7 +18,7 @@ export const bidiStreamProxy = (
     }
 
     metadata = combineMetadata(metadata || new Metadata(), defaultMetadata)
-    options = Object.assign({}, defaultOptions, options)
+    options = setDeadline(options, defaultOptions)
 
     const call = func.apply(client, [metadata, options])
 
