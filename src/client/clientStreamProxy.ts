@@ -1,6 +1,6 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
-import type { UntypedServiceImplementation, Metadata, StatusObject } from '@grpc/grpc-js'
+import { UntypedServiceImplementation, Metadata, StatusObject } from '@grpc/grpc-js'
 
 export const clientStreamProxy = (
   client: UntypedServiceImplementation,
@@ -8,14 +8,14 @@ export const clientStreamProxy = (
   defaultMetadata: Record<string, unknown>,
   defaultOptions: Record<string, unknown>
 ) => {
-  return (metadata: Metadata, options: Record<string, unknown>): any => {
+  return (metadata?: Metadata, options?: Record<string, unknown>): any => {
     if (typeof options === 'function') {
       throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
     } else if (typeof metadata === 'function') {
       throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
     }
 
-    metadata = combineMetadata(metadata, defaultMetadata)
+    metadata = combineMetadata(metadata || new Metadata(), defaultMetadata)
     options = Object.assign({}, defaultOptions, options)
 
     const result: { response?: any; metadata?: Metadata; status?: StatusObject } = {}
