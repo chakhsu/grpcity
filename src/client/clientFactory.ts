@@ -31,13 +31,14 @@ export class ClientFactory {
     if (!ctBool) {
       credentials = (this._loader as ProtoLoader).makeClientCredentials()
     }
-    const newOptions = assignChannelOptions(options)
+    const channelOptions = assignChannelOptions(options)
 
     let cacheAddr: string = addr
     if (addr === 'undefined:undefined') {
       cacheAddr = this._clientAddrMap.get(name) || addr
     }
-    const client = this.createReal(name, cacheAddr, credentials, newOptions)
+
+    const client = this.createReal(name, cacheAddr, credentials, channelOptions)
     this._clientAddrMap.set(name, cacheAddr)
     this._clientMap.set(cacheKey, client)
     return client

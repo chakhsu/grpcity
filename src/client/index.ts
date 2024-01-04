@@ -9,17 +9,22 @@ import type { ClientOptionsType } from '../schema/client'
 const prepareUrl = (url: ClientOptionsType['url']) => {
   return {
     isDefaultClient: !!url,
-    addr: _.isString(url) ? (url as string) : (url as AddressObject).host + ':' + (url as AddressObject).port
+    addr: _.isString(url) ? (url as string) : (url as AddressObject)?.host + ':' + (url as AddressObject)?.port
   }
 }
 
 export default class Clients {
   private _proxyClientMap: Map<string, any> = new Map()
   private _clientFactory: ClientFactory
+  private _credentials: ClientsOptionsType['credentials']
 
   constructor(loader: ProtoLoader, options: ClientsOptionsType) {
     this._clientFactory = new ClientFactory(loader)
     const { services, channelOptions, credentials } = options
+
+    if (credentials) {
+      this._credentials = credentials
+    }
 
     const serviceNames = Object.keys(services)
     serviceNames.forEach((name) => {
@@ -34,9 +39,13 @@ export default class Clients {
     return this
   }
 
-  client(name: string, clientOptions?: ClientOptionsType) {
-    let { url, channelOptions, credentials, timeout } = clientOptions as ClientOptionsType
+  get(name: string, clientOptions: ClientOptionsType = {}) {
+    let { url, channelOptions, credentials, timeout } = clientOptions
     const { isDefaultClient, addr } = prepareUrl(url)
+
+    if (!credentials) {
+      credentials = this._credentials
+    }
 
     const cacheKeyPrefix = isDefaultClient ? 'default' : addr.replace(/\./g, '-')
     const cacheKey = `proxy.${cacheKeyPrefix}.${name}.${timeout}`
@@ -51,17 +60,13 @@ export default class Clients {
     return proxy
   }
 
-  clientWithoutCache(name: string, clientOptions?: ClientOptionsType) {
-    const { url, channelOptions, credentials, timeout } = clientOptions as ClientOptionsType
-    const { isDefaultClient, addr } = prepareUrl(url)
+  getReal(name: string, clientOptions: ClientOptionsType = {}) {
+    let { url, channelOptions, credentials } = clientOptions as ClientOptionsType
 
-    const client = this._clientFactory.create(isDefaultClient, name, addr, credentials, channelOptions)
-    const proxy = clientProxy(client, { timeout })
-    return proxy
-  }
+    if (!credentials) {
+      credentials = this._credentials
+    }
 
-  realClient(name: string, clientOptions?: ClientOptionsType) {
-    const { url, channelOptions, credentials } = clientOptions as ClientOptionsType
     const { isDefaultClient, addr } = prepareUrl(url)
 
     const client = this._clientFactory.create(isDefaultClient, name, addr, credentials, channelOptions)

@@ -20,7 +20,7 @@ const ClientOptionsSchema = Joi.object({
 }).optional()
 
 export type ClientOptionsType = {
-  url: Address
+  url?: Address
   channelOptions?: ChannelOptions
   credentials?: ChannelCredentials
   timeout?: number

@@ -8,14 +8,14 @@ export const unaryProxy = (
   defaultMetadata: Record<string, unknown>,
   defaultOptions: Record<string, unknown>
 ) => {
-  return async (request: any, metadata: Metadata, options: Record<string, unknown>): Promise<any> => {
+  return async (request: any, metadata?: Metadata, options?: Record<string, unknown>): Promise<any> => {
     if (typeof options === 'function') {
       throw new Error('gRPCity: AsyncFunction should not contain a callback function')
     } else if (typeof metadata === 'function') {
       throw new Error('gRPCity: AsyncFunction should not contain a callback function')
     }
 
-    metadata = combineMetadata(metadata, defaultMetadata)
+    metadata = combineMetadata(metadata || new Metadata(), defaultMetadata)
     options = Object.assign({}, defaultOptions, options)
 
     return new Promise((resolve, reject) => {

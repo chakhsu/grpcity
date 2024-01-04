@@ -21,7 +21,6 @@ export class ProtoLoader {
   private _insecureClientCredentials?: grpc.ChannelCredentials
   private _insecureServerCredentials?: grpc.ServerCredentials
   private _reflectedRoot?: protobuf.Root
-  private _clients?: Clients
 
   constructor(protoFileOptions: ProtoFileOptionsType) {
     assertProtoFileOptionsOptions(protoFileOptions)
@@ -67,28 +66,18 @@ export class ProtoLoader {
     if (!this._packageDefinition) {
       await this.init()
     }
-    if (this._clients) {
-      return
-    }
-    const newOptions = attemptInitClientsOptions(options)
-    this._clients = new Clients(this, options)
-    return this._clients
-  }
-
-  closeClients() {
-    this._clients = void 0
+    const clientsOptions = attemptInitClientsOptions(options)
+    return new Clients(this, clientsOptions)
   }
 
   async initServer(options?: ServerOptionsType) {
     if (!this._packageDefinition) {
       await this.init()
     }
-    const server = new Server(this, options)
-    return server
+    return new Server(this, options)
   }
 
   makeClientCredentials(rootCerts?: any, privateKey?: any, certChain?: any, verifyOptions?: any) {
-    assert(this._types, 'Must called loader init() first. proto file has not been loaded.')
     if (rootCerts && privateKey && certChain) {
       return grpc.credentials.createSsl(rootCerts, privateKey, certChain, verifyOptions)
     } else {
@@ -100,7 +89,6 @@ export class ProtoLoader {
   }
 
   makeServerCredentials(rootCerts?: Buffer, keyCertPairs?: grpc.KeyCertPair[], checkClientCertificate?: boolean) {
-    assert(this._types, 'Must called loader init() first. proto file has not been loaded.')
     if (rootCerts && keyCertPairs) {
       return grpc.ServerCredentials.createSsl(rootCerts, keyCertPairs, checkClientCertificate)
     } else {
@@ -112,7 +100,6 @@ export class ProtoLoader {
   }
 
   makeMetadata(initialValues: Record<string, any>) {
-    assert(this._types, 'Must called loader init() first. proto file has not been loaded.')
     const meta = new grpc.Metadata()
     if (typeof initialValues === 'object') {
       Object.entries(initialValues).forEach(([key, value]: [string, any]) => {

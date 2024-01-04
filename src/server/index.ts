@@ -20,9 +20,9 @@ export default class Server {
       this._loader = loader
     }
     if (!this._server) {
-      this._server = new grpc.Server(assignServerOptions(options))
+      const serverOptions = assignServerOptions(options)
+      this._server = new grpc.Server(serverOptions)
     }
-    return this
   }
 
   async listen(addr: any, credentials?: grpc.ServerCredentials): Promise<void> {
