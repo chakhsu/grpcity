@@ -31,11 +31,11 @@ const start = async (addr) => {
 
   // hellorClient
   const hellorClient = clients.get('helloworld.Hellor')
+  const { response: result1 } = await hellorClient.sayHello({ name: 'hellor1' })
+  console.log('hellorClient.sayHello', result1)
+
   const { response: result2 } = await hellorClient.sayHello({ name: 'hellor2' })
   console.log('hellorClient.sayHello', result2)
-
-  const { response: result3 } = await hellorClient.sayHello({ name: 'hellor3' })
-  console.log('hellorClient.sayHello', result3)
 
   // initClients again
   const twiceClients = await loader.initClients({
@@ -45,16 +45,15 @@ const start = async (addr) => {
     credentials
   })
   const newHellorClient = twiceClients.get('helloworld.Hellor')
-  const { response: result4 } = await newHellorClient.sayHello({
-    name: 'hellor4'
-  })
-  console.log('newHellorClient.sayHello', result4)
+  const { response: result3 } = await newHellorClient.sayHello({ name: 'hellor3' })
+  console.log('newHellorClient.sayHello', result3)
 
   // origin client
-  const { response: result5 } = await hellorClient.sayHello({
-    name: 'hellor5'
+  const twiceHellorClient = clients.get('helloworld.Hellor')
+  const { response: result4 } = await twiceHellorClient.sayHello({
+    name: 'hellor4'
   })
-  console.log('hellorClient.sayHello', result5)
+  console.log('hellorClient.sayHello', result4)
 }
 
 start('localhost:9099')
