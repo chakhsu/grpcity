@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option java_multiple_files  = true;
+option java_package         = "io.grpc.examples.helloworld";
+option java_outer_classname = "HelloWorldProto";
+
+import "helloworld/model/message.proto";
+
+package helloworld;
+
+// The greeting service definition.
+service Greeter {
+  // Sends a greeting
+  rpc SayGreet(model.HelloRequest) returns (model.HelloReply) {}
+  rpc SayGreet2(model.HelloRequest) returns (model.HelloReply) {}
+}
+
+service Hellor {
+  rpc SayHello(model.HelloRequest) returns (model.HelloReply) {}
+  rpc SayHello2(model.HelloRequest) returns (model.HelloReply) {}
+}
