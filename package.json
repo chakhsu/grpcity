@@ -23,7 +23,7 @@
   },
   "type": "module",
   "exports": "./lib/index.js",
-  "types": "./lib/types/index.d.ts",
+  "types": "./lib/index.d.ts",
   "engines": {
     "node": ">=16"
   },
