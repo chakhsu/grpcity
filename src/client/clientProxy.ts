@@ -27,7 +27,7 @@ export const clientProxy = (client: UntypedServiceImplementation, options: Recor
   const target = Object.entries(prototype).reduce(
     (target: any, [name, func]) => {
       if (name !== 'constructor' && typeof func === 'function') {
-        metadata['x-service-name'] = `${methodNames[name.toUpperCase()]}`
+        metadata['x-service-path'] = `${methodNames[name.toUpperCase()]}`
 
         const { requestStream, responseStream } = getFuncStreamType(func)
 
