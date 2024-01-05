@@ -2,11 +2,11 @@ import assert from 'node:assert'
 import * as grpc from '@grpc/grpc-js'
 import * as _ from 'lodash-es'
 
-import { MiddlewareFunction } from '../utils/compose'
 import { assignServerOptions } from '../schema/server'
 import { ProtoLoader } from '../loader'
-import type { ServerOptionsType } from '../schema/loader'
 import { callbackify } from './callbackify'
+import type { ServerOptionsType } from '../schema/loader'
+import type { MiddlewareFunction } from '../utils/compose'
 import type { CallbackifyOptions } from './callbackify'
 
 export default class Server {
@@ -89,7 +89,7 @@ export default class Server {
   }
 
   use(...args: MiddlewareFunction[]): void {
-    assert(args.length >= 1, 'server addMiddleware() takes at least one argument.')
+    assert(args.length >= 1, 'server use() takes at least one middleware.')
     if (args.length === 1) {
       if (Array.isArray(args[0])) {
         args[0].forEach((fn) => {

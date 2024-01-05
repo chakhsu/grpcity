@@ -1,6 +1,6 @@
 import * as grpc from '@grpc/grpc-js'
 import iterator from '../utils/iterator'
-import { createContext } from './context'
+import { createContext } from './serverContext'
 import { createServerError } from './serverError'
 
 export const callClientStreamProxy = (target: any, key: string, composeFunc: Function): grpc.handleClientStreamingCall<any, any> => {

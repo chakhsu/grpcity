@@ -11,7 +11,7 @@ const getFuncStreamType = (func: any) => {
   return { requestStream, responseStream }
 }
 
-export const clientProxy = (client: UntypedServiceImplementation, options: Record<string, any>) => {
+export const clientProxy = (client: UntypedServiceImplementation, options: Record<string, any>, fn: Function) => {
   const prototype = Object.getPrototypeOf(client)
   const methodNames: any = Object.keys(prototype)
     .filter((key) => prototype[key] && prototype[key].path)
@@ -33,21 +33,21 @@ export const clientProxy = (client: UntypedServiceImplementation, options: Recor
 
         if (!requestStream && !responseStream) {
           // promisify unary method
-          target[name] = unaryProxy(client, func, metadata, options)
+          target[name] = unaryProxy(client, func, metadata, options, fn)
         }
 
         // stream
         if (requestStream && !responseStream) {
           // promisify only client stream method
-          target[name] = clientStreamProxy(client, func, metadata, options)
+          target[name] = clientStreamProxy(client, func, metadata, options, fn)
         }
         if (!requestStream && responseStream) {
           // promisify only server stream method
-          target[name] = serverStreamProxy(client, func, metadata, options)
+          target[name] = serverStreamProxy(client, func, metadata, options, fn)
         }
         if (requestStream && responseStream) {
           // promisify duplex stream method
-          target[name] = bidiStreamProxy(client, func, metadata, options)
+          target[name] = bidiStreamProxy(client, func, metadata, options, fn)
         }
 
         // keep callback method

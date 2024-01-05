@@ -12,6 +12,13 @@ const start = async (addr) => {
     'x-timestamp-client': 'begin=' + new Date().toISOString()
   })
 
+  const logMiddleware = async (ctx, next) => {
+    const beginTime = new Date().getTime()
+    await next()
+    const endTime = new Date().getTime()
+    console.log(ctx.res.response, endTime - beginTime)
+  }
+
   const clients = await loader.initClients({
     services: {
       'helloworld.Greeter': addr,
@@ -19,6 +26,8 @@ const start = async (addr) => {
     },
     credentials
   })
+
+  clients.use(logMiddleware)
 
   // greeterClient
   const greeterClient = clients.get('helloworld.Greeter', {
@@ -31,11 +40,9 @@ const start = async (addr) => {
 
   // hellorClient
   const hellorClient = clients.get('helloworld.Hellor')
-  const { response: result1 } = await hellorClient.sayHello({ name: 'hellor1' })
-  console.log('hellorClient.sayHello', result1)
+  await hellorClient.sayHello({ name: 'hellor1' })
 
-  const { response: result2 } = await hellorClient.sayHello({ name: 'hellor2' })
-  console.log('hellorClient.sayHello', result2)
+  await hellorClient.sayHello({ name: 'hellor2' })
 
   // initClients again
   const twiceClients = await loader.initClients({
@@ -44,16 +51,15 @@ const start = async (addr) => {
     },
     credentials
   })
+  twiceClients.use(logMiddleware)
   const newHellorClient = twiceClients.get('helloworld.Hellor')
-  const { response: result3 } = await newHellorClient.sayHello({ name: 'hellor3' })
-  console.log('newHellorClient.sayHello', result3)
+  await newHellorClient.sayHello({ name: 'hellor3' })
 
   // origin client
   const twiceHellorClient = clients.get('helloworld.Hellor')
-  const { response: result4 } = await twiceHellorClient.sayHello({
+  await twiceHellorClient.sayHello({
     name: 'hellor4'
   })
-  console.log('hellorClient.sayHello', result4)
 }
 
 start('localhost:9099')

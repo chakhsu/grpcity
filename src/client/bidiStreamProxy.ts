@@ -1,6 +1,7 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
+import { createContext } from './clientContext'
 import iterator from '../utils/iterator'
 import { UntypedServiceImplementation, Metadata, StatusObject } from '@grpc/grpc-js'
 
@@ -8,9 +9,10 @@ export const bidiStreamProxy = (
   client: UntypedServiceImplementation,
   func: any,
   defaultMetadata: Record<string, unknown>,
-  defaultOptions: Record<string, unknown>
+  defaultOptions: Record<string, unknown>,
+  composeFunc: Function
 ) => {
-  return (metadata?: Metadata, options?: Record<string, unknown>): any => {
+  return async (metadata?: Metadata, options?: Record<string, unknown>): any => {
     if (typeof options === 'function') {
       throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
     } else if (typeof metadata === 'function') {
@@ -19,6 +21,8 @@ export const bidiStreamProxy = (
 
     metadata = combineMetadata(metadata || new Metadata(), defaultMetadata)
     options = setDeadline(options, defaultOptions)
+
+    const ctx = createContext({ metadata, options })
 
     const call = func.apply(client, [metadata, options])
 
@@ -35,20 +39,25 @@ export const bidiStreamProxy = (
       throw createClientError(err, metadata)
     })
 
-    const result: { metadata?: Metadata; status?: StatusObject } = {}
-    call.readAll = () => {
-      call.on('metadata', (metadata: Metadata) => {
-        result.metadata = metadata
-      })
-      call.on('status', (status: StatusObject) => {
-        result.status = status
-      })
-      return iterator(call, 'data', {
-        resolutionEvents: ['status', 'end']
-      })
+    const handler = async () => {
+      call.readAll = () => {
+        call.on('metadata', (metadata: Metadata) => {
+          ctx.res.metadata = metadata
+        })
+        call.on('status', (status: StatusObject) => {
+          ctx.res.status = status
+        })
+        return iterator(call, 'data', {
+          resolutionEvents: ['status', 'end']
+        })
+      }
     }
+    await composeFunc(ctx, handler).catch((err: Error) => {
+      throw createClientError(err, metadata)
+    })
+
     call.readEnd = () => {
-      return result
+      return ctx.res
     }
 
     return call

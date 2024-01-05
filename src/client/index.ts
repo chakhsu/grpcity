@@ -1,8 +1,11 @@
+import assert from 'node:assert'
 import * as _ from 'lodash-es'
 import { ProtoLoader } from '../loader'
 import { ClientFactory } from './clientFactory'
 import { clientProxy } from './clientProxy'
 
+import { compose } from '../utils/compose'
+import type { MiddlewareFunction } from '../utils/compose'
 import type { ClientsOptionsType, AddressObject } from '../schema/loader'
 import type { ClientOptionsType } from '../schema/client'
 
@@ -14,6 +17,7 @@ const prepareUrl = (url: ClientOptionsType['url']) => {
 }
 
 export default class Clients {
+  private _middleware: MiddlewareFunction[] = []
   private _proxyClientMap: Map<string, any> = new Map()
   private _clientFactory: ClientFactory
   private _credentials: ClientsOptionsType['credentials']
@@ -54,8 +58,10 @@ export default class Clients {
       return this._proxyClientMap.get(cacheKey)
     }
 
+    const fn = compose(this._middleware)
+
     const client = this._clientFactory.create(isDefaultClient, name, addr, credentials, channelOptions)
-    const proxy = clientProxy(client, { timeout })
+    const proxy = clientProxy(client, { timeout }, fn)
     this._proxyClientMap.set(cacheKey, proxy)
     return proxy
   }
@@ -71,6 +77,23 @@ export default class Clients {
 
     const client = this._clientFactory.create(isDefaultClient, name, addr, credentials, channelOptions)
     return client
+  }
+
+  use(...args: MiddlewareFunction[]): void {
+    assert(args.length >= 1, 'client use() takes at least one middleware.')
+    if (args.length === 1) {
+      if (Array.isArray(args[0])) {
+        args[0].forEach((fn) => {
+          this._middleware.push(fn)
+        })
+      } else {
+        this._middleware.push(args[0])
+      }
+    } else {
+      args.forEach((fn) => {
+        this._middleware.push(fn)
+      })
+    }
   }
 
   clear() {
