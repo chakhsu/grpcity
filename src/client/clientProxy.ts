@@ -20,14 +20,13 @@ export const clientProxy = (client: UntypedServiceImplementation, options: Recor
       return names
     }, {})
 
-  const metadata: Record<string, any> = {
-    'x-client-hostname': os.hostname()
-  }
-
   const target = Object.entries(prototype).reduce(
     (target: any, [name, func]) => {
       if (name !== 'constructor' && typeof func === 'function') {
-        metadata['x-service-path'] = `${methodNames[name.toUpperCase()]}`
+        const metadata: Record<string, any> = {
+          'x-client-hostname': os.hostname(),
+          'x-service-path': `${methodNames[name.toUpperCase()]}`
+        }
 
         const { requestStream, responseStream } = getFuncStreamType(func)
 

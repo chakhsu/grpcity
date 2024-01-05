@@ -12,7 +12,7 @@ export const serverStreamProxy = (
   defaultOptions: Record<string, unknown>,
   composeFunc: Function
 ) => {
-  return async (request?: any, metadata?: Metadata, options?: Record<string, unknown>): any => {
+  return async (request?: any, metadata?: Metadata, options?: Record<string, unknown>): Promise<any> => {
     if (typeof options === 'function') {
       throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
     } else if (typeof metadata === 'function') {

@@ -12,7 +12,7 @@ export const bidiStreamProxy = (
   defaultOptions: Record<string, unknown>,
   composeFunc: Function
 ) => {
-  return async (metadata?: Metadata, options?: Record<string, unknown>): any => {
+  return async (metadata?: Metadata, options?: Record<string, unknown>): Promise<any> => {
     if (typeof options === 'function') {
       throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
     } else if (typeof metadata === 'function') {
