@@ -12,6 +12,7 @@ export type ClientContextType = {
   metadata?: grpc.Metadata
   response?: any
   status?: grpc.StatusObject
+  [key: string]: any
 }
 
 type createContextOptions = {

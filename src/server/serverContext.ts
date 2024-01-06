@@ -9,6 +9,7 @@ export type ServerContextType = {
   request: any
   metadata: grpc.Metadata
   response?: any
+  [key: string]: any
 }
 
 export const createContext = (call: any, methodOptions: { requestStream: boolean; responseStream: boolean }): ServerContextType => {
