@@ -16,7 +16,7 @@ const start = async (addr) => {
     const beginTime = new Date().getTime()
     await next()
     const endTime = new Date().getTime()
-    console.log(ctx.response, endTime - beginTime)
+    console.log(ctx.peer, ctx.response, endTime - beginTime)
   }
 
   const clients = await loader.initClients({

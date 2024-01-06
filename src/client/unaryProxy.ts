@@ -44,6 +44,7 @@ export const unaryProxy = (
         })
         call.on('status', (status: StatusObject) => {
           ctx.status = status
+          ctx.peer = call.getPeer()
           resolve()
         })
       })

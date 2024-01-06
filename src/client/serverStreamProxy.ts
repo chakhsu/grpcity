@@ -41,6 +41,7 @@ export const serverStreamProxy = (
         })
         call.on('status', (status: StatusObject) => {
           ctx.status = status
+          ctx.peer = call.getPeer()
         })
         return iterator(call, 'data', {
           resolutionEvents: ['status', 'end']

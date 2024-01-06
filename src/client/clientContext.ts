@@ -9,9 +9,10 @@ export type ClientContextType = {
     options: Record<string, any>
   }
   request?: any
+  status?: grpc.StatusObject
+  peer?: string
   metadata?: grpc.Metadata
   response?: any
-  status?: grpc.StatusObject
   [key: string]: any
 }
 
@@ -43,6 +44,7 @@ export const createContext = (args: createContextOptions): ClientContextType => 
 export const createResponse = (ctx: ClientContextType) => {
   return {
     status: ctx.status,
+    peer: ctx.peer,
     metadata: ctx.metadata,
     response: ctx.response
   }
