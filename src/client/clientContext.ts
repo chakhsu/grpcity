@@ -2,22 +2,47 @@ import * as grpc from '@grpc/grpc-js'
 
 export type ClientContextType = {
   path: string
-  req: {
-    request?: any
-    metadata?: grpc.Metadata
-    options?: Record<string, any>
+  method: {
+    requestStream: boolean
+    responseStream: boolean
+    metadata: grpc.Metadata
+    options: Record<string, any>
   }
-  res: {
-    response?: any
-    metadata?: grpc.Metadata
-    status?: grpc.StatusObject
+  request?: any
+  metadata?: grpc.Metadata
+  response?: any
+  status?: grpc.StatusObject
+}
+
+type createContextOptions = {
+  request?: any
+  metadata: grpc.Metadata
+  options: Record<string, any>
+  methodOptions: {
+    requestStream: boolean
+    responseStream: boolean
   }
 }
 
-export const createContext = (args: { request?: any; metadata?: grpc.Metadata; options?: Record<string, any> }): ClientContextType => {
+export const createContext = (args: createContextOptions): ClientContextType => {
+  const { request, metadata, options, methodOptions } = args
+  const { requestStream, responseStream } = methodOptions
   return {
-    path: args.metadata?.get('x-service-path')[0].toString() || '',
-    req: args,
-    res: {}
+    path: metadata?.get('x-service-path')[0].toString() || '',
+    method: {
+      requestStream: requestStream || false,
+      responseStream: responseStream || false,
+      metadata: metadata.clone(),
+      options
+    },
+    request: request || {}
+  }
+}
+
+export const createResponse = (ctx: ClientContextType) => {
+  return {
+    status: ctx.status,
+    metadata: ctx.metadata,
+    response: ctx.response
   }
 }

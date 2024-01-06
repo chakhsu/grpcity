@@ -2,9 +2,14 @@ import * as grpc from '@grpc/grpc-js'
 import { createContext } from './serverContext'
 import { createServerError } from './serverError'
 
-export const callUnaryProxy = (target: any, key: string, composeFunc: Function): grpc.handleUnaryCall<any, any> => {
+export const callUnaryProxy = (
+  target: any,
+  key: string,
+  composeFunc: Function,
+  methodOptions: { requestStream: boolean; responseStream: boolean }
+): grpc.handleUnaryCall<any, any> => {
   return (call, callback) => {
-    const ctx = createContext(call)
+    const ctx = createContext(call, methodOptions)
 
     Promise.resolve().then(async () => {
       const handleResponse = async () => {

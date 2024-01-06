@@ -3,9 +3,14 @@ import iterator from '../utils/iterator'
 import { createContext } from './serverContext'
 import { createServerError } from './serverError'
 
-export const callClientStreamProxy = (target: any, key: string, composeFunc: Function): grpc.handleClientStreamingCall<any, any> => {
+export const callClientStreamProxy = (
+  target: any,
+  key: string,
+  composeFunc: Function,
+  methodOptions: { requestStream: boolean; responseStream: boolean }
+): grpc.handleClientStreamingCall<any, any> => {
   return (call: any, callback) => {
-    const ctx = createContext(call)
+    const ctx = createContext(call, methodOptions)
 
     call.readAll = () => {
       return iterator(call, 'data', {

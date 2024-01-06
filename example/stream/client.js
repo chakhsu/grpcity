@@ -3,7 +3,7 @@ import { loader } from './loader.js'
 const start = async (addr) => {
   await loader.init({
     isDev: true,
-    packagePrefix: 'dev'
+    packagePrefix: 'test'
   })
 
   const clients = await loader.initClients({

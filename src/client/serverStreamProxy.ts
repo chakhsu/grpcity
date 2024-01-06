@@ -2,15 +2,16 @@ import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
 import iterator from '../utils/iterator'
-import { createContext } from './clientContext'
+import { createContext, createResponse } from './clientContext'
 import { UntypedServiceImplementation, Metadata, StatusObject } from '@grpc/grpc-js'
 
 export const serverStreamProxy = (
   client: UntypedServiceImplementation,
   func: any,
+  composeFunc: Function,
   defaultMetadata: Record<string, unknown>,
   defaultOptions: Record<string, unknown>,
-  composeFunc: Function
+  methodOptions: { requestStream: boolean; responseStream: boolean }
 ) => {
   return async (request?: any, metadata?: Metadata, options?: Record<string, unknown>): Promise<any> => {
     if (typeof options === 'function') {
@@ -22,9 +23,12 @@ export const serverStreamProxy = (
     metadata = combineMetadata(metadata || new Metadata(), defaultMetadata)
     options = setDeadline(options, defaultOptions)
 
-    const ctx = createContext({ request, metadata, options })
+    const ctx = createContext({ request, metadata, options, methodOptions })
 
-    const call = func.apply(client, [request, metadata, options])
+    let ctxRequest = ctx.request
+    let ctxMetadata = ctx.method.metadata
+    let ctxOptions = ctx.method.options
+    const call = func.apply(client, [ctxRequest, ctxMetadata, ctxOptions])
 
     call.on('error', (err: Error) => {
       throw createClientError(err, metadata)
@@ -33,10 +37,10 @@ export const serverStreamProxy = (
     const handler = async () => {
       call.readAll = () => {
         call.on('metadata', (metadata: Metadata) => {
-          ctx.res.metadata = metadata
+          ctx.metadata = metadata
         })
         call.on('status', (status: StatusObject) => {
-          ctx.res.status = status
+          ctx.status = status
         })
         return iterator(call, 'data', {
           resolutionEvents: ['status', 'end']
@@ -48,7 +52,7 @@ export const serverStreamProxy = (
     })
 
     call.readEnd = () => {
-      return ctx.res
+      return createResponse(ctx)
     }
 
     return call

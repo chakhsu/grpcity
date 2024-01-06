@@ -6,12 +6,12 @@ import { serverStreamProxy } from './serverStreamProxy'
 import { bidiStreamProxy } from './bidiStreamProxy'
 import type { UntypedServiceImplementation } from '@grpc/grpc-js'
 
-const getFuncStreamType = (func: any) => {
+const getMethodStreamType = (func: any) => {
   const { requestStream, responseStream } = func
-  return { requestStream, responseStream }
+  return { requestStream: !!requestStream, responseStream: !!responseStream }
 }
 
-export const clientProxy = (client: UntypedServiceImplementation, options: Record<string, any>, fn: Function) => {
+export const clientProxy = (client: UntypedServiceImplementation, options: Record<string, any>, composeFunc: Function) => {
   const prototype = Object.getPrototypeOf(client)
   const methodNames: any = Object.keys(prototype)
     .filter((key) => prototype[key] && prototype[key].path)
@@ -28,25 +28,27 @@ export const clientProxy = (client: UntypedServiceImplementation, options: Recor
           'x-service-path': `${methodNames[name.toUpperCase()]}`
         }
 
-        const { requestStream, responseStream } = getFuncStreamType(func)
+        const { requestStream, responseStream } = getMethodStreamType(func)
+
+        const methodOptions = { requestStream, responseStream }
 
         if (!requestStream && !responseStream) {
           // promisify unary method
-          target[name] = unaryProxy(client, func, metadata, options, fn)
+          target[name] = unaryProxy(client, func, composeFunc, metadata, options, methodOptions)
         }
 
         // stream
         if (requestStream && !responseStream) {
           // promisify only client stream method
-          target[name] = clientStreamProxy(client, func, metadata, options, fn)
+          target[name] = clientStreamProxy(client, func, composeFunc, metadata, options, methodOptions)
         }
         if (!requestStream && responseStream) {
           // promisify only server stream method
-          target[name] = serverStreamProxy(client, func, metadata, options, fn)
+          target[name] = serverStreamProxy(client, func, composeFunc, metadata, options, methodOptions)
         }
         if (requestStream && responseStream) {
           // promisify duplex stream method
-          target[name] = bidiStreamProxy(client, func, metadata, options, fn)
+          target[name] = bidiStreamProxy(client, func, composeFunc, metadata, options, methodOptions)
         }
 
         // keep callback method

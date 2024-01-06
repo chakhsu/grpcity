@@ -4,5 +4,5 @@ export const combineMetadata = (metadata: Metadata, options: Record<string, unkn
   Object.keys(options).forEach((key) => {
     ;(metadata as Metadata).set(key, options[key] as MetadataValue)
   })
-  return metadata
+  return metadata.clone()
 }

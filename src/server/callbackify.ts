@@ -51,22 +51,23 @@ export const callbackify = (target: any, middleware: MiddlewareFunction[], optio
 const proxy = (target: any, key: string, options: any = {}, middleware: MiddlewareFunction[]) => {
   const { requestStream, responseStream } = options
 
-  const fn = compose(middleware)
+  const composeFunc = compose(middleware)
+  const methodsOptions = { requestStream, responseStream }
 
   // unary
   if (!requestStream && !responseStream) {
-    return callUnaryProxy(target, key, fn)
+    return callUnaryProxy(target, key, composeFunc, methodsOptions)
   }
   // client stream
   if (requestStream && !responseStream) {
-    return callClientStreamProxy(target, key, fn)
+    return callClientStreamProxy(target, key, composeFunc, methodsOptions)
   }
   // server stream
   if (!requestStream && responseStream) {
-    return callServerStreamProxy(target, key, fn)
+    return callServerStreamProxy(target, key, composeFunc, methodsOptions)
   }
   // duplex stream
   if (requestStream && responseStream) {
-    return callBidiStreamProxy(target, key, fn)
+    return callBidiStreamProxy(target, key, composeFunc, methodsOptions)
   }
 }

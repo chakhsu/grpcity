@@ -87,7 +87,7 @@ const middlewareB = async (ctx, next) => {
 const start = async (addr) => {
   await loader.init({
     isDev: true,
-    packagePrefix: 'dev'
+    packagePrefix: 'test'
   })
 
   const server = await loader.initServer()

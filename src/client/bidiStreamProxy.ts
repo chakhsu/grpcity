@@ -1,16 +1,17 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
-import { createContext } from './clientContext'
+import { createContext, createResponse } from './clientContext'
 import iterator from '../utils/iterator'
 import { UntypedServiceImplementation, Metadata, StatusObject } from '@grpc/grpc-js'
 
 export const bidiStreamProxy = (
   client: UntypedServiceImplementation,
   func: any,
+  composeFunc: Function,
   defaultMetadata: Record<string, unknown>,
   defaultOptions: Record<string, unknown>,
-  composeFunc: Function
+  methodOptions: { requestStream: boolean; responseStream: boolean }
 ) => {
   return async (metadata?: Metadata, options?: Record<string, unknown>): Promise<any> => {
     if (typeof options === 'function') {
@@ -22,9 +23,11 @@ export const bidiStreamProxy = (
     metadata = combineMetadata(metadata || new Metadata(), defaultMetadata)
     options = setDeadline(options, defaultOptions)
 
-    const ctx = createContext({ metadata, options })
+    const ctx = createContext({ metadata, options, methodOptions })
 
-    const call = func.apply(client, [metadata, options])
+    let ctxMetadata = ctx.method.metadata
+    let ctxOptions = ctx.method.options
+    const call = func.apply(client, [ctxMetadata, ctxOptions])
 
     call.writeAll = (messages: any[]) => {
       if (Array.isArray(messages)) {
@@ -42,10 +45,10 @@ export const bidiStreamProxy = (
     const handler = async () => {
       call.readAll = () => {
         call.on('metadata', (metadata: Metadata) => {
-          ctx.res.metadata = metadata
+          ctx.metadata = metadata
         })
         call.on('status', (status: StatusObject) => {
-          ctx.res.status = status
+          ctx.status = status
         })
         return iterator(call, 'data', {
           resolutionEvents: ['status', 'end']
@@ -57,7 +60,7 @@ export const bidiStreamProxy = (
     })
 
     call.readEnd = () => {
-      return ctx.res
+      return createResponse(ctx)
     }
 
     return call

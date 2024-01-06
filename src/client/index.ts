@@ -58,10 +58,10 @@ export default class Clients {
       return this._proxyClientMap.get(cacheKey)
     }
 
-    const fn = compose(this._middleware)
+    const composeFunc = compose(this._middleware)
 
     const client = this._clientFactory.create(isDefaultClient, name, addr, credentials, channelOptions)
-    const proxy = clientProxy(client, { timeout }, fn)
+    const proxy = clientProxy(client, { timeout }, composeFunc)
     this._proxyClientMap.set(cacheKey, proxy)
     return proxy
   }

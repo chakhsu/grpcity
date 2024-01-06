@@ -3,7 +3,7 @@ import { loader } from './loader.js'
 const start = async (addr) => {
   await loader.init({
     isDev: true,
-    packagePrefix: 'dev'
+    packagePrefix: 'test'
   })
 
   const clients = await loader.initClients({
@@ -22,7 +22,7 @@ const start = async (addr) => {
     const beginTime = new Date().getTime()
     await next()
     const endTime = new Date().getTime()
-    console.log(ctx.path, ctx.res.response, endTime - beginTime)
+    console.log(ctx.path, ctx.response, endTime - beginTime)
   }
 
   clients.use(logMiddleware)

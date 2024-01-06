@@ -1,15 +1,16 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
-import { createContext } from './clientContext'
+import { createContext, createResponse } from './clientContext'
 import { UntypedServiceImplementation, Metadata, StatusObject } from '@grpc/grpc-js'
 
 export const clientStreamProxy = (
   client: UntypedServiceImplementation,
   func: any,
+  composeFunc: Function,
   defaultMetadata: Record<string, unknown>,
   defaultOptions: Record<string, unknown>,
-  composeFunc: Function
+  methodOptions: { requestStream: boolean; responseStream: boolean }
 ) => {
   return async (metadata?: Metadata, options?: Record<string, unknown>): Promise<any> => {
     if (typeof options === 'function') {
@@ -21,14 +22,16 @@ export const clientStreamProxy = (
     metadata = combineMetadata(metadata || new Metadata(), defaultMetadata)
     options = setDeadline(options, defaultOptions)
 
-    const ctx = createContext({ metadata, options })
+    const ctx = createContext({ metadata, options, methodOptions })
 
-    const argumentsList: Array<any> = [metadata, options]
+    let ctxMetadata = ctx.method.metadata
+    let ctxOptions = ctx.method.options
+    const argumentsList: Array<any> = [ctxMetadata, ctxOptions]
     argumentsList.push((err: any, response: any) => {
       if (err) {
-        throw createClientError(err, metadata)
+        throw createClientError(err, ctxMetadata)
       }
-      ctx.res.response = response
+      ctx.response = response
     })
 
     const call = func.apply(client, argumentsList)
@@ -45,10 +48,10 @@ export const clientStreamProxy = (
       call.end()
       await new Promise<void>((resolve, _) => {
         call.on('metadata', (metadata: Metadata) => {
-          ctx.res.metadata = metadata
+          ctx.metadata = metadata
         })
         call.on('status', (status: StatusObject) => {
-          ctx.res.status = status
+          ctx.status = status
           resolve()
         })
       })
@@ -58,7 +61,7 @@ export const clientStreamProxy = (
       await composeFunc(ctx, handler).catch((err: Error) => {
         throw createClientError(err, metadata)
       })
-      return ctx.res
+      return createResponse(ctx)
     }
 
     return call

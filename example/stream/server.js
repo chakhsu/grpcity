@@ -61,7 +61,7 @@ class Stream {
 const start = async (addr) => {
   await loader.init({
     isDev: true,
-    packagePrefix: 'dev'
+    packagePrefix: 'test'
   })
 
   const server = await loader.initServer()
