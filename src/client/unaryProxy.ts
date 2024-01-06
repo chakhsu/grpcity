@@ -1,8 +1,10 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
-import { createContext, createResponse } from './clientContext'
-import { UntypedServiceImplementation, Metadata, StatusObject } from '@grpc/grpc-js'
+import { createContext, createResponse, ClientResponse } from './clientContext'
+import { UntypedServiceImplementation, Metadata, StatusObject, ClientUnaryCall } from '@grpc/grpc-js'
+
+export type { ClientUnaryCall } from '@grpc/grpc-js'
 
 export const unaryProxy = (
   client: UntypedServiceImplementation,
@@ -12,7 +14,7 @@ export const unaryProxy = (
   defaultOptions: Record<string, unknown>,
   methodOptions: { requestStream: boolean; responseStream: boolean }
 ) => {
-  return async (request?: any, metadata?: Metadata, options?: Record<string, unknown>): Promise<any> => {
+  return async (request?: any, metadata?: Metadata, options?: Record<string, unknown>): Promise<ClientResponse> => {
     if (typeof options === 'function') {
       throw new Error('gRPCity: AsyncFunction should not contain a callback function')
     } else if (typeof metadata === 'function') {
@@ -37,7 +39,7 @@ export const unaryProxy = (
           ctx.response = response
         })
 
-        const call = func.apply(client, argumentsList)
+        const call: ClientUnaryCall = func.apply(client, argumentsList)
 
         call.on('metadata', (metadata: Metadata) => {
           ctx.metadata = metadata

@@ -6,10 +6,10 @@ import { clientProxy } from './clientProxy'
 import { isString } from '../utils/string'
 import { compose } from '../utils/compose'
 import type { MiddlewareFunction } from '../utils/compose'
-import type { ClientsOptionsType, AddressObject } from '../schema/loader'
-import type { ClientOptionsType } from '../schema/client'
+import type { ClientsOptions, AddressObject } from '../schema/loader'
+import type { ClientOptions } from '../schema/client'
 
-const prepareUrl = (url: ClientOptionsType['url']) => {
+const prepareUrl = (url: ClientOptions['url']) => {
   return {
     isDefaultClient: !!url,
     addr: isString(url) ? (url as string) : (url as AddressObject)?.host + ':' + (url as AddressObject)?.port
@@ -20,9 +20,9 @@ export default class Clients {
   private _middleware: MiddlewareFunction[] = []
   private _proxyClientMap: Map<string, any> = new Map()
   private _clientFactory: ClientFactory
-  private _credentials: ClientsOptionsType['credentials']
+  private _credentials: ClientsOptions['credentials']
 
-  constructor(loader: ProtoLoader, options: ClientsOptionsType) {
+  constructor(loader: ProtoLoader, options: ClientsOptions) {
     this._clientFactory = new ClientFactory(loader)
     const { services, channelOptions, credentials } = options
 
@@ -43,7 +43,7 @@ export default class Clients {
     return this
   }
 
-  get(name: string, clientOptions: ClientOptionsType = {}) {
+  get(name: string, clientOptions: ClientOptions = {}) {
     let { url, channelOptions, credentials, timeout } = clientOptions
     const { isDefaultClient, addr } = prepareUrl(url)
 
@@ -66,8 +66,8 @@ export default class Clients {
     return proxy
   }
 
-  getReal(name: string, clientOptions: ClientOptionsType = {}) {
-    let { url, channelOptions, credentials } = clientOptions as ClientOptionsType
+  getReal(name: string, clientOptions: ClientOptions = {}) {
+    let { url, channelOptions, credentials } = clientOptions as ClientOptions
 
     if (!credentials) {
       credentials = this._credentials

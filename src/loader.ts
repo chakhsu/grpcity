@@ -8,8 +8,8 @@ import { isString } from './utils/string'
 import { get } from './utils/object'
 import { prefixingDefinition } from './utils/definition'
 import { assertProtoFileOptionsOptions, attemptInitOptions, attemptInitClientsOptions } from './schema/loader'
-import type { ClientsOptionsType, ServerOptionsType } from './schema/loader'
-import type { ProtoFileOptionsType, ProtoFileOptionType, InitOptionsType } from './schema/loader'
+import type { ClientsOptions, ServerOptions } from './schema/loader'
+import type { ProtoFileOptions, ProtoFileOptionType, InitOptions } from './schema/loader'
 
 export class ProtoLoader {
   private _protoFiles: ProtoFileOptionType[]
@@ -20,12 +20,12 @@ export class ProtoLoader {
   private _insecureClientCredentials?: grpc.ChannelCredentials
   private _insecureServerCredentials?: grpc.ServerCredentials
 
-  constructor(protoFileOptions: ProtoFileOptionsType) {
+  constructor(protoFileOptions: ProtoFileOptions) {
     assertProtoFileOptionsOptions(protoFileOptions)
     this._protoFiles = Array.isArray(protoFileOptions) ? protoFileOptions : [protoFileOptions]
   }
 
-  async init(InitOptions?: InitOptionsType) {
+  async init(InitOptions?: InitOptions) {
     const newInitOptions = attemptInitOptions(InitOptions)
 
     if (this._types) {
@@ -60,7 +60,7 @@ export class ProtoLoader {
     }
   }
 
-  async initClients(options: ClientsOptionsType) {
+  async initClients(options: ClientsOptions) {
     if (!this._packageDefinition) {
       await this.init()
     }
@@ -68,7 +68,7 @@ export class ProtoLoader {
     return new Clients(this, clientsOptions)
   }
 
-  async initServer(options?: ServerOptionsType) {
+  async initServer(options?: ServerOptions) {
     if (!this._packageDefinition) {
       await this.init()
     }

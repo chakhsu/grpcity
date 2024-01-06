@@ -1,9 +1,16 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
-import { createContext, createResponse } from './clientContext'
-import iterator from '../utils/iterator'
-import { UntypedServiceImplementation, Metadata, StatusObject } from '@grpc/grpc-js'
+import { createContext, createResponse, ClientResponse } from './clientContext'
+import Iterator from '../utils/iterator'
+import { UntypedServiceImplementation, Metadata, StatusObject, ClientDuplexStream, InterceptingCall } from '@grpc/grpc-js'
+
+export type ClientDuplexStreamCall = ClientDuplexStream<Request, Response> & {
+  writeAll: (message: any[]) => void
+  writeEnd: Function
+  readAll: () => Iterator<any, any, any>
+  readEnd: () => ClientResponse
+}
 
 export const bidiStreamProxy = (
   client: UntypedServiceImplementation,
@@ -13,7 +20,7 @@ export const bidiStreamProxy = (
   defaultOptions: Record<string, unknown>,
   methodOptions: { requestStream: boolean; responseStream: boolean }
 ) => {
-  return async (metadata?: Metadata, options?: Record<string, unknown>): Promise<any> => {
+  return async (metadata?: Metadata, options?: Record<string, unknown>): Promise<ClientDuplexStreamCall> => {
     if (typeof options === 'function') {
       throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
     } else if (typeof metadata === 'function') {
@@ -51,7 +58,7 @@ export const bidiStreamProxy = (
           ctx.status = status
           ctx.peer = call.getPeer()
         })
-        return iterator(call, 'data', {
+        return Iterator(call, 'data', {
           resolutionEvents: ['status', 'end']
         })
       }

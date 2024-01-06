@@ -1,9 +1,14 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
-import iterator from '../utils/iterator'
-import { createContext, createResponse } from './clientContext'
-import { UntypedServiceImplementation, Metadata, StatusObject } from '@grpc/grpc-js'
+import Iterator from '../utils/iterator'
+import { createContext, createResponse, ClientResponse } from './clientContext'
+import { UntypedServiceImplementation, Metadata, StatusObject, ClientReadableStream } from '@grpc/grpc-js'
+
+export type ClientReadableStreamCall = ClientReadableStream<Request> & {
+  readAll: () => Iterator<any, any, any>
+  readEnd: () => ClientResponse
+}
 
 export const serverStreamProxy = (
   client: UntypedServiceImplementation,
@@ -13,7 +18,7 @@ export const serverStreamProxy = (
   defaultOptions: Record<string, unknown>,
   methodOptions: { requestStream: boolean; responseStream: boolean }
 ) => {
-  return async (request?: any, metadata?: Metadata, options?: Record<string, unknown>): Promise<any> => {
+  return async (request?: any, metadata?: Metadata, options?: Record<string, unknown>): Promise<ClientReadableStreamCall> => {
     if (typeof options === 'function') {
       throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
     } else if (typeof metadata === 'function') {
@@ -43,7 +48,7 @@ export const serverStreamProxy = (
           ctx.status = status
           ctx.peer = call.getPeer()
         })
-        return iterator(call, 'data', {
+        return Iterator(call, 'data', {
           resolutionEvents: ['status', 'end']
         })
       }

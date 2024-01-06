@@ -3,13 +3,20 @@ import iterator from '../utils/iterator'
 import { createContext } from './serverContext'
 import { createServerError } from './serverError'
 
+export type ServerDuplexStream = grpc.ServerDuplexStream<any, any> & {
+  writeAll: (message: any[]) => void
+  readAll: Function
+}
+
+export type HandleBidiStreamingCall = (call: ServerDuplexStream) => void
+
 export const callBidiStreamProxy = (
   target: any,
   key: string,
   composeFunc: Function,
   methodOptions: { requestStream: boolean; responseStream: boolean }
-): grpc.handleBidiStreamingCall<any, any> => {
-  return (call: any) => {
+): HandleBidiStreamingCall => {
+  return (call) => {
     const ctx = createContext(call, methodOptions)
 
     call.writeAll = (messages: any[]) => {

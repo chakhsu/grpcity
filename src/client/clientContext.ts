@@ -41,7 +41,14 @@ export const createContext = (args: createContextOptions): ClientContextType => 
   }
 }
 
-export const createResponse = (ctx: ClientContextType) => {
+export type ClientResponse = {
+  status?: grpc.StatusObject
+  peer?: string
+  metadata?: grpc.Metadata
+  response?: any
+}
+
+export const createResponse = (ctx: ClientContextType): ClientResponse => {
   return {
     status: ctx.status,
     peer: ctx.peer,

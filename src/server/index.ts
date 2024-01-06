@@ -5,7 +5,7 @@ import { isString } from '../utils/string'
 import { assignServerOptions } from '../schema/server'
 import { ProtoLoader } from '../loader'
 import { callbackify } from './callbackify'
-import type { ServerOptionsType } from '../schema/loader'
+import type { ServerOptions } from '../schema/loader'
 import type { MiddlewareFunction } from '../utils/compose'
 import type { CallbackifyOptions } from './callbackify'
 
@@ -14,7 +14,7 @@ export default class Server {
   private _loader?: ProtoLoader
   private _server?: grpc.Server
 
-  constructor(loader: ProtoLoader, options?: ServerOptionsType) {
+  constructor(loader: ProtoLoader, options?: ServerOptions) {
     this._loader = loader
     if (!this._loader) {
       this._loader = loader
@@ -25,16 +25,16 @@ export default class Server {
     }
   }
 
-  async listen(addr: any, credentials?: grpc.ServerCredentials): Promise<void> {
+  async listen(addr: string | { host: string; port: number }, credentials?: grpc.ServerCredentials): Promise<void> {
     assert(this._server, 'must be first init() server before server listen()')
 
-    const url = isString(addr) ? addr : `${addr.host}:${addr.port}`
+    const url = isString(addr) ? (addr as string) : `${(addr as any).host}:${(addr as any).port}`
     const bindPort = await new Promise<number>((resolve, reject) => {
       this._server!.bindAsync(url, credentials || (this._loader as ProtoLoader).makeServerCredentials(), (err, result) =>
         err ? reject(err) : resolve(result)
       )
     })
-    const port = addr.port ? addr.port : Number(addr.match(/:(\d+)/)![1])
+    const port = (addr as any).port ? (addr as any).port : Number((addr as string).match(/:(\d+)/)![1])
     assert(bindPort === port, 'server bind port not to be right')
 
     this._server!.start()

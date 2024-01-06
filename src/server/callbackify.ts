@@ -1,10 +1,10 @@
 import assert from 'node:assert'
 import * as util from 'node:util'
 import { compose, MiddlewareFunction } from '../utils/compose'
-import { callUnaryProxy } from './callUnaryProxy'
-import { callClientStreamProxy } from './callClientStreamProxy'
-import { callServerStreamProxy } from './callServerStreamProxy'
-import { callBidiStreamProxy } from './callBidiStreamProxy'
+import { callUnaryProxy } from './unaryCallProxy'
+import { callClientStreamProxy } from './clientStreamingCallProxy'
+import { callServerStreamProxy } from './serverStreamingCallProxy'
+import { callBidiStreamProxy } from './bidiStreamingCallProxy'
 
 export type CallbackifyOptions = {
   _implementationType: Record<string, { requestStream: boolean; responseStream: boolean }>

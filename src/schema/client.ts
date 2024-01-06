@@ -19,7 +19,7 @@ const ClientOptionsSchema = Joi.object({
     .default(1000 * 10)
 }).optional()
 
-export type ClientOptionsType = {
+export type ClientOptions = {
   url?: Address
   channelOptions?: ChannelOptions
   credentials?: ChannelCredentials
@@ -27,6 +27,6 @@ export type ClientOptionsType = {
   [key: string]: any
 }
 
-export const attemptClientOptions = (options: ClientOptionsType) => {
+export const attemptClientOptions = (options: ClientOptions) => {
   return Joi.attempt(options || {}, ClientOptionsSchema)
 }

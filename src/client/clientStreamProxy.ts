@@ -1,8 +1,13 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
-import { createContext, createResponse } from './clientContext'
-import { UntypedServiceImplementation, Metadata, StatusObject } from '@grpc/grpc-js'
+import { createContext, createResponse, ClientResponse } from './clientContext'
+import { UntypedServiceImplementation, Metadata, StatusObject, ClientWritableStream } from '@grpc/grpc-js'
+
+export type ClientWritableStreamCall = ClientWritableStream<Request> & {
+  writeAll: (message: any[]) => void
+  writeEnd: () => Promise<ClientResponse>
+}
 
 export const clientStreamProxy = (
   client: UntypedServiceImplementation,
@@ -12,7 +17,7 @@ export const clientStreamProxy = (
   defaultOptions: Record<string, unknown>,
   methodOptions: { requestStream: boolean; responseStream: boolean }
 ) => {
-  return async (metadata?: Metadata, options?: Record<string, unknown>): Promise<any> => {
+  return async (metadata?: Metadata, options?: Record<string, unknown>): Promise<ClientWritableStreamCall> => {
     if (typeof options === 'function') {
       throw new Error('gRPCity: asyncStreamFunction should not contain a callback function')
     } else if (typeof metadata === 'function') {
@@ -34,7 +39,7 @@ export const clientStreamProxy = (
       ctx.response = response
     })
 
-    const call = func.apply(client, argumentsList)
+    const call: ClientWritableStreamCall = func.apply(client, argumentsList)
 
     call.writeAll = (messages: any[]) => {
       if (Array.isArray(messages)) {

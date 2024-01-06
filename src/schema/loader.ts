@@ -5,7 +5,7 @@ import { defaultLoadOptions } from '../config/defaultLoadOptions'
 import { defaultChannelOptions } from '../config/defaultChannelOptions'
 
 export type { Options as LoaderOptions } from '@grpc/proto-loader'
-export type { ChannelOptions as ServerOptionsType } from '@grpc/grpc-js'
+export type { ChannelOptions as ServerOptions } from '@grpc/grpc-js'
 
 const protoFileOptionsSchema = Joi.array()
   .items(
@@ -21,9 +21,9 @@ export type ProtoFileOptionType = {
   files: string[]
 }
 
-export type ProtoFileOptionsType = ProtoFileOptionType[] | ProtoFileOptionType
+export type ProtoFileOptions = ProtoFileOptionType[] | ProtoFileOptionType
 
-export const assertProtoFileOptionsOptions = (options: ProtoFileOptionsType) => {
+export const assertProtoFileOptionsOptions = (options: ProtoFileOptions) => {
   Joi.assert(options, protoFileOptionsSchema, 'new ProtoLoader() params error')
 }
 
@@ -33,7 +33,7 @@ export type AddressObject = {
 }
 export type Address = AddressObject | string
 
-export type InitOptionsType = {
+export type InitOptions = {
   isDev?: boolean
   packagePrefix?: string
   loadOptions?: LoaderOptions
@@ -55,7 +55,7 @@ const InitOptionsSchema = Joi.object({
   loadOptions: Joi.object().optional().default(defaultLoadOptions)
 })
 
-export const attemptInitOptions = (options?: InitOptionsType) => {
+export const attemptInitOptions = (options?: InitOptions) => {
   return Joi.attempt(options || {}, InitOptionsSchema)
 }
 
@@ -65,12 +65,12 @@ const ClientsOptionsSchema = Joi.object({
   channelOptions: Joi.object().optional().default(defaultChannelOptions)
 })
 
-export type ClientsOptionsType = {
+export type ClientsOptions = {
   services: Record<string, Address>
   channelOptions?: ChannelOptions
   credentials?: ChannelCredentials
 }
 
-export const attemptInitClientsOptions = (options: ClientsOptionsType) => {
+export const attemptInitClientsOptions = (options: ClientsOptions) => {
   return Joi.attempt(options || {}, ClientsOptionsSchema)
 }

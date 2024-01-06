@@ -3,13 +3,19 @@ import iterator from '../utils/iterator'
 import { createContext } from './serverContext'
 import { createServerError } from './serverError'
 
+export type ServerReadableStream = grpc.ServerReadableStream<any, any> & {
+  readAll: Function
+}
+
+export type HandleClientStreamingCall = (call: ServerReadableStream, callback: grpc.sendUnaryData<Response>) => void
+
 export const callClientStreamProxy = (
   target: any,
   key: string,
   composeFunc: Function,
   methodOptions: { requestStream: boolean; responseStream: boolean }
-): grpc.handleClientStreamingCall<any, any> => {
-  return (call: any, callback) => {
+): HandleClientStreamingCall => {
+  return (call, callback) => {
     const ctx = createContext(call, methodOptions)
 
     call.readAll = () => {
