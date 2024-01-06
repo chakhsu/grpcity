@@ -1,9 +1,9 @@
 import assert from 'node:assert'
-import * as _ from 'lodash-es'
 import { ProtoLoader } from '../loader'
 import { ClientFactory } from './clientFactory'
 import { clientProxy } from './clientProxy'
 
+import { isString } from '../utils/string'
 import { compose } from '../utils/compose'
 import type { MiddlewareFunction } from '../utils/compose'
 import type { ClientsOptionsType, AddressObject } from '../schema/loader'
@@ -12,7 +12,7 @@ import type { ClientOptionsType } from '../schema/client'
 const prepareUrl = (url: ClientOptionsType['url']) => {
   return {
     isDefaultClient: !!url,
-    addr: _.isString(url) ? (url as string) : (url as AddressObject)?.host + ':' + (url as AddressObject)?.port
+    addr: isString(url) ? (url as string) : (url as AddressObject)?.host + ':' + (url as AddressObject)?.port
   }
 }
 
@@ -34,7 +34,7 @@ export default class Clients {
     serviceNames.forEach((name) => {
       const isDefault = true
 
-      const addr = _.isString(services[name])
+      const addr = isString(services[name])
         ? (services[name] as string)
         : (services[name] as AddressObject).host + ':' + (services[name] as AddressObject).port
 

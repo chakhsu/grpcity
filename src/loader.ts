@@ -1,12 +1,11 @@
 import assert from 'node:assert'
 import * as grpc from '@grpc/grpc-js'
 import * as protoLoader from '@grpc/proto-loader'
-import * as protobuf from 'protobufjs'
-import * as Descriptor from 'protobufjs/ext/descriptor'
-import * as _ from 'lodash-es'
 
 import Server from './server'
 import Clients from './client'
+import { isString } from './utils/string'
+import { get } from './utils/object'
 import { prefixingDefinition } from './utils/definition'
 import { assertProtoFileOptionsOptions, attemptInitOptions, attemptInitClientsOptions } from './schema/loader'
 import type { ClientsOptionsType, ServerOptionsType } from './schema/loader'
@@ -20,7 +19,6 @@ export class ProtoLoader {
   private _packageDefinition?: protoLoader.PackageDefinition
   private _insecureClientCredentials?: grpc.ChannelCredentials
   private _insecureServerCredentials?: grpc.ServerCredentials
-  private _reflectedRoot?: protobuf.Root
 
   constructor(protoFileOptions: ProtoFileOptionsType) {
     assertProtoFileOptionsOptions(protoFileOptions)
@@ -104,9 +102,9 @@ export class ProtoLoader {
     if (typeof initialValues === 'object') {
       Object.entries(initialValues).forEach(([key, value]: [string, any]) => {
         if (Array.isArray(value)) {
-          value.map((v) => meta.add(key, _.isString(v) ? v : Buffer.from(v)))
+          value.map((v) => meta.add(key, isString(v) ? v : Buffer.from(v)))
         } else {
-          meta.add(key, _.isString(value) ? value : Buffer.from(value))
+          meta.add(key, isString(value) ? value : Buffer.from(value))
         }
       })
     }
@@ -116,7 +114,7 @@ export class ProtoLoader {
   service(name: string) {
     assert(this._types, 'Must called loader init() first. proto file has not been loaded.')
     const fullName = this._isDev ? `${this._packagePrefix}.${name}` : name
-    const service = _.get(this._types, `${fullName}`)
+    const service = get(this._types, `${fullName}`)
     assert(service, `Cannot find service with name: ${fullName}, please check whether the protos file is configured incorrectly.`)
     return (service as grpc.ServiceClientConstructor).service
   }
@@ -124,30 +122,8 @@ export class ProtoLoader {
   type(name: string) {
     assert(this._types, 'Must called loader init() first. proto file has not been loaded.')
     const fullName = this._isDev ? `${this._packagePrefix}.${name}` : name
-    const type = _.get(this._types, `${fullName}`)
+    const type = get(this._types, `${fullName}`)
     assert(type, `Cannot find type with name: ${fullName}, please check whether the protos file is configured incorrectly.`)
     return type
-  }
-
-  message(name: string) {
-    let root = this._reflectedRoot
-
-    if (root) {
-      const found = root.lookupType(name)
-      if (found) {
-        return found
-      }
-    }
-
-    const descriptor = (this.type(name) as grpc.ProtobufTypeDefinition).fileDescriptorProtos.map((proto: any) =>
-      Descriptor.FileDescriptorProto.decode(proto)
-    )
-    root = (protobuf.Root as protobuf.RootConstructor).fromDescriptor({
-      file: descriptor as Descriptor.IFileDescriptorProto[]
-    })
-
-    this._reflectedRoot = root
-
-    return root.lookupType(name)
   }
 }

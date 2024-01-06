@@ -1,6 +1,6 @@
 import assert from 'node:assert'
 import * as grpc from '@grpc/grpc-js'
-import * as _ from 'lodash-es'
+import { isString } from '../utils/string'
 
 import { assignServerOptions } from '../schema/server'
 import { ProtoLoader } from '../loader'
@@ -28,7 +28,7 @@ export default class Server {
   async listen(addr: any, credentials?: grpc.ServerCredentials): Promise<void> {
     assert(this._server, 'must be first init() server before server listen()')
 
-    const url = _.isString(addr) ? addr : `${addr.host}:${addr.port}`
+    const url = isString(addr) ? addr : `${addr.host}:${addr.port}`
     const bindPort = await new Promise<number>((resolve, reject) => {
       this._server!.bindAsync(url, credentials || (this._loader as ProtoLoader).makeServerCredentials(), (err, result) =>
         err ? reject(err) : resolve(result)
