@@ -40,7 +40,6 @@ export default class Clients {
 
       this._clientFactory.create(isDefault, name, addr, credentials, channelOptions)
     })
-    return this
   }
 
   get(name: string, clientOptions: ClientOptions = {}) {

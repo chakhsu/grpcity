@@ -1,6 +1,6 @@
 import * as grpc from '@grpc/grpc-js'
 
-export type ClientContextType = {
+export type ClientContext = {
   path: string
   method: {
     requestStream: boolean
@@ -26,7 +26,7 @@ type createContextOptions = {
   }
 }
 
-export const createContext = (args: createContextOptions): ClientContextType => {
+export const createContext = (args: createContextOptions): ClientContext => {
   const { request, metadata, options, methodOptions } = args
   const { requestStream, responseStream } = methodOptions
   return {
@@ -34,7 +34,7 @@ export const createContext = (args: createContextOptions): ClientContextType => 
     method: {
       requestStream: requestStream || false,
       responseStream: responseStream || false,
-      metadata: metadata.clone(),
+      metadata: metadata?.clone() || new grpc.Metadata(),
       options
     },
     request: request || {}
@@ -48,7 +48,7 @@ export type ClientResponse = {
   response?: any
 }
 
-export const createResponse = (ctx: ClientContextType): ClientResponse => {
+export const createResponse = (ctx: ClientContext): ClientResponse => {
   return {
     status: ctx.status,
     peer: ctx.peer,

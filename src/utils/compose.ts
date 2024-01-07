@@ -1,4 +1,6 @@
-export type MiddlewareFunction = (context: any, next: () => Promise<any>) => Promise<any>
+export type Next = () => Promise<any>
+
+export type MiddlewareFunction = (context: any, next: Next) => Promise<any>
 
 export const compose = (middleware: MiddlewareFunction[]): Function => {
   if (!Array.isArray(middleware)) throw new TypeError('Middleware stack must be an array!')
@@ -6,7 +8,7 @@ export const compose = (middleware: MiddlewareFunction[]): Function => {
     if (typeof fn !== 'function') throw new TypeError('Middleware must be composed of functions!')
   }
 
-  return function (context: any, next: () => Promise<any>) {
+  return function (context: any, next: Next) {
     let index = -1
     return dispatch(0)
     function dispatch(i: number): Promise<any> {

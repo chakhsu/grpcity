@@ -29,6 +29,9 @@ export const callServerStreamProxy = (
 
     Promise.resolve().then(async () => {
       const handleResponse = async () => {
+        if (call.request) {
+          call.request = ctx.request
+        }
         await target[key](call)
       }
       await composeFunc(ctx, handleResponse).catch((err: Error) => {

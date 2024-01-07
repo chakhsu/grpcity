@@ -17,6 +17,9 @@ export const callUnaryProxy = (
 
     Promise.resolve().then(async () => {
       const handleResponse = async () => {
+        if (call.request) {
+          call.request = ctx.request
+        }
         ctx.response = await target[key](call)
       }
       await composeFunc(ctx, handleResponse).catch((err: Error) => {
