@@ -33,19 +33,19 @@ const start = async (addr) => {
   await client.unaryHello({ message: 'gRPCity' }, meta)
 
   // stream client to server
-  // const clientStreamHelloCall = await client.clientStreamHello(meta)
-  // clientStreamHelloCall.write({ message: 'Hello!' })
-  // clientStreamHelloCall.write({ message: 'How are you?' })
-  // await clientStreamHelloCall.writeEnd()
+  const clientStreamHelloCall = await client.clientStreamHello(meta)
+  clientStreamHelloCall.write({ message: 'Hello!' })
+  clientStreamHelloCall.write({ message: 'How are you?' })
+  await clientStreamHelloCall.writeEnd()
 
   // client to stream server
-  // const serverStreamHelloCall = await client.serverStreamHello({ message: 'Hello! How are you?' }, meta)
-  // const serverReadAllResult = serverStreamHelloCall.readAll()
-  // for await (const data of serverReadAllResult) {
-  //   console.log(data)
-  // }
-  // const serverReadEndResult = await serverStreamHelloCall.readEnd()
-  // console.log(serverReadEndResult)
+  const serverStreamHelloCall = await client.serverStreamHello({ message: 'Hello! How are you?' }, meta)
+  const serverReadAllResult = serverStreamHelloCall.readAll()
+  for await (const data of serverReadAllResult) {
+    console.log(data)
+  }
+  const serverReadEndResult = await serverStreamHelloCall.readEnd()
+  console.log(serverReadEndResult)
 
   // stream client to stream server
   const mutualStreamHelloCall = await client.mutualStreamHello(meta)

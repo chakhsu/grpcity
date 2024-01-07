@@ -77,10 +77,10 @@ describe('gRPC Unary Call', () => {
       services: { 'helloworld.Greeter': addr }
     })
     const greeterClient = clients.get('helloworld.Greeter')
-    const { status, metadata, peer, response } = await greeterClient.sayGreet({ name: 'test' })
+    const { status, metadata, peer, response } = await greeterClient.sayGreet({ name: 'grpcity' })
 
     expect(typeof response).toBe('object')
-    expect(response.message).toBe('hello, test')
+    expect(response.message).toBe('hello, grpcity')
     expect(status.code).toBe(0)
     expect(metadata.get('x-service-path')[0]).toBe('/helloworld.Greeter/SayGreet')
     expect(peer).toBe(addr.host + ':' + addr.port)
@@ -132,7 +132,7 @@ describe('gRPC Unary Call', () => {
 
     const { status, metadata, peer, response } = (await new Promise((resolve, reject) => {
       const result: any = {}
-      const call = greeterClient.call.sayGreet({ name: 'test' }, meta, (err: Error, response: any) => {
+      const call = greeterClient.call.sayGreet({ name: 'grpcity' }, meta, (err: Error, response: any) => {
         if (err) {
           reject(err)
         } else {
@@ -150,7 +150,7 @@ describe('gRPC Unary Call', () => {
     })) as any
 
     expect(typeof response).toBe('object')
-    expect(response.message).toBe('hello, test')
+    expect(response.message).toBe('hello, grpcity')
     expect(status.code).toBe(0)
     expect(metadata.get('x-test-name')[0]).toBe('grpcity')
     expect(peer.includes(addr.host + ':' + addr.port)).toBeTruthy
