@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { ProtoLoader } from '../src'
 
-describe('ProtoLoader', () => {
+describe('gRPC Proto Loader', () => {
   test('Should be load a single proto path', async () => {
     const loader = new ProtoLoader({
       location: path.join(__dirname, '../example/proto'),
