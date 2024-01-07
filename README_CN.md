@@ -17,15 +17,15 @@
 - **API**: 通信协议以 gRPC 为基础，通过 Protobuf 进行定义；
 - **Protobuf**: 只支持动态 pb 加载，简化了 pb 文件的加载流程；
 - **Client**: 一次配置，随时随处调用，支持 multi-server 的调用；
-- **Server**: 简化了初始化流程，三步完成服务端的启动，支持 multi-server 的启动；
+- **Server**: 简化了初始化流程，三步完成启动，支持 multi-server 的启动；
+- **Credentials**: 客户端和服务端完整地支持了证书加载，提供了通信加密的能力；
 - **No-Route**: 无路由，rpc 与 method 天生绑定；
-- **Middleware**: 集成了跟 Koa 一样中间件机制，得到了 rpc 前后处理的能力；
+- **Middleware**: 客户端和服务端都支持中间件机制；
 - **Metadata**: 规范化了元信息的传递和获取；
 - **Error**: 提供了专有 Error 对象，保证异常捕捉后可以针对性处理；
 - **Promise**: rpc 方法内部支持了 promisify，同时也保留了 callbackify ；
 - **Config**: 与官方配置对齐，支持 pb load 配置和 gRPC channel 配置；
-- **Pattern**: 单例模式，保证了实例对象的唯一性；
-- **Typescript**: 支持，保证了 ts 和 js 的兼容性；
+- **Typescript**: 纯 TS 实现，类型齐全。
 
 ...还有更多等你发现。
 
@@ -66,8 +66,6 @@ message Message {
 ```js
 import GrpcLoader from 'grpcity'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default new GrpcLoader({
   location: path.join(__dirname, './'),
@@ -94,8 +92,8 @@ class Greeter {
 const start = async (addr) => {
   await loader.init()
 
-  const server = loader.initServer()
-  server.addService('helloworld.Greeter', new Greeter())
+  const server = await loader.initServer()
+  server.add('helloworld.Greeter', new Greeter())
 
   await server.listen(addr)
   console.log('gRPC Server is started: ', addr)
@@ -114,13 +112,13 @@ import loader from './loader.js'
 const start = async (addr) => {
   await loader.init()
 
-  await loader.initClients({
+  const clients = await loader.initClients({
     services: {
       'helloworld.Greeter': addr
     }
   })
 
-  const client = loader.client('helloworld.Greeter')
+  const client = clients.get('helloworld.Greeter')
   const result = await client.sayGreet({ message: 'greeter' })
   console.log('sayGreet', result.response)
 }
