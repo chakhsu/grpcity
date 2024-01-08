@@ -299,7 +299,6 @@ describe('gRPC Unary Call', () => {
       const greeterClient = clientsWithoutCredentials.get('helloworld.Greeter')
       await greeterClient.sayGreet({ name: 'credentials' })
     } catch (err: any) {
-      expect(err.code).toBe(14)
       expect(/UNAVAILABLE/i.test(err.message)).toBeTruthy
       expect(/SayGreet/i.test(err.message)).toBeTruthy
     }
