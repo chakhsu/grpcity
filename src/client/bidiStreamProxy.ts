@@ -2,13 +2,13 @@ import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
 import { createContext, createResponse, ClientResponse } from './clientContext'
-import Iterator from '../utils/iterator'
+import { iterator } from '../utils/iterator'
 import { UntypedServiceImplementation, Metadata, StatusObject, ClientDuplexStream, InterceptingCall } from '@grpc/grpc-js'
 
 export type ClientDuplexStreamCall = ClientDuplexStream<Request, Response> & {
   writeAll: (message: any[]) => void
   writeEnd: Function
-  readAll: () => Iterator<any, any, any>
+  readAll: () => AsyncIterator<any, any, any>
   readEnd: () => ClientResponse
 }
 
@@ -58,7 +58,7 @@ export const bidiStreamProxy = (
           ctx.status = status
           ctx.peer = call.getPeer()
         })
-        return Iterator(call, 'data', {
+        return iterator(call, 'data', {
           resolutionEvents: ['status', 'end']
         })
       }

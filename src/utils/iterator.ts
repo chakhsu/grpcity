@@ -16,7 +16,7 @@ const normalizeEmitter = (emitter: any): { addListener: Function; removeListener
 
 const toArray = (value: any): any[] => (Array.isArray(value) ? value : [value])
 
-export default (emitter: any, event: string | string[], options: any) => {
+export const iterator = (emitter: any, event: string | string[], options: any) => {
   if (typeof options === 'function') {
     options = { filter: options }
   }

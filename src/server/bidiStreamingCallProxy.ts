@@ -1,5 +1,5 @@
 import * as grpc from '@grpc/grpc-js'
-import iterator from '../utils/iterator'
+import { iterator } from '../utils/iterator'
 import { createContext } from './serverContext'
 import { createServerError } from './serverError'
 

@@ -1,12 +1,12 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
-import Iterator from '../utils/iterator'
+import { iterator } from '../utils/iterator'
 import { createContext, createResponse, ClientResponse } from './clientContext'
 import { UntypedServiceImplementation, Metadata, StatusObject, ClientReadableStream } from '@grpc/grpc-js'
 
 export type ClientReadableStreamCall = ClientReadableStream<Request> & {
-  readAll: () => Iterator<any, any, any>
+  readAll: () => AsyncIterator<any, any, any>
   readEnd: () => ClientResponse
 }
 
@@ -48,7 +48,7 @@ export const serverStreamProxy = (
           ctx.status = status
           ctx.peer = call.getPeer()
         })
-        return Iterator(call, 'data', {
+        return iterator(call, 'data', {
           resolutionEvents: ['status', 'end']
         })
       }
