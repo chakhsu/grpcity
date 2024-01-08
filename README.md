@@ -1,4 +1,4 @@
-# gRPCity ![build-status](https://github.com/chakhsu/grpcity/actions/workflows/tests.yml/badge.svg) ![npm](https://img.shields.io/npm/v/grpcity) ![license](https://img.shields.io/npm/l/grpcity) ![code-style](https://img.shields.io/badge/code_style-standard-brightgreen.svg)
+# gRPCity ![build-status](https://github.com/chakhsu/grpcity/actions/workflows/build.yml/badge.svg) ![npm](https://img.shields.io/npm/v/grpcity) ![license](https://img.shields.io/npm/l/grpcity)
 
 [English](./README.md) | [简体中文](./README_CN.md)
 
@@ -17,33 +17,26 @@ numerous advanced features to meet the needs of most development scenarios.
 
 Here is the feature:
 
-- **API**: The communication protocol is based on gRPC and defined using
-  Protobuf.
-- **Protobuf**: Supports only dynamic loading of pb, simplifying the loading
-  process of pb files.
-- **Client**: Configured once and can be called anytime, anywhere, supporting
-  multi-server invocation.
-- **Server**: Simplifies the initialization process, starting the server in
-  three steps, supporting multi-server startup.
+- **API**: Communication protocol is based on gRPC and defined through Protobuf.
+- **Protobuf**: Supports only dynamic load, simplifying the loading process of protobuf files.
+- **Client**: Configured once, callable anytime, anywhere, and supports multi-server invocation.
+- **Server**: Simplifies the initialization process with a three-step start, supporting multi-server deployment.
+- **Credentials**: Complete support for certificate loading on both the client and server, providing communication encryption capabilities.
 - **No-Route**: No routing, RPC is inherently bound to methods.
-- **Middleware**: Integrates middleware mechanism similar to Koa, providing pre
-  and post-processing capabilities for RPC.
+- **Middleware**: Both client and server support middleware.
 - **Metadata**: Standardizes the transmission and retrieval of metadata.
 - **Error**: Provides dedicated Error objects to ensure targeted handling of
   exceptions after catching.
 - **Promise**: Supports promisify internally in RPC methods while also
   preserving callbackify.
-- **Config**: Aligned with official configurations, supports pb load
-  configuration and gRPC channel configuration.
-- **Pattern**: Singleton pattern ensures the uniqueness of instance objects.
-- **Typescript**: Supported, ensuring compatibility between TS and JS.
+- **Config**: Aligned with official configurations, supports protobuf load configurations and gRPC channel configurations.
+- **Typescript**: Implemented purely in TypeScript with comprehensive types.
 
 ...and a lot more.
 
 ---
 
-View full documentation and examples on
-[grpcity.js.org](https://grpcity.js.org).
+View full documentation and examples on [grpcity.js.org](https://grpcity.js.org).
 
 ## Quick Start
 
@@ -78,8 +71,6 @@ Next, create `loader.js` and write the following code in it:
 ```js
 import GrpcLoader from 'grpcity'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default new GrpcLoader({
   location: path.join(__dirname, './'),
@@ -106,8 +97,8 @@ class Greeter {
 const start = async (addr) => {
   await loader.init()
 
-  const server = loader.initServer()
-  server.addService('helloworld.Greeter', new Greeter())
+  const server = await loader.initServer()
+  server.add('helloworld.Greeter', new Greeter())
 
   await server.listen(addr)
   console.log('gRPC Server is started: ', addr)
@@ -126,13 +117,13 @@ import loader from './loader.js'
 const start = async (addr) => {
   await loader.init()
 
-  await loader.initClients({
+  const clients = await loader.initClients({
     services: {
       'helloworld.Greeter': addr
     }
   })
 
-  const client = loader.client('helloworld.Greeter')
+  const client = clients.get('helloworld.Greeter')
   const result = await client.sayGreet({ message: 'greeter' })
   console.log('sayGreet', result.response)
 }
@@ -149,8 +140,7 @@ node ./client.js
 
 ---
 
-View full documentation and examples on
-[grpcity.js.org](https://grpcity.js.org).
+View full documentation and examples on [grpcity.js.org](https://grpcity.js.org).
 
 ## License
 
