@@ -1,5 +1,7 @@
 # gRPCity ![build-status](https://github.com/chakhsu/grpcity/actions/workflows/build.yml/badge.svg) ![npm](https://img.shields.io/npm/v/grpcity) ![license](https://img.shields.io/npm/l/grpcity)
 
+<img src="./docs/grpcity-logo.svg" width="160" height="160" alt="grpcity logo" align="right">
+
 [English](./README.md) | [简体中文](./README_CN.md)
 
 ## 介绍
@@ -64,10 +66,10 @@ message Message {
 然后，创建`loader.js`, 编写下面的代码到其中：
 
 ```js
-import GrpcLoader from 'grpcity'
+import { ProtoLoader } from 'grpcity'
 import path from 'node:path'
 
-export default new GrpcLoader({
+export default new ProtoLoader({
   location: path.join(__dirname, './'),
   files: ['greeter.proto']
 })
@@ -126,7 +128,7 @@ const start = async (addr) => {
 start('127.0.0.1:9099')
 ```
 
-完成编程工作之后，就可以通过下面的命令启动~
+完成编程工作之后，就可以在终端里执行下面命令进行启动~
 
 ```sh
 node ./server.js

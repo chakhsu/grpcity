@@ -1,5 +1,7 @@
 # gRPCity ![build-status](https://github.com/chakhsu/grpcity/actions/workflows/build.yml/badge.svg) ![npm](https://img.shields.io/npm/v/grpcity) ![license](https://img.shields.io/npm/l/grpcity)
 
+<img src="./docs/grpcity-logo.svg" width="160" height="160" alt="grpcity logo" align="right">
+
 [English](./README.md) | [简体中文](./README_CN.md)
 
 ## Introduction
@@ -69,10 +71,10 @@ message Message {
 Next, create `loader.js` and write the following code in it:
 
 ```js
-import GrpcLoader from 'grpcity'
+import { ProtoLoader } from 'grpcity'
 import path from 'node:path'
 
-export default new GrpcLoader({
+export default new ProtoLoader({
   location: path.join(__dirname, './'),
   files: ['greeter.proto']
 })
@@ -131,7 +133,7 @@ const start = async (addr) => {
 start('127.0.0.1:9099')
 ```
 
-Once the programming work is completed, you can start it by running:
+Once the programming work is completed, you can start it in the terminal by running:
 
 ```sh
 node ./server.js
