@@ -20,6 +20,7 @@ export type { HandleUnaryCall, ServerUnaryCall } from './server/unaryCallProxy'
 export type { HandleClientStreamingCall, ServerReadableStream } from './server/clientStreamingCallProxy'
 export type { HandleServerStreamingCall, ServerWritableStream } from './server/serverStreamingCallProxy'
 export type { HandleBidiStreamingCall, ServerDuplexStream } from './server/bidiStreamingCallProxy'
+export type { ReflectionServerOptions } from './server/serverReflection'
 
 // export grpc-js
 export type { Metadata, StatusObject } from '@grpc/grpc-js'

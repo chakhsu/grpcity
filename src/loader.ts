@@ -3,11 +3,12 @@ import * as grpc from '@grpc/grpc-js'
 import * as protoLoader from '@grpc/proto-loader'
 
 import Server from './server'
+import { Reflection, ReflectionServerOptions } from './server/serverReflection'
 import Clients from './client'
 import { isString } from './utils/string'
 import { get } from './utils/object'
 import { prefixingDefinition } from './utils/definition'
-import { assertProtoFileOptionsOptions, attemptInitOptions, attemptInitClientsOptions } from './schema/loader'
+import { assertProtoFileOptionsOptions, attemptInitOptions, attemptInitClientsOptions, attemptInitServerOptions } from './schema/loader'
 import type { ClientsOptions, ServerOptions } from './schema/loader'
 import type { ProtoFileOptions, ProtoFileOptionType, InitOptions } from './schema/loader'
 
@@ -48,7 +49,7 @@ export class ProtoLoader {
 
       const packageDefinition = await protoLoader.load(files, loadOptions)
 
-      if (this._packagePrefix) {
+      if (this._isDev && this._packagePrefix) {
         this._packageDefinition = prefixingDefinition(packageDefinition, packagePrefix)
       } else {
         this._packageDefinition = packageDefinition
@@ -72,7 +73,15 @@ export class ProtoLoader {
     if (!this._packageDefinition) {
       await this.init()
     }
-    return new Server(this, options)
+    const serverOptions = attemptInitServerOptions(options)
+    return new Server(this, serverOptions)
+  }
+
+  async initReflection(options?: ReflectionServerOptions) {
+    if (!this._packageDefinition) {
+      await this.init()
+    }
+    return new Reflection(this._packageDefinition as protoLoader.PackageDefinition, options)
   }
 
   makeClientCredentials(rootCerts?: Buffer, privateKey?: Buffer, certChain?: Buffer, verifyOptions?: any) {

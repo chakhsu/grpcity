@@ -24,6 +24,7 @@
 - **No-Route**: 无路由，rpc 与 method 天生绑定；
 - **Middleware**: 客户端和服务端都支持中间件机制；
 - **Metadata**: 规范化了元信息的传递和获取；
+- **Reflection**: 服务端内置 gRPC reflection API；
 - **Error**: 提供了专有 Error 对象，保证异常捕捉后可以针对性处理；
 - **Promise**: rpc 方法内部支持了 promisify，同时也保留了 callbackify ；
 - **Config**: 与官方配置对齐，支持 pb load 配置和 gRPC channel 配置；

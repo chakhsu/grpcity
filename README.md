@@ -27,6 +27,7 @@ Here is the feature:
 - **No-Route**: No routing, RPC is inherently bound to methods.
 - **Middleware**: Both client and server support middleware.
 - **Metadata**: Standardizes the transmission and retrieval of metadata.
+- **Reflection**: Built-in gRPC Reflection API in server.
 - **Error**: Provides dedicated Error objects to ensure targeted handling of
   exceptions after catching.
 - **Promise**: Supports promisify internally in RPC methods while also

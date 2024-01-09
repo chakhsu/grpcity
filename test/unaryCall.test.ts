@@ -273,9 +273,11 @@ describe('gRPC Unary Call', () => {
     )
 
     // server
-    const server = await loader.initServer()
+    const server = await loader.initServer({
+      credentials: serverCredentials
+    })
     server.add('helloworld.Greeter', new Greeter())
-    await server.listen(addr, serverCredentials)
+    await server.listen(addr)
 
     // client
     const clients = await loader.initClients({
@@ -349,6 +351,32 @@ describe('gRPC Unary Call', () => {
 
     expect(typeof response).toBe('object')
     expect(response.message).toBe('hello, grpcity3124')
+    expect(status.code).toBe(0)
+    expect(metadata.get('x-service-path')[0]).toBe('/helloworld.Greeter/SayGreet')
+    expect(peer).toBe(addr.host + ':' + addr.port)
+
+    await server.shutdown()
+  })
+
+  test('Should inject reflection from client to server', async () => {
+    await loader.init()
+    const reflection = await loader.initReflection()
+
+    // server
+    const server = await loader.initServer()
+    server.inject(reflection)
+    server.add('helloworld.Greeter', new Greeter())
+    await server.listen(addr)
+
+    // client
+    const clients = await loader.initClients({
+      services: { 'helloworld.Greeter': addr }
+    })
+    const greeterClient = clients.get('helloworld.Greeter')
+    const { status, metadata, peer, response } = await greeterClient.sayGreet({ name: 'grpcity' })
+
+    expect(typeof response).toBe('object')
+    expect(response.message).toBe('hello, grpcity')
     expect(status.code).toBe(0)
     expect(metadata.get('x-service-path')[0]).toBe('/helloworld.Greeter/SayGreet')
     expect(peer).toBe(addr.host + ':' + addr.port)

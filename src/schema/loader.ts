@@ -1,11 +1,10 @@
 import Joi from 'joi'
 import type { Options as LoaderOptions } from '@grpc/proto-loader'
-import type { ChannelOptions, ChannelCredentials } from '@grpc/grpc-js'
+import type { ChannelOptions, ChannelCredentials, ServerCredentials } from '@grpc/grpc-js'
 import { defaultLoadOptions } from '../config/defaultLoadOptions'
 import { defaultChannelOptions } from '../config/defaultChannelOptions'
 
 export type { Options as LoaderOptions } from '@grpc/proto-loader'
-export type { ChannelOptions as ServerOptions } from '@grpc/grpc-js'
 
 const protoFileOptionsSchema = Joi.array()
   .items(
@@ -73,4 +72,18 @@ export type ClientsOptions = {
 
 export const attemptInitClientsOptions = (options: ClientsOptions) => {
   return Joi.attempt(options || {}, ClientsOptionsSchema)
+}
+
+const ServerOptionsSchema = Joi.object({
+  channelOptions: Joi.object().optional().default(defaultChannelOptions),
+  credentials: Joi.any().optional()
+})
+
+export type ServerOptions = {
+  channelOptions?: ChannelOptions
+  credentials?: ServerCredentials
+}
+
+export const attemptInitServerOptions = (options?: ServerOptions): ServerOptions => {
+  return Joi.attempt(options || {}, ServerOptionsSchema)
 }
