@@ -23,7 +23,7 @@ Here is the feature:
 - **Protobuf**: Supports only dynamic load, simplifying the loading process of protobuf files.
 - **Client**: Configured once, callable anytime, anywhere, and supports multi-server invocation.
 - **Server**: Simplifies the initialization process with a three-step start, supporting multi-server deployment.
-- **Credentials**: Complete support for certificate loading on both the client and server, providing communication encryption capabilities.
+- **Credentials**: Complete support for certificate loading on both the client and server.
 - **No-Route**: No routing, RPC is inherently bound to methods.
 - **Middleware**: Both client and server support middleware.
 - **Metadata**: Standardizes the transmission and retrieval of metadata.
@@ -32,7 +32,7 @@ Here is the feature:
   exceptions after catching.
 - **Promise**: Supports promisify internally in RPC methods while also
   preserving callbackify.
-- **Config**: Aligned with official configurations, supports protobuf load configurations and gRPC channel configurations.
+- **Config**: Supports protobuf load configurations and gRPC channel configurations.
 - **Typescript**: Implemented purely in TypeScript with comprehensive types.
 
 ...and a lot more.
