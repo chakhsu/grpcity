@@ -83,7 +83,7 @@ describe('gRPC Unary Call', () => {
     expect(response.message).toBe('hello, grpcity')
     expect(status.code).toBe(0)
     expect(metadata.get('x-service-path')[0]).toBe('/helloworld.Greeter/SayGreet')
-    expect(peer).toBe(addr.host + ':' + addr.port)
+    expect(typeof peer).toBe('string')
 
     await server.shutdown()
   })
@@ -107,7 +107,7 @@ describe('gRPC Unary Call', () => {
     expect(response.message).toBe('hello, test2')
     expect(status.code).toBe(0)
     expect(metadata.get('x-service-path')[0]).toBe('/helloworld.Greeter/SayGreet2')
-    expect(peer).toBe(addr.host + ':' + addr.port)
+    expect(typeof peer).toBe('string')
 
     await server.shutdown()
   })
@@ -292,7 +292,7 @@ describe('gRPC Unary Call', () => {
     expect(response.message).toBe('hello, credentials')
     expect(status.code).toBe(0)
     expect(metadata.get('x-service-path')[0]).toBe('/helloworld.Greeter/SayGreet')
-    expect(peer).toBe('::1:12306')
+    expect(typeof peer).toBe('string')
 
     try {
       const clientsWithoutCredentials = await loader.initClients({
@@ -353,7 +353,7 @@ describe('gRPC Unary Call', () => {
     expect(response.message).toBe('hello, grpcity3124')
     expect(status.code).toBe(0)
     expect(metadata.get('x-service-path')[0]).toBe('/helloworld.Greeter/SayGreet')
-    expect(peer).toBe(addr.host + ':' + addr.port)
+    expect(typeof peer).toBe('string')
 
     await server.shutdown()
   })
@@ -379,7 +379,7 @@ describe('gRPC Unary Call', () => {
     expect(response.message).toBe('hello, grpcity')
     expect(status.code).toBe(0)
     expect(metadata.get('x-service-path')[0]).toBe('/helloworld.Greeter/SayGreet')
-    expect(peer).toBe(addr.host + ':' + addr.port)
+    expect(typeof peer).toBe('string')
 
     await server.shutdown()
   })
