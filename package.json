@@ -34,7 +34,7 @@
   "scripts": {
     "clear": "rimraf lib && rimraf coverage",
     "build": "pnpm clear && tsc -P tsconfig.json",
-    "publish": "pnpm build && pnpm publish .",
+    "release": "pnpm build && pnpm publish .",
     "lint:prettier": "prettier --cache --check --ignore-path .gitignore --ignore-path .prettierignore .",
     "prettier": "pnpm lint:prettier --write",
     "prepare": "husky install",
