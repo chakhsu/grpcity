@@ -22,10 +22,10 @@ export type { HandleServerStreamingCall, ServerWritableStream } from './server/s
 export type { HandleBidiStreamingCall, ServerDuplexStream } from './server/bidiStreamingCallProxy'
 export type { ReflectionServerOptions } from './server/serverReflection'
 
-// export grpc-js
-export type { Metadata, StatusObject } from '@grpc/grpc-js'
-
 // export middleware
 export type { ClientContext } from './client/clientContext'
 export type { ServerContext } from './server/serverContext'
-export type { Next } from './utils/compose'
+export type { Next, MiddlewareFunction } from './utils/compose'
+
+// export grpc-js
+export type { Metadata, StatusObject } from '@grpc/grpc-js'

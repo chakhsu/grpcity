@@ -383,4 +383,75 @@ describe('gRPC Unary Call', () => {
 
     await server.shutdown()
   })
+
+  test('Should getReal() from client to server', async () => {
+    await loader.init()
+
+    // server
+    const server = await loader.initServer()
+    server.add('helloworld.Greeter', new Greeter())
+    await server.listen(addr)
+
+    // client
+    const clients = await loader.initClients({
+      services: { 'helloworld.Greeter': addr }
+    })
+    const greeterClient = clients.getReal('helloworld.Greeter')
+
+    const meta = loader.makeMetadata({
+      'x-test-name': 'grpcity'
+    })
+
+    const { status, metadata, peer, response } = (await new Promise((resolve, reject) => {
+      const result: any = {}
+      const call = greeterClient.sayGreet({ name: 'grpcity' }, meta, (err: Error, response: any) => {
+        if (err) {
+          reject(err)
+        } else {
+          result.response = response
+        }
+      })
+      result.peer = call.getPeer()
+      call.on('metadata', (metadata: Metadata) => {
+        result.metadata = metadata
+      })
+      call.on('status', (status: StatusObject) => {
+        result.status = status
+        resolve(result)
+      })
+    })) as any
+
+    expect(typeof response).toBe('object')
+    expect(response.message).toBe('hello, grpcity')
+    expect(status.code).toBe(0)
+    expect(metadata.get('x-test-name')[0]).toBe('grpcity')
+    expect(peer.includes(addr.host + ':' + addr.port)).toBeTruthy
+
+    await server.shutdown()
+  })
+
+  test('Should clear clients from client to server', async () => {
+    await loader.init()
+
+    // server
+    const server = await loader.initServer()
+    server.add('helloworld.Greeter', new Greeter())
+    await server.listen(addr)
+
+    // client
+    const clients = await loader.initClients({
+      services: { 'helloworld.Greeter': addr }
+    })
+
+    // clear
+    clients.clear()
+
+    try {
+      clients.get('helloworld.Greeter')
+    } catch (err: any) {
+      expect(/address/i.test(err.message)).toBeTruthy
+    }
+
+    await server.shutdown()
+  })
 })

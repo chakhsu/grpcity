@@ -35,7 +35,10 @@ export class ClientFactory {
 
     let cacheAddr: string = addr
     if (addr === 'undefined:undefined') {
-      cacheAddr = this._clientAddrMap.get(name) || addr
+      cacheAddr = this._clientAddrMap.get(name) || ''
+    }
+    if (cacheAddr === '') {
+      throw new Error(`client factory create() [${name}]: address] not found.`)
     }
 
     const client = this.createReal(name, cacheAddr, credentials, channelOptions)
