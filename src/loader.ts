@@ -106,7 +106,7 @@ export class ProtoLoader {
     }
   }
 
-  makeMetadata(initialValues: Record<string, any>) {
+  makeMetadata(initialValues?: Record<string, any>) {
     const meta = new grpc.Metadata()
     if (typeof initialValues === 'object') {
       Object.entries(initialValues).forEach(([key, value]: [string, any]) => {
