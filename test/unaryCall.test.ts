@@ -452,6 +452,19 @@ describe('gRPC Unary Call', () => {
       expect(/address/i.test(err.message)).toBeTruthy
     }
 
+    clients.init({
+      services: { 'helloworld.Greeter': addr }
+    })
+
+    const greeterClient = clients.get('helloworld.Greeter')
+    const { status, metadata, peer, response } = await greeterClient.sayGreet({ name: 'grpcity' })
+
+    expect(typeof response).toBe('object')
+    expect(response.message).toBe('hello, grpcity')
+    expect(status.code).toBe(0)
+    expect(metadata.get('x-service-path')[0]).toBe('/helloworld.Greeter/SayGreet')
+    expect(typeof peer).toBe('string')
+
     await server.shutdown()
   })
 })

@@ -1,6 +1,6 @@
 {
   "name": "grpcity",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "A powerful and complete gRPC framework for Node.js",
   "author": "Chakhsu.Lau",
   "license": "MIT",
@@ -34,6 +34,7 @@
   "scripts": {
     "clear": "rimraf lib && rimraf coverage",
     "build": "pnpm clear && tsc -P tsconfig.json",
+    "publish": "pnpm build && pnpm publish .",
     "lint:prettier": "prettier --cache --check --ignore-path .gitignore --ignore-path .prettierignore .",
     "prettier": "pnpm lint:prettier --write",
     "prepare": "husky install",

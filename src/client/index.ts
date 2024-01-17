@@ -21,9 +21,19 @@ export default class Clients {
   private _proxyClientMap: Map<string, any> = new Map()
   private _clientFactory: ClientFactory
   private _credentials: ClientsOptions['credentials']
+  private _initialized: boolean = false
 
   constructor(loader: ProtoLoader, options: ClientsOptions) {
     this._clientFactory = new ClientFactory(loader)
+    this.init(options)
+    this._initialized = true
+  }
+
+  init(options: ClientsOptions) {
+    if (this._initialized) {
+      return
+    }
+
     const { services, channelOptions, credentials } = options
 
     if (credentials) {
@@ -98,5 +108,6 @@ export default class Clients {
   clear() {
     this._clientFactory.clear()
     this._proxyClientMap.clear()
+    this._initialized = false
   }
 }
