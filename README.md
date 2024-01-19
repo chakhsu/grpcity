@@ -1,6 +1,6 @@
 # gRPCity ![build-status](https://github.com/chakhsu/grpcity/actions/workflows/build.yml/badge.svg) ![npm](https://img.shields.io/npm/v/grpcity) ![license](https://img.shields.io/npm/l/grpcity)
 
-<img src="./docs/grpcity-logo.svg" width="130" height="130" alt="grpcity" align="right">
+<img src="./.github/assert/grpcity-logo.svg" width="130" height="130" alt="grpcity" align="right">
 
 [English](./README.md) | [简体中文](./README_CN.md)
 
