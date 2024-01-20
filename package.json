@@ -28,7 +28,7 @@
   },
   "files": [
     "lib",
-    "docs",
+    ".github/assert",
     "README_CN.md"
   ],
   "scripts": {
