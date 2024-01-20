@@ -8,6 +8,6 @@ import { fileURLToPath } from 'node:url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export const loader = new ProtoLoader({
-  location: path.join(__dirname, '../proto'),
-  files: ['stream/service.proto']
+  location: path.join(__dirname, './'),
+  files: ['service.proto']
 })

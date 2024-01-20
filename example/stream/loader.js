@@ -1,4 +1,6 @@
 import { ProtoLoader } from '../../lib/index.js'
+// same as import { ProtoLoader } from 'grpcity'
+
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 

@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package simple;
+
+service Hellor {
+  rpc sayHello (Message) returns (Message) {}
+}
+
+message Message {
+  string message = 1;
+}
