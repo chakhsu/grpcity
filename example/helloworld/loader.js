@@ -3,10 +3,8 @@ import { ProtoLoader } from '../../lib/index.js'
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 
-// get this file dir path
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const __dirname = path.dirname(new URL(import.meta.url).pathname)
 
 export const loader = new ProtoLoader({
   location: path.join(__dirname, '../proto'),
