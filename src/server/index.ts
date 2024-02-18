@@ -54,7 +54,6 @@ export default class Server {
     const port = (addr as any).port ? (addr as any).port : Number((addr as string).match(/:(\d+)/)![1])
     assert(bindPort === port, 'server bind port not to be right')
 
-    this._server!.start()
     this._started = true
   }
 
