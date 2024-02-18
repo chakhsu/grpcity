@@ -84,7 +84,7 @@ export class ProtoLoader {
     return new Reflection(this._packageDefinition as protoLoader.PackageDefinition, options)
   }
 
-  makeClientCredentials(rootCerts?: Buffer, privateKey?: Buffer, certChain?: Buffer, verifyOptions?: any) {
+  makeClientCredentials(rootCerts?: Buffer, privateKey?: Buffer, certChain?: Buffer, verifyOptions?: grpc.VerifyOptions) {
     if (rootCerts && privateKey && certChain) {
       return grpc.credentials.createSsl(rootCerts, privateKey, certChain, verifyOptions)
     } else {
