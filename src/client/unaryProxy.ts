@@ -1,6 +1,7 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
+import { getSignal } from './clientSignal'
 import { createContext, createResponse, ClientResponse } from './clientContext'
 import { UntypedServiceImplementation, Metadata, StatusObject, ClientUnaryCall } from '@grpc/grpc-js'
 
@@ -24,6 +25,9 @@ export const unaryProxy = (
     metadata = combineMetadata(metadata || new Metadata(), defaultMetadata)
     options = setDeadline(options, defaultOptions)
 
+    const signal = getSignal(options, defaultOptions)
+    signal.throwIfAborted()
+
     const ctx = createContext({ request, metadata, options, methodOptions })
 
     const handler = async () => {
@@ -40,6 +44,11 @@ export const unaryProxy = (
         })
 
         const call: ClientUnaryCall = func.apply(client, argumentsList)
+
+        const abortListener = () => {
+          call.cancel()
+        }
+        signal.addEventListener('abort', abortListener)
 
         call.on('metadata', (metadata: Metadata) => {
           ctx.metadata = metadata

@@ -1,6 +1,7 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
+import { getSignal } from './clientSignal'
 import { iterator } from '../utils/iterator'
 import { createContext, createResponse, ClientResponse } from './clientContext'
 import { UntypedServiceImplementation, Metadata, StatusObject, ClientReadableStream } from '@grpc/grpc-js'
@@ -28,6 +29,9 @@ export const serverStreamProxy = (
     metadata = combineMetadata(metadata || new Metadata(), defaultMetadata)
     options = setDeadline(options, defaultOptions)
 
+    const signal = getSignal(options, defaultOptions)
+    signal.throwIfAborted()
+
     const ctx = createContext({ request, metadata, options, methodOptions })
 
     let ctxRequest = ctx.request
@@ -35,7 +39,13 @@ export const serverStreamProxy = (
     let ctxOptions = ctx.method.options
     const call = func.apply(client, [ctxRequest, ctxMetadata, ctxOptions])
 
+    const abortListener = () => {
+      call.cancel()
+    }
+    signal.addEventListener('abort', abortListener)
+
     call.on('error', (err: Error) => {
+      signal.removeEventListener('abort', abortListener)
       throw createClientError(err, metadata)
     })
 

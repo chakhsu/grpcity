@@ -1,6 +1,10 @@
 import { Metadata } from '@grpc/grpc-js'
 
 export const createClientError = (err: any, metadata?: Metadata) => {
+  if (err?.name === 'GrpcClientError') {
+    return err
+  }
+
   const newError = new Error() as {
     name: string
     code: string
