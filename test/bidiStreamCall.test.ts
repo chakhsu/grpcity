@@ -79,4 +79,71 @@ describe('gRPC Bidi Stream Call', () => {
 
     await server.shutdown()
   })
+
+  test('Should signal abort immediately form client', async () => {
+    await loader.init()
+
+    // server
+    const server = await loader.initServer()
+    server.add('stream.Hellor', new AsyncStream())
+    await server.listen(addr)
+
+    // client
+    const clients = await loader.initClients({
+      services: {
+        'stream.Hellor': addr
+      }
+    })
+
+    const client = clients.get('stream.Hellor')
+
+    const ac = new AbortController()
+    const { signal } = ac
+    ac.abort()
+
+    try {
+      await client.mutualStreamHello(null, { signal })
+    } catch (err: any) {
+      expect(err.code).toBe(20)
+      expect(err.name).toBe('AbortError')
+      expect(err.message).toBe('This operation was aborted')
+    }
+
+    await server.shutdown()
+  })
+
+  test('Should signal abort 100ms interval form client', async () => {
+    loader.init()
+
+    // server
+    const server = await loader.initServer()
+    server.add('stream.Hellor', new AsyncStream())
+    await server.listen(addr)
+
+    // client
+    const clients = await loader.initClients({
+      services: {
+        'stream.Hellor': addr
+      }
+    })
+
+    const client = clients.get('stream.Hellor')
+
+    const ac = new AbortController()
+    const { signal } = ac
+    setTimeout(() => {
+      ac.abort()
+    }, 100)
+
+    try {
+      const mutualStreamHelloCall = await client.mutualStreamHello(null, { signal })
+      mutualStreamHelloCall.writeAll([{ message: 'How are you?' }])
+    } catch (err: any) {
+      expect(err.code).toBe(1)
+      expect(err.name).toBe('GrpcClientError')
+      expect(/Cancelled on client/i.test(err.message)).toBeTruthy
+    }
+
+    await server.shutdown()
+  })
 })

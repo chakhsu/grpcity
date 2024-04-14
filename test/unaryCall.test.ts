@@ -467,4 +467,68 @@ describe('gRPC Unary Call', () => {
 
     await server.shutdown()
   })
+
+  test('Should signal abort immediately form client', async () => {
+    await loader.init()
+
+    // server
+    const server = await loader.initServer()
+    server.add('helloworld.Greeter', new Greeter())
+    await server.listen(addr)
+
+    // client
+    const clients = await loader.initClients({
+      services: { 'helloworld.Greeter': addr }
+    })
+    const greeterClient = clients.get('helloworld.Greeter')
+
+    const ac = new AbortController()
+    const { signal } = ac
+    ac.abort()
+
+    try {
+      await greeterClient.sayGreet({ name: 'grpcity' }, null, { signal })
+    } catch (err: any) {
+      expect(err.code).toBe(20)
+      expect(err.name).toBe('AbortError')
+      expect(err.message).toBe('This operation was aborted')
+    }
+
+    await server.shutdown()
+  })
+
+  test('Should signal abort 100ms interval form client', async () => {
+    await loader.init()
+
+    // server
+    const server = await loader.initServer()
+    server.add('helloworld.Greeter', new Greeter())
+    server.use(async (ctx, next) => {
+      await timeout(100)
+      await next()
+    })
+    await server.listen(addr)
+
+    // client
+    const clients = await loader.initClients({
+      services: { 'helloworld.Greeter': addr }
+    })
+    const greeterClient = clients.get('helloworld.Greeter')
+
+    const ac = new AbortController()
+    const { signal } = ac
+    setTimeout(() => {
+      ac.abort()
+    }, 50)
+
+    try {
+      await greeterClient.sayGreet({ name: 'grpcity' }, null, { signal })
+    } catch (err: any) {
+      expect(err.code).toBe(1)
+      expect(err.name).toBe('GrpcClientError')
+      expect(/Cancelled on client/i.test(err.message)).toBeTruthy
+    }
+
+    await server.shutdown()
+  })
 })
