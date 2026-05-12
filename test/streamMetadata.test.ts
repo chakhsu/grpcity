@@ -1,4 +1,4 @@
-import { Metadata } from '@grpc/grpc-js'
+import { Metadata } from '../src'
 import { newLoader, pickPort } from './helpers/streamHarness'
 import type { ServerReadableStream, ServerWritableStream, ServerDuplexStream } from '../src'
 
