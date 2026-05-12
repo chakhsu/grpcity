@@ -28,6 +28,7 @@
 - **Error**: 提供了专有 Error 对象，保证异常捕捉后可以针对性处理；
 - **Promise**: rpc 方法内部支持了 promisify，同时也保留了 callbackify ；
 - **Config**: 与官方配置对齐，支持 pb load 配置和 gRPC channel 配置；
+- **Validation**: Loader、client、server 的参数会在运行时通过 [zod](https://zod.dev) 进行校验；
 - **Typescript**: 纯 TS 实现，类型齐全。
 
 ...还有更多等你发现。
@@ -39,6 +40,8 @@
 ## 快速开始
 
 ### 安装
+
+需要 Node.js >= 18。
 
 ```bash
 npm i grpcity

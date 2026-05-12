@@ -33,6 +33,7 @@ Here is the feature:
 - **Promise**: Supports promisify internally in RPC methods while also
   preserving callbackify.
 - **Config**: Supports protobuf load configurations and gRPC channel configurations.
+- **Validation**: Loader, client and server options are validated at runtime with [zod](https://zod.dev).
 - **Typescript**: Implemented purely in TypeScript with comprehensive types.
 
 ...and a lot more.
@@ -44,6 +45,8 @@ View full documentation and examples on [grpcity.js.org](https://grpcity.js.org)
 ## Quick Start
 
 ### Install
+
+Requires Node.js >= 18.
 
 ```bash
 npm i grpcity
