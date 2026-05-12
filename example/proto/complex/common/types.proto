@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package complex.common;
+
+// Shared enum used across services.
+enum Status {
+  STATUS_UNSPECIFIED = 0;
+  STATUS_ACTIVE = 1;
+  STATUS_ARCHIVED = 2;
+  STATUS_OUT_OF_STOCK = 3;
+}
+
+// Shared message used across services.
+message Money {
+  // ISO 4217 currency code, e.g. "USD".
+  string currency = 1;
+  // Whole units, stored as int64 to exercise long handling.
+  int64 units = 2;
+  // Nanos in the range [0, 999_999_999].
+  int32 nanos = 3;
+}
