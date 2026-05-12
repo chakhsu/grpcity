@@ -47,6 +47,7 @@ pnpm exec tsx typescript/client.ts
 | `multiService/` | Two services on one server, plus a server middleware for access logs.   |
 | `middleware/`   | Client- and server-side `(ctx, next)` middleware patterns.              |
 | `errors/`       | Server throws + client deadline; how to read `GrpcClientError` fields.  |
+| `abortSignal/`  | Cancelling RPCs with `AbortController` / `AbortSignal.timeout`.         |
 | `tls/`          | Mutual TLS using the certs in `../certs/`.                              |
 | `reflection/`   | Server-side reflection so tools like `grpcurl` can introspect.          |
 | `typescript/`   | The same minimal flow written in TypeScript with `tsx`.                 |
@@ -57,7 +58,7 @@ pnpm exec tsx typescript/client.ts
 2. `loader-init/` — understand the loader options before they bite.
 3. `stream/` — see how each streaming kind looks with `for await`.
 4. `middleware/` — when you start needing logging, auth, or tracing.
-5. `errors/` — how failures surface, deadlines, and error fields.
+5. `errors/` and `abortSignal/` — how failures surface and how to cancel work.
 6. `multiService/` and `reflection/` — for production-shaped servers.
 7. `tls/` — when you're ready to put it on the wire.
 

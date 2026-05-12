@@ -39,6 +39,7 @@ on you. gRPCity collapses that boilerplate without hiding it:
 - **Errors** — client-side errors surface as `GrpcClientError` so callers can
   branch on `err.name` and `err.code` precisely.
 - **Promise & callback** — async APIs by default, callback variants kept.
+- **AbortSignal** — pass an `AbortSignal` to any RPC call to cancel it.
 - **Config** — passthrough for any `@grpc/proto-loader` and `@grpc/grpc-js`
   channel option.
 - **Validation** — options are validated at runtime with [zod](https://zod.dev).

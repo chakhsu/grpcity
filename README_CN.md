@@ -36,6 +36,7 @@
 - **Error**：客户端错误统一以 `GrpcClientError` 抛出，可按 `err.name` 与
   `err.code` 精确处理。
 - **Promise 与 callback**：默认异步 API，回调版本保留。
+- **AbortSignal**：任何 RPC 调用都可以传入 `AbortSignal` 进行取消。
 - **Config**:`@grpc/proto-loader` 与 `@grpc/grpc-js` 的所有 channel option
   原样透传。
 - **Validation**:参数在运行时通过 [zod](https://zod.dev) 校验。
