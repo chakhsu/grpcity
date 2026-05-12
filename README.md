@@ -98,6 +98,11 @@ export default new ProtoLoader({
 })
 ```
 
+> **`__dirname` in ESM** — the snippet uses CommonJS-style `__dirname` for
+> brevity. If your project is ESM (`"type": "module"` in `package.json`),
+> swap `__dirname` for `import.meta.dirname` (Node.js >= 20.11) or derive
+> it from `import.meta.url` with `fileURLToPath` on older Node 18.
+
 ### 3. Implement the server
 
 Each service is an ordinary class. Methods receive a `ctx` with `request`,

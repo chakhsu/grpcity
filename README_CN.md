@@ -94,6 +94,11 @@ export default new ProtoLoader({
 })
 ```
 
+> **ESM 下的 `__dirname`** — 上述代码为简洁起见使用了 CommonJS 风格的
+> `__dirname`。如果你的项目是 ESM（`package.json` 里设了 `"type": "module"`），
+> 请把 `__dirname` 替换为 `import.meta.dirname`（Node.js >= 20.11），或在
+> 较早的 Node 18 上用 `fileURLToPath(import.meta.url)` 自行派生。
+
 ### 3. 实现服务端
 
 每个服务就是一个普通类。方法收到的 `ctx` 包含 `request`、`metadata` 等字段，
