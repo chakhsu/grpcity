@@ -1,6 +1,7 @@
-const symbolAsyncIterator = Symbol.asyncIterator || '@@asyncIterator'
+type Listener = (...args: any[]) => void
+type ListenerFn = (event: string, listener: Listener) => void
 
-const normalizeEmitter = (emitter: any): { addListener: Function; removeListener: Function } => {
+const normalizeEmitter = (emitter: any): { addListener: ListenerFn; removeListener: ListenerFn } => {
   const addListener = emitter.on || emitter.addListener || emitter.addEventListener
   const removeListener = emitter.off || emitter.removeListener || emitter.removeEventListener
 
@@ -58,7 +59,11 @@ export const iterator = (emitter: any, event: string | string[], options: any) =
   let isDone = false
   let error: any
   let hasPendingError = false
-  const nextQueue: { resolve: Function; reject: Function }[] = []
+  type QueueEntry = {
+    resolve: (value: { done: boolean; value: any }) => void
+    reject: (reason: any) => void
+  }
+  const nextQueue: QueueEntry[] = []
   const valueQueue: any[] = []
   let eventCount = 0
   let isLimitReached = false
@@ -150,7 +155,7 @@ export const iterator = (emitter: any, event: string | string[], options: any) =
   }
 
   return {
-    [symbolAsyncIterator](): any {
+    [Symbol.asyncIterator](): any {
       return this
     },
     async next(): Promise<{ done: boolean; value: any }> {

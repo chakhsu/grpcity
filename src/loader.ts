@@ -20,22 +20,24 @@ export class ProtoLoader {
   private _packageDefinition?: protoLoader.PackageDefinition
   private _insecureClientCredentials?: grpc.ChannelCredentials
   private _insecureServerCredentials?: grpc.ServerCredentials
+  private _initPromise?: Promise<void>
 
   constructor(protoFileOptions: ProtoFileOptions) {
     assertProtoFileOptionsOptions(protoFileOptions)
     this._protoFiles = Array.isArray(protoFileOptions) ? protoFileOptions : [protoFileOptions]
   }
 
-  async init(InitOptions?: InitOptions) {
-    const newInitOptions = attemptInitOptions(InitOptions)
-
+  async init(initOptions?: InitOptions) {
     if (this._types) {
       return
     }
+    if (this._initPromise) {
+      return this._initPromise
+    }
 
-    const { isDev, packagePrefix, loadOptions } = newInitOptions
+    const { isDev, packagePrefix, loadOptions } = attemptInitOptions(initOptions)
 
-    try {
+    this._initPromise = (async () => {
       this._isDev = isDev
       this._packagePrefix = packagePrefix
 
@@ -49,14 +51,15 @@ export class ProtoLoader {
 
       const packageDefinition = await protoLoader.load(files, loadOptions)
 
-      if (this._isDev && this._packagePrefix) {
-        this._packageDefinition = prefixingDefinition(packageDefinition, packagePrefix)
-      } else {
-        this._packageDefinition = packageDefinition
-      }
+      this._packageDefinition = this._isDev && this._packagePrefix ? prefixingDefinition(packageDefinition, packagePrefix) : packageDefinition
 
       this._types = grpc.loadPackageDefinition(this._packageDefinition)
+    })()
+
+    try {
+      await this._initPromise
     } catch (err) {
+      this._initPromise = undefined
       throw err
     }
   }

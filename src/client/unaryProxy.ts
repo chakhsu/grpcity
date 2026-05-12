@@ -3,13 +3,14 @@ import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
 import { createContext, createResponse, ClientResponse } from './clientContext'
 import { UntypedServiceImplementation, Metadata, StatusObject, ClientUnaryCall } from '@grpc/grpc-js'
+import type { ComposedMiddleware } from '../utils/compose'
 
 export type { ClientUnaryCall } from '@grpc/grpc-js'
 
 export const unaryProxy = (
   client: UntypedServiceImplementation,
   func: any,
-  composeFunc: Function,
+  composeFunc: ComposedMiddleware,
   defaultMetadata: Record<string, unknown>,
   defaultOptions: Record<string, unknown>,
   methodOptions: { requestStream: boolean; responseStream: boolean }
@@ -35,6 +36,7 @@ export const unaryProxy = (
         argumentsList.push((err: any, response: any) => {
           if (err) {
             reject(createClientError(err, metadata))
+            return
           }
           ctx.response = response
         })
@@ -52,9 +54,7 @@ export const unaryProxy = (
       })
     }
 
-    await composeFunc(ctx, handler).catch((err: Error) => {
-      throw createClientError(err, metadata)
-    })
+    await composeFunc(ctx, handler)
 
     return createResponse(ctx)
   }

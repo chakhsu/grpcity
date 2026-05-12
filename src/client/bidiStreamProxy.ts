@@ -4,18 +4,19 @@ import { setDeadline } from './clientDeadline'
 import { createContext, createResponse, ClientResponse } from './clientContext'
 import { iterator } from '../utils/iterator'
 import { UntypedServiceImplementation, Metadata, StatusObject, ClientDuplexStream } from '@grpc/grpc-js'
+import type { ComposedMiddleware } from '../utils/compose'
 
-export type ClientDuplexStreamCall = ClientDuplexStream<Request, Response> & {
+export type ClientDuplexStreamCall = ClientDuplexStream<any, any> & {
   writeAll: (message: any[]) => void
-  writeEnd: Function
-  readAll: () => AsyncIterator<any, any, any>
+  writeEnd: () => void
+  readAll: () => AsyncIterableIterator<any>
   readEnd: () => ClientResponse
 }
 
 export const bidiStreamProxy = (
   client: UntypedServiceImplementation,
   func: any,
-  composeFunc: Function,
+  composeFunc: ComposedMiddleware,
   defaultMetadata: Record<string, unknown>,
   defaultOptions: Record<string, unknown>,
   methodOptions: { requestStream: boolean; responseStream: boolean }
@@ -45,10 +46,6 @@ export const bidiStreamProxy = (
     }
     call.writeEnd = call.end
 
-    call.on('error', (err: Error) => {
-      throw createClientError(err, metadata)
-    })
-
     const handler = async () => {
       call.readAll = () => {
         call.on('metadata', (metadata: Metadata) => {
@@ -63,9 +60,11 @@ export const bidiStreamProxy = (
         })
       }
     }
-    await composeFunc(ctx, handler).catch((err: Error) => {
+    try {
+      await composeFunc(ctx, handler)
+    } catch (err) {
       throw createClientError(err, metadata)
-    })
+    }
 
     call.readEnd = () => {
       return createResponse(ctx)

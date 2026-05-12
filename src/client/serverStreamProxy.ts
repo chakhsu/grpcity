@@ -4,16 +4,17 @@ import { setDeadline } from './clientDeadline'
 import { iterator } from '../utils/iterator'
 import { createContext, createResponse, ClientResponse } from './clientContext'
 import { UntypedServiceImplementation, Metadata, StatusObject, ClientReadableStream } from '@grpc/grpc-js'
+import type { ComposedMiddleware } from '../utils/compose'
 
-export type ClientReadableStreamCall = ClientReadableStream<Request> & {
-  readAll: () => AsyncIterator<any, any, any>
+export type ClientReadableStreamCall = ClientReadableStream<any> & {
+  readAll: () => AsyncIterableIterator<any>
   readEnd: () => ClientResponse
 }
 
 export const serverStreamProxy = (
   client: UntypedServiceImplementation,
   func: any,
-  composeFunc: Function,
+  composeFunc: ComposedMiddleware,
   defaultMetadata: Record<string, unknown>,
   defaultOptions: Record<string, unknown>,
   methodOptions: { requestStream: boolean; responseStream: boolean }
@@ -35,10 +36,6 @@ export const serverStreamProxy = (
     const ctxOptions = ctx.method.options
     const call = func.apply(client, [ctxRequest, ctxMetadata, ctxOptions])
 
-    call.on('error', (err: Error) => {
-      throw createClientError(err, metadata)
-    })
-
     const handler = async () => {
       call.readAll = () => {
         call.on('metadata', (metadata: Metadata) => {
@@ -53,9 +50,11 @@ export const serverStreamProxy = (
         })
       }
     }
-    await composeFunc(ctx, handler).catch((err: Error) => {
+    try {
+      await composeFunc(ctx, handler)
+    } catch (err) {
       throw createClientError(err, metadata)
-    })
+    }
 
     call.readEnd = () => {
       return createResponse(ctx)

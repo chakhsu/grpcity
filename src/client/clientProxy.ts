@@ -5,13 +5,14 @@ import { clientStreamProxy } from './clientStreamProxy'
 import { serverStreamProxy } from './serverStreamProxy'
 import { bidiStreamProxy } from './bidiStreamProxy'
 import type { UntypedServiceImplementation } from '@grpc/grpc-js'
+import type { ComposedMiddleware } from '../utils/compose'
 
 const getMethodStreamType = (func: any) => {
   const { requestStream, responseStream } = func
   return { requestStream: !!requestStream, responseStream: !!responseStream }
 }
 
-export const clientProxy = (client: UntypedServiceImplementation, options: Record<string, any>, composeFunc: Function) => {
+export const clientProxy = (client: UntypedServiceImplementation, options: Record<string, any>, composeFunc: ComposedMiddleware) => {
   const prototype = Object.getPrototypeOf(client)
   const methodNames: any = Object.keys(prototype)
     .filter((key) => prototype[key] && prototype[key].path)

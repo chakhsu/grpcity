@@ -10,10 +10,11 @@ import type { ClientsOptions, AddressObject } from '../schema/loader'
 import type { ClientOptions } from '../schema/client'
 
 const prepareUrl = (url: ClientOptions['url']) => {
-  return {
-    isDefaultClient: !!url,
-    addr: isString(url) ? (url as string) : (url as AddressObject)?.host + ':' + (url as AddressObject)?.port
+  if (!url) {
+    return { isDefaultClient: true, addr: undefined }
   }
+  const addr = isString(url) ? (url as string) : `${(url as AddressObject).host}:${(url as AddressObject).port}`
+  return { isDefaultClient: false, addr }
 }
 
 export default class Clients {
@@ -21,34 +22,27 @@ export default class Clients {
   private _proxyClientMap: Map<string, any> = new Map()
   private _clientFactory: ClientFactory
   private _credentials: ClientsOptions['credentials']
-  private _initialized: boolean = false
 
   constructor(loader: ProtoLoader, options: ClientsOptions) {
     this._clientFactory = new ClientFactory(loader)
     this.init(options)
-    this._initialized = true
   }
 
   init(options: ClientsOptions) {
-    if (this._initialized) {
-      return
-    }
-
     const { services, channelOptions, credentials } = options
 
     if (credentials) {
       this._credentials = credentials
     }
 
-    const serviceNames = Object.keys(services)
-    serviceNames.forEach((name) => {
-      const isDefault = true
+    if (!services) {
+      return
+    }
 
-      const addr = isString(services[name])
-        ? (services[name] as string)
-        : (services[name] as AddressObject).host + ':' + (services[name] as AddressObject).port
-
-      this._clientFactory.create(isDefault, name, addr, credentials, channelOptions)
+    Object.keys(services).forEach((name) => {
+      const service = services[name]
+      const addr = isString(service) ? (service as string) : `${(service as AddressObject).host}:${(service as AddressObject).port}`
+      this._clientFactory.create(true, name, addr, credentials, channelOptions)
     })
   }
 
@@ -61,7 +55,7 @@ export default class Clients {
       credentials = this._credentials
     }
 
-    const cacheKeyPrefix = isDefaultClient ? 'default' : addr.replace(/\./g, '-')
+    const cacheKeyPrefix = isDefaultClient || !addr ? 'default' : addr.replace(/\./g, '-')
     const cacheKey = `proxy.${cacheKeyPrefix}.${name}.${timeout}`
 
     if (this._proxyClientMap.has(cacheKey)) {
@@ -110,6 +104,5 @@ export default class Clients {
   clear() {
     this._clientFactory.clear()
     this._proxyClientMap.clear()
-    this._initialized = false
   }
 }

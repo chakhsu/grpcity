@@ -1,6 +1,7 @@
 import * as grpc from '@grpc/grpc-js'
 import { createContext } from './serverContext'
 import { createServerError } from './serverError'
+import type { ComposedMiddleware } from '../utils/compose'
 
 export type ServerWritableStream = grpc.ServerWritableStream<any, any> & {
   writeAll: (message: any[]) => void
@@ -12,7 +13,7 @@ export type HandleServerStreamingCall = (call: ServerWritableStream) => void
 export const callServerStreamProxy = (
   target: any,
   key: string,
-  composeFunc: Function,
+  composeFunc: ComposedMiddleware,
   methodOptions: { requestStream: boolean; responseStream: boolean }
 ): HandleServerStreamingCall => {
   return (call) => {
@@ -34,9 +35,12 @@ export const callServerStreamProxy = (
         }
         await target[key](call)
       }
-      await composeFunc(ctx, handleResponse).catch((err: Error) => {
-        call.destroy(createServerError(err))
-      })
+      try {
+        await composeFunc(ctx, handleResponse)
+      } catch (err) {
+        call.destroy(createServerError(err as Error))
+        return
+      }
       call.end()
     })
   }

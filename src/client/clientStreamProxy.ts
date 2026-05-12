@@ -3,8 +3,9 @@ import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
 import { createContext, createResponse, ClientResponse } from './clientContext'
 import { UntypedServiceImplementation, Metadata, StatusObject, ClientWritableStream } from '@grpc/grpc-js'
+import type { ComposedMiddleware } from '../utils/compose'
 
-export type ClientWritableStreamCall = ClientWritableStream<Request> & {
+export type ClientWritableStreamCall = ClientWritableStream<any> & {
   writeAll: (message: any[]) => void
   writeEnd: () => Promise<ClientResponse>
 }
@@ -12,7 +13,7 @@ export type ClientWritableStreamCall = ClientWritableStream<Request> & {
 export const clientStreamProxy = (
   client: UntypedServiceImplementation,
   func: any,
-  composeFunc: Function,
+  composeFunc: ComposedMiddleware,
   defaultMetadata: Record<string, unknown>,
   defaultOptions: Record<string, unknown>,
   methodOptions: { requestStream: boolean; responseStream: boolean }
@@ -31,10 +32,12 @@ export const clientStreamProxy = (
 
     const ctxMetadata = ctx.method.metadata
     const ctxOptions = ctx.method.options
+    let callError: Error | null = null
     const argumentsList: Array<any> = [ctxMetadata, ctxOptions]
     argumentsList.push((err: any, response: any) => {
       if (err) {
-        throw createClientError(err, ctxMetadata)
+        callError = createClientError(err, ctxMetadata)
+        return
       }
       ctx.response = response
     })
@@ -51,7 +54,7 @@ export const clientStreamProxy = (
 
     const handler = async () => {
       call.end()
-      await new Promise<void>((resolve, _) => {
+      await new Promise<void>((resolve) => {
         call.on('metadata', (metadata: Metadata) => {
           ctx.metadata = metadata
         })
@@ -64,9 +67,10 @@ export const clientStreamProxy = (
     }
 
     call.writeEnd = async () => {
-      await composeFunc(ctx, handler).catch((err: Error) => {
-        throw createClientError(err, metadata)
-      })
+      await composeFunc(ctx, handler)
+      if (callError) {
+        throw callError
+      }
       return createResponse(ctx)
     }
 

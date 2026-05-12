@@ -3,43 +3,30 @@ import { ProtoLoader } from '../loader'
 import { assignChannelOptions } from '../schema/client'
 
 export class ClientFactory {
-  private _loader?: ProtoLoader
+  private _loader: ProtoLoader
   private _clientMap: Map<string, any> = new Map()
   private _clientAddrMap: Map<string, string> = new Map()
 
   constructor(loader: ProtoLoader) {
     this._loader = loader
-    if (!this._loader) {
-      this._loader = loader
-    }
   }
 
-  create(isDefault: boolean, name: string, addr: string, credentials?: ChannelCredentials, options?: ChannelOptions) {
-    const ctBool = !!credentials
-    const cacheKeyPrefix = isDefault ? 'default' : addr.replace(/\./g, '-')
+  create(isDefault: boolean, name: string, addr: string | undefined, credentials?: ChannelCredentials, options?: ChannelOptions) {
+    const cacheAddr = addr || this._clientAddrMap.get(name) || ''
+    if (cacheAddr === '') {
+      throw new Error(`client factory create() [${name}]: address not found.`)
+    }
 
+    const cacheKeyPrefix = isDefault ? 'default' : cacheAddr.replace(/\./g, '-')
     const cacheKey = `${cacheKeyPrefix}.${name}`
     if (this._clientMap.has(cacheKey)) {
       return this._clientMap.get(cacheKey)
     }
 
-    const cacheKeyWithCt = `${cacheKeyPrefix}.${name}.${ctBool}`
-    if (this._clientMap.has(cacheKeyWithCt)) {
-      return this._clientMap.get(cacheKeyWithCt)
-    }
-
-    if (!ctBool) {
-      credentials = (this._loader as ProtoLoader).makeClientCredentials()
+    if (!credentials) {
+      credentials = this._loader.makeClientCredentials()
     }
     const channelOptions = assignChannelOptions(options)
-
-    let cacheAddr: string = addr
-    if (addr === 'undefined:undefined') {
-      cacheAddr = this._clientAddrMap.get(name) || ''
-    }
-    if (cacheAddr === '') {
-      throw new Error(`client factory create() [${name}]: address] not found.`)
-    }
 
     const client = this.createReal(name, cacheAddr, credentials, channelOptions)
     this._clientAddrMap.set(name, cacheAddr)
@@ -49,11 +36,11 @@ export class ClientFactory {
 
   createReal(name: string, addr: string, credentials?: ChannelCredentials, options?: Partial<ChannelOptions>) {
     if (!credentials) {
-      credentials = (this._loader as ProtoLoader).makeClientCredentials()
+      credentials = this._loader.makeClientCredentials()
     }
     const newOptions = assignChannelOptions(options)
 
-    const ServiceProto = (this._loader as ProtoLoader).type(name)
+    const ServiceProto = this._loader.type(name)
     const client = new (ServiceProto as ServiceClientConstructor)(addr, credentials, newOptions)
     return client
   }
