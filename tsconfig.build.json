@@ -1,16 +1,18 @@
 {
   "extends": "@tsconfig/node18/tsconfig.json",
   "compilerOptions": {
-    "rootDir": ".",
-    "noEmit": true,
+    "rootDir": "src",
+    "outDir": "lib",
     "sourceMap": true,
     "declaration": true,
     "stripInternal": true,
     "allowJs": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["jest", "node"]
+    "types": ["node"]
   },
-  "include": ["src/**/*.ts", "test/**/*.ts"]
+  "include": ["src/**/*.ts"]
 }

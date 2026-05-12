@@ -33,7 +33,7 @@
   ],
   "scripts": {
     "clear": "rimraf lib && rimraf coverage",
-    "build": "pnpm clear && tsc -P tsconfig.json",
+    "build": "pnpm clear && tsc -P tsconfig.build.json",
     "release": "pnpm build && pnpm publish .",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint:fix": "pnpm lint --fix",
