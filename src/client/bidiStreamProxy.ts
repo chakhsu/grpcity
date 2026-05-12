@@ -1,6 +1,7 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
+import { extractSignal } from './clientSignal'
 import { createContext, createResponse, ClientResponse } from './clientContext'
 import { iterator } from '../utils/iterator'
 import { UntypedServiceImplementation, Metadata, StatusObject, ClientDuplexStream } from '@grpc/grpc-js'
@@ -31,11 +32,19 @@ export const bidiStreamProxy = (
     metadata = combineMetadata(metadata || new Metadata(), defaultMetadata)
     options = setDeadline(options, defaultOptions)
 
-    const ctx = createContext({ metadata, options, methodOptions })
+    const { signal, options: callOptions } = extractSignal(options)
+    signal?.throwIfAborted()
+
+    const ctx = createContext({ metadata, options: callOptions, methodOptions })
 
     const ctxMetadata = ctx.method.metadata
     const ctxOptions = ctx.method.options
     const call = func.apply(client, [ctxMetadata, ctxOptions])
+
+    const onAbort = () => call.cancel()
+    if (signal) {
+      signal.addEventListener('abort', onAbort, { once: true })
+    }
 
     call.writeAll = (messages: any[]) => {
       if (Array.isArray(messages)) {
@@ -54,6 +63,7 @@ export const bidiStreamProxy = (
         call.on('status', (status: StatusObject) => {
           ctx.status = status
           ctx.peer = call.getPeer()
+          signal?.removeEventListener('abort', onAbort)
         })
         return iterator(call, 'data', {
           resolutionEvents: ['status', 'end']

@@ -10,6 +10,7 @@ export { Status } from './schema/status'
 
 // export client
 export type { ClientOptions } from './schema/client'
+export type { ClientCallOptions } from './client/clientSignal'
 export type { ClientUnaryCall } from './client/unaryProxy'
 export type { ClientWritableStreamCall } from './client/clientStreamProxy'
 export type { ClientReadableStreamCall } from './client/serverStreamProxy'

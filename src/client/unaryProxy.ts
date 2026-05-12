@@ -1,6 +1,7 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
+import { extractSignal } from './clientSignal'
 import { createContext, createResponse, ClientResponse } from './clientContext'
 import { UntypedServiceImplementation, Metadata, StatusObject, ClientUnaryCall } from '@grpc/grpc-js'
 import type { ComposedMiddleware } from '../utils/compose'
@@ -25,7 +26,10 @@ export const unaryProxy = (
     metadata = combineMetadata(metadata || new Metadata(), defaultMetadata)
     options = setDeadline(options, defaultOptions)
 
-    const ctx = createContext({ request, metadata, options, methodOptions })
+    const { signal, options: callOptions } = extractSignal(options)
+    signal?.throwIfAborted()
+
+    const ctx = createContext({ request, metadata, options: callOptions, methodOptions })
 
     const handler = async () => {
       await new Promise<void>((resolve, reject) => {
@@ -43,12 +47,18 @@ export const unaryProxy = (
 
         const call: ClientUnaryCall = func.apply(client, argumentsList)
 
+        const onAbort = () => call.cancel()
+        if (signal) {
+          signal.addEventListener('abort', onAbort, { once: true })
+        }
+
         call.on('metadata', (metadata: Metadata) => {
           ctx.metadata = metadata
         })
         call.on('status', (status: StatusObject) => {
           ctx.status = status
           ctx.peer = call.getPeer()
+          signal?.removeEventListener('abort', onAbort)
           resolve()
         })
       })
