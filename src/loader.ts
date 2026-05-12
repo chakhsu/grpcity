@@ -51,7 +51,7 @@ export class ProtoLoader {
 
       const packageDefinition = await protoLoader.load(files, loadOptions)
 
-      this._packageDefinition = this._isDev && this._packagePrefix ? prefixingDefinition(packageDefinition, packagePrefix) : packageDefinition
+      this._packageDefinition = this._isDev && packagePrefix ? prefixingDefinition(packageDefinition, packagePrefix) : packageDefinition
 
       this._types = grpc.loadPackageDefinition(this._packageDefinition)
     })()

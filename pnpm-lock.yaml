@@ -16,12 +16,12 @@ importers:
       '@grpc/reflection':
         specifier: ^1.0.4
         version: 1.0.4(@grpc/grpc-js@1.14.3)
-      joi:
-        specifier: ^18.2.1
-        version: 18.2.1
       protobufjs:
         specifier: ^8.2.0
         version: 8.2.0
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       '@tsconfig/node18':
         specifier: ^18.2.6
@@ -389,26 +389,6 @@ packages:
     peerDependencies:
       '@grpc/grpc-js': ^1.8.21
 
-  '@hapi/address@5.1.1':
-    resolution: { integrity: sha512-A+po2d/dVoY7cYajycYI43ZbYMXukuopIsqCjh5QzsBCipDtdofHntljDlpccMjIfTy6UOkg+5KPriwYch2bXA== }
-    engines: { node: '>=14.0.0' }
-
-  '@hapi/formula@3.0.2':
-    resolution: { integrity: sha512-hY5YPNXzw1He7s0iqkRQi+uMGh383CGdyyIGYtB+W5N3KHPXoqychklvHhKCC9M3Xtv0OCs/IHw+r4dcHtBYWw== }
-
-  '@hapi/hoek@11.0.7':
-    resolution: { integrity: sha512-HV5undWkKzcB4RZUusqOpcgxOaq6VOAH7zhhIr2g3G8NF/MlFO75SjOr2NfuSx0Mh40+1FqCkagKLJRykUWoFQ== }
-
-  '@hapi/pinpoint@2.0.1':
-    resolution: { integrity: sha512-EKQmr16tM8s16vTT3cA5L0kZZcTMU5DUOZTuvpnY738m+jyP3JIUj+Mm1xc1rsLkGBQ/gVnfKYPwOmPg1tUR4Q== }
-
-  '@hapi/tlds@1.1.6':
-    resolution: { integrity: sha512-xdi7A/4NZokvV0ewovme3aUO5kQhW9pQ2YD1hRqZGhhSi5rBv4usHYidVocXSi9eihYsznZxLtAiEYYUL6VBGw== }
-    engines: { node: '>=14.0.0' }
-
-  '@hapi/topo@6.0.2':
-    resolution: { integrity: sha512-KR3rD5inZbGMrHmgPxsJ9dbi6zEK+C3ZwUwTa+eMwWLz7oijWUTWD2pMSNNYJAU6Qq+65NkxXjqHr/7LM2Xkqg== }
-
   '@humanfs/core@0.19.2':
     resolution: { integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA== }
     engines: { node: '>=18.18.0' }
@@ -614,9 +594,6 @@ packages:
 
   '@sinonjs/fake-timers@15.4.0':
     resolution: { integrity: sha512-DsG+8/LscQIQg68J6Ef3dv10u6nVyetYn923s3/sus5eaGfTo1of5WMZSLf0UJc9KDuKPilPH0UDJCjvNbDNCA== }
-
-  '@standard-schema/spec@1.1.0':
-    resolution: { integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w== }
 
   '@tsconfig/node10@1.0.9':
     resolution: { integrity: sha512-jNsYVVxU8v5g43Erja32laIDHXeoNvFEpX33OK4d6hljo3jDhCBDhx5dhCCTMWUojscpAagGiRkBKxpdl9fxqA== }
@@ -1562,10 +1539,6 @@ packages:
       node-notifier:
         optional: true
 
-  joi@18.2.1:
-    resolution: { integrity: sha512-2/OKlogiESf2Nh3TFCrRjrr9z1DRHeW0I+KReF67+4J0Ns+8hBtHRmoWAZ2OFU6I5+TWLEe6sVlSdXPjHm5UbQ== }
-    engines: { node: '>= 20' }
-
   js-tokens@4.0.0:
     resolution: { integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ== }
 
@@ -2198,6 +2171,9 @@ packages:
     resolution: { integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q== }
     engines: { node: '>=10' }
 
+  zod@4.4.3:
+    resolution: { integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ== }
+
 snapshots:
   '@ampproject/remapping@2.2.1':
     dependencies:
@@ -2595,22 +2571,6 @@ snapshots:
       '@grpc/proto-loader': 0.7.13
       protobufjs: 7.3.0
 
-  '@hapi/address@5.1.1':
-    dependencies:
-      '@hapi/hoek': 11.0.7
-
-  '@hapi/formula@3.0.2': {}
-
-  '@hapi/hoek@11.0.7': {}
-
-  '@hapi/pinpoint@2.0.1': {}
-
-  '@hapi/tlds@1.1.6': {}
-
-  '@hapi/topo@6.0.2':
-    dependencies:
-      '@hapi/hoek': 11.0.7
-
   '@humanfs/core@0.19.2':
     dependencies:
       '@humanfs/types': 0.15.0
@@ -2910,8 +2870,6 @@ snapshots:
   '@sinonjs/fake-timers@15.4.0':
     dependencies:
       '@sinonjs/commons': 3.0.1
-
-  '@standard-schema/spec@1.1.0': {}
 
   '@tsconfig/node10@1.0.9': {}
 
@@ -4050,16 +4008,6 @@ snapshots:
       - supports-color
       - ts-node
 
-  joi@18.2.1:
-    dependencies:
-      '@hapi/address': 5.1.1
-      '@hapi/formula': 3.0.2
-      '@hapi/hoek': 11.0.7
-      '@hapi/pinpoint': 2.0.1
-      '@hapi/tlds': 1.1.6
-      '@hapi/topo': 6.0.2
-      '@standard-schema/spec': 1.1.0
-
   js-tokens@4.0.0: {}
 
   js-yaml@3.14.1:
@@ -4665,3 +4613,5 @@ snapshots:
   yn@3.1.1: {}
 
   yocto-queue@0.1.0: {}
+
+  zod@4.4.3: {}
