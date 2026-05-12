@@ -53,7 +53,8 @@ export default class Clients {
   }
 
   get(name: string, clientOptions: ClientOptions = {}) {
-    let { url, channelOptions, credentials, timeout } = clientOptions
+    const { url, channelOptions, timeout } = clientOptions
+    let { credentials } = clientOptions
     const { isDefaultClient, addr } = prepareUrl(url)
 
     if (!credentials) {
@@ -76,7 +77,8 @@ export default class Clients {
   }
 
   getReal(name: string, clientOptions: ClientOptions = {}) {
-    let { url, channelOptions, credentials } = clientOptions as ClientOptions
+    const { url, channelOptions } = clientOptions as ClientOptions
+    let { credentials } = clientOptions as ClientOptions
 
     if (!credentials) {
       credentials = this._credentials

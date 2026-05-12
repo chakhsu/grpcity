@@ -3,7 +3,7 @@ import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
 import { createContext, createResponse, ClientResponse } from './clientContext'
 import { iterator } from '../utils/iterator'
-import { UntypedServiceImplementation, Metadata, StatusObject, ClientDuplexStream, InterceptingCall } from '@grpc/grpc-js'
+import { UntypedServiceImplementation, Metadata, StatusObject, ClientDuplexStream } from '@grpc/grpc-js'
 
 export type ClientDuplexStreamCall = ClientDuplexStream<Request, Response> & {
   writeAll: (message: any[]) => void
@@ -32,8 +32,8 @@ export const bidiStreamProxy = (
 
     const ctx = createContext({ metadata, options, methodOptions })
 
-    let ctxMetadata = ctx.method.metadata
-    let ctxOptions = ctx.method.options
+    const ctxMetadata = ctx.method.metadata
+    const ctxOptions = ctx.method.options
     const call = func.apply(client, [ctxMetadata, ctxOptions])
 
     call.writeAll = (messages: any[]) => {

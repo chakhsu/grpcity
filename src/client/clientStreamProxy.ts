@@ -29,8 +29,8 @@ export const clientStreamProxy = (
 
     const ctx = createContext({ metadata, options, methodOptions })
 
-    let ctxMetadata = ctx.method.metadata
-    let ctxOptions = ctx.method.options
+    const ctxMetadata = ctx.method.metadata
+    const ctxOptions = ctx.method.options
     const argumentsList: Array<any> = [ctxMetadata, ctxOptions]
     argumentsList.push((err: any, response: any) => {
       if (err) {

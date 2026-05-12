@@ -1,11 +1,17 @@
 {
-  "extends": "@tsconfig/node14/tsconfig.json",
+  "extends": "@tsconfig/node18/tsconfig.json",
   "compilerOptions": {
+    "rootDir": "src",
     "outDir": "lib",
     "sourceMap": true,
     "declaration": true,
     "stripInternal": true,
-    "allowJs": true
+    "allowJs": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/*.ts"]
+  "include": ["src/**/*.ts"]
 }

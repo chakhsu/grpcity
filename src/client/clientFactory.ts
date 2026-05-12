@@ -59,7 +59,7 @@ export class ClientFactory {
   }
 
   clear() {
-    this._clientMap.forEach((client, key) => {
+    this._clientMap.forEach((client) => {
       if (client && typeof client.close === 'function') {
         client.close()
       }

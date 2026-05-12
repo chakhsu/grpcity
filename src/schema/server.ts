@@ -1,5 +1,3 @@
-import Joi from 'joi'
-
 import type { ChannelOptions } from '@grpc/grpc-js'
 import { defaultChannelOptions } from '../config/defaultChannelOptions'
 

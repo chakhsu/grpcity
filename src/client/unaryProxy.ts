@@ -28,8 +28,8 @@ export const unaryProxy = (
 
     const handler = async () => {
       await new Promise<void>((resolve, reject) => {
-        let { request } = ctx
-        let { metadata, options } = ctx.method
+        const { request } = ctx
+        const { metadata, options } = ctx.method
 
         const argumentsList: Array<any> = [request, metadata, options]
         argumentsList.push((err: any, response: any) => {

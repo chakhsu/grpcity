@@ -30,9 +30,9 @@ export const serverStreamProxy = (
 
     const ctx = createContext({ request, metadata, options, methodOptions })
 
-    let ctxRequest = ctx.request
-    let ctxMetadata = ctx.method.metadata
-    let ctxOptions = ctx.method.options
+    const ctxRequest = ctx.request
+    const ctxMetadata = ctx.method.metadata
+    const ctxOptions = ctx.method.options
     const call = func.apply(client, [ctxRequest, ctxMetadata, ctxOptions])
 
     call.on('error', (err: Error) => {
