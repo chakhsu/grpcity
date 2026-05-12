@@ -54,7 +54,7 @@ describe('gRPC Server Stream Call', () => {
 
     const { status, peer, metadata, response } = await serverStreamHelloCall.readEnd()
 
-    expect(!response).toBeTruthy()
+    expect(response).toBeFalsy()
     expect(status.code).toBe(0)
     expect(metadata.get('x-service-path')[0]).toBe('/stream.Hellor/ServerStreamHello')
     expect(typeof peer).toBe('string')

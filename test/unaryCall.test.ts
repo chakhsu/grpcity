@@ -313,7 +313,7 @@ describe('gRPC Unary Call', () => {
 
     // server
     const serverMiddleware = async (ctx: ServerContext, next: Next) => {
-      expect(!ctx.response).toBeTruthy()
+      expect(ctx.response).toBeFalsy()
       if (ctx.request) {
         ctx.request.name = ctx.request.name + '1'
       }
@@ -321,7 +321,7 @@ describe('gRPC Unary Call', () => {
       if (ctx.response) {
         ctx.response.message = ctx.response.message + '2'
       }
-      expect(!!ctx.response).toBeTruthy()
+      expect(ctx.response).toBeTruthy()
     }
 
     const server = await loader.initServer()
@@ -331,12 +331,12 @@ describe('gRPC Unary Call', () => {
 
     // client
     const clientMiddleware = async (ctx: ClientContext, next: Next) => {
-      expect(!ctx.response).toBeTruthy()
+      expect(ctx.response).toBeFalsy()
       if (ctx.request) {
         ctx.request.name = ctx.request.name + '3'
       }
       await next()
-      expect(!!ctx.response).toBeTruthy()
+      expect(ctx.response).toBeTruthy()
       if (ctx.response) {
         ctx.response.message = ctx.response.message + '4'
       }
