@@ -4,57 +4,68 @@
 
 [English](./README.md) | [简体中文](./README_CN.md)
 
-## Introduction
+`gRPCity` is a batteries-included gRPC framework for Node.js. It wraps
+`@grpc/grpc-js` and `@grpc/proto-loader` behind a small, opinionated API so
+you can stand up a typed gRPC service or client in a handful of lines and
+spend the rest of your time on business logic.
 
-`gRPCity` is a gRPC microservices library running on Node.js. It combines
-`proto-loader` and `grpc-js` to offer an exceptionally easy way to load proto
-files. It simplifies many complex technical concepts, allowing clients and
-servers to be implemented with just a few functions. Additionally, it provides
-numerous advanced features to meet the needs of most development scenarios.
+## Why gRPCity
 
-> The name is derived from "gRPC + City = gRPCity", symbolizing the author's
-> hope that this library can support the development of business cities. Taking
-> a technological perspective as the foundation, it enables everyone to focus on
-> business and better support delivery.
+Working directly with `@grpc/grpc-js` is powerful but verbose: dynamic loading,
+service binding, credentials, metadata, streaming, and error handling are all
+on you. gRPCity collapses that boilerplate without hiding it:
 
-Here is the feature:
+- **One loader, many uses** — load `.proto` files once, then spawn clients and
+  servers from the same instance.
+- **Promise-first** — all four RPC kinds (unary, client/server/bidi stream)
+  return Promises or async iterators. Callbacks are still available when you
+  need them.
+- **Middleware on both sides** — Koa-style `(ctx, next)` pipelines on the
+  client and server for cross-cutting concerns like logging and auth.
+- **Sensible defaults** — channel options, retry policy, and keepalives are
+  preconfigured for typical microservice deployments.
 
-- **API**: Communication protocol is based on gRPC and defined through Protobuf.
-- **Protobuf**: Supports only dynamic load, simplifying the loading process of protobuf files.
-- **Client**: Configured once, callable anytime, anywhere, and supports multi-server invocation.
-- **Server**: Simplifies the initialization process with a three-step start, supporting multi-server deployment.
-- **Credentials**: Complete support for certificate loading on both the client and server.
-- **No-Route**: No routing, RPC is inherently bound to methods.
-- **Middleware**: Both client and server support middleware.
-- **Metadata**: Standardizes the transmission and retrieval of metadata.
-- **Reflection**: Built-in gRPC Reflection API in server.
-- **Error**: Provides dedicated Error objects to ensure targeted handling of
-  exceptions after catching.
-- **Promise**: Supports promisify internally in RPC methods while also
-  preserving callbackify.
-- **Config**: Supports protobuf load configurations and gRPC channel configurations.
-- **Validation**: Loader, client and server options are validated at runtime with [zod](https://zod.dev).
-- **Typescript**: Implemented purely in TypeScript with comprehensive types.
+## Features
 
-...and a lot more.
+- **API** — gRPC over HTTP/2, schemas defined in Protobuf.
+- **Protobuf** — dynamic loading only; no codegen step.
+- **Client** — configure once, call from anywhere; multi-server supported.
+- **Server** — three-line bootstrap; multiple services per process.
+- **Credentials** — full TLS support on both ends.
+- **No routing** — RPC paths are bound to methods automatically.
+- **Middleware** — Koa-style `(ctx, next)` on both client and server.
+- **Metadata** — standard helpers for sending and reading metadata.
+- **Reflection** — gRPC Server Reflection built in.
+- **Errors** — client-side errors surface as `GrpcClientError` so callers can
+  branch on `err.name` and `err.code` precisely.
+- **Promise & callback** — async APIs by default, callback variants kept.
+- **Config** — passthrough for any `@grpc/proto-loader` and `@grpc/grpc-js`
+  channel option.
+- **Validation** — options are validated at runtime with [zod](https://zod.dev).
+- **TypeScript** — written in TS with complete type exports.
 
----
+Full documentation and examples: [grpcity.js.org](https://grpcity.js.org).
 
-View full documentation and examples on [grpcity.js.org](https://grpcity.js.org).
-
-## Quick Start
-
-### Install
+## Install
 
 Requires Node.js >= 18.
 
 ```bash
 npm i grpcity
+# or
+pnpm add grpcity
+# or
+yarn add grpcity
 ```
 
-### Proto
+## Quick Start
 
-First, create the `greeter.proto` file and write the following content in it:
+Below is a minimal request/response example. You'll create three files: a
+`.proto` schema, a shared loader, and one each for the server and client.
+
+### 1. Define the service
+
+`greeter.proto`:
 
 ```proto
 syntax = "proto3";
@@ -70,9 +81,12 @@ message Message {
 }
 ```
 
-### Loader
+### 2. Share a loader
 
-Next, create `loader.js` and write the following code in it:
+A single `ProtoLoader` is reused by both the server and the client, so the
+schema is parsed exactly once.
+
+`loader.js`:
 
 ```js
 import { ProtoLoader } from 'grpcity'
@@ -84,9 +98,12 @@ export default new ProtoLoader({
 })
 ```
 
-### Server
+### 3. Implement the server
 
-Then, create `server.js` and write the following code in it:
+Each service is an ordinary class. Methods receive a `ctx` with `request`,
+`metadata`, and helpers, and return the response object.
+
+`server.js`:
 
 ```js
 import loader from './loader.js'
@@ -94,9 +111,7 @@ import loader from './loader.js'
 class Greeter {
   async sayGreet(ctx) {
     const { message } = ctx.request
-    return {
-      message: `hello ${message || 'world'}`
-    }
+    return { message: `hello ${message || 'world'}` }
   }
 }
 
@@ -107,15 +122,18 @@ const start = async (addr) => {
   server.add('helloworld.Greeter', new Greeter())
 
   await server.listen(addr)
-  console.log('gRPC Server is started: ', addr)
+  console.log('gRPC Server is started:', addr)
 }
 
 start('127.0.0.1:9099')
 ```
 
-### Client
+### 4. Call from a client
 
-Finally, create `client.js` and write the following code in it:
+Clients are looked up by their fully qualified service name. The returned
+proxy exposes every RPC method as an async function.
+
+`client.js`:
 
 ```js
 import loader from './loader.js'
@@ -124,30 +142,29 @@ const start = async (addr) => {
   await loader.init()
 
   const clients = await loader.initClients({
-    services: {
-      'helloworld.Greeter': addr
-    }
+    services: { 'helloworld.Greeter': addr }
   })
 
   const client = clients.get('helloworld.Greeter')
-  const result = await client.sayGreet({ message: 'greeter' })
-  console.log('sayGreet', result.response)
+  const { response } = await client.sayGreet({ message: 'greeter' })
+  console.log('sayGreet', response)
 }
 
 start('127.0.0.1:9099')
 ```
 
-Once the programming work is completed, you can start it in the terminal by running:
+Run them:
 
 ```sh
 node ./server.js
 node ./client.js
 ```
 
----
+## Documentation
 
-View full documentation and examples on [grpcity.js.org](https://grpcity.js.org).
+Full guides, streaming examples, middleware, TLS, and reflection are covered
+on the documentation site: [grpcity.js.org](https://grpcity.js.org).
 
 ## License
 
-Released under the MIT License.
+Released under the [MIT License](./LICENSE).
