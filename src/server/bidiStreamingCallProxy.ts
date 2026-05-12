@@ -40,7 +40,7 @@ export const callBidiStreamProxy = (
       try {
         await composeFunc(ctx, handleResponse)
       } catch (err) {
-        call.destroy(createServerError(err as Error))
+        call.emit('error', createServerError(err as Error))
         return
       }
       call.end()
