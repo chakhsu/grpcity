@@ -1,4 +1,4 @@
-import Joi from 'joi'
+import { z, ZodError } from 'zod'
 import type { Options as LoaderOptions } from '@grpc/proto-loader'
 import type { ChannelOptions, ChannelCredentials, ServerCredentials } from '@grpc/grpc-js'
 import { defaultLoadOptions } from '../config/defaultLoadOptions'
@@ -6,14 +6,20 @@ import { defaultChannelOptions } from '../config/defaultChannelOptions'
 
 export type { Options as LoaderOptions } from '@grpc/proto-loader'
 
-const protoFileOptionsSchema = Joi.array()
-  .items(
-    Joi.object({
-      location: Joi.string().required(),
-      files: Joi.array().items(Joi.string()).required()
+const formatZodError = (err: ZodError): string => err.issues.map((i) => `${i.path.join('.') || '<root>'}: ${i.message}`).join('; ')
+
+const protoFileOptionsSchema = z.union([
+  z.object({
+    location: z.string(),
+    files: z.array(z.string())
+  }),
+  z.array(
+    z.object({
+      location: z.string(),
+      files: z.array(z.string())
     })
   )
-  .single()
+])
 
 export type ProtoFileOptionType = {
   location: string
@@ -23,7 +29,14 @@ export type ProtoFileOptionType = {
 export type ProtoFileOptions = ProtoFileOptionType[] | ProtoFileOptionType
 
 export const assertProtoFileOptionsOptions = (options: ProtoFileOptions) => {
-  Joi.assert(options, protoFileOptionsSchema, 'new ProtoLoader() params error')
+  try {
+    protoFileOptionsSchema.parse(options)
+  } catch (err) {
+    if (err instanceof ZodError) {
+      throw new Error(`new ProtoLoader() params error: ${formatZodError(err)}`)
+    }
+    throw err
+  }
 }
 
 export type AddressObject = {
@@ -38,30 +51,32 @@ export type InitOptions = {
   loadOptions?: LoaderOptions
 }
 
-export const AddressSchema = Joi.alternatives([
-  Joi.string().regex(/:/, 'host and port like 127.0.0.1:9090'),
-  Joi.object({
-    host: Joi.string().required(),
-    port: Joi.number().integer().min(0).max(65535).required()
+export const AddressSchema = z.union([
+  z.string().regex(/:/, 'host and port like 127.0.0.1:9090'),
+  z.object({
+    host: z.string(),
+    port: z.number().int().min(0).max(65535)
   })
 ])
 
-const ClientsAddressSchema = Joi.object().pattern(/\.*/, AddressSchema)
+const ClientsAddressSchema = z.record(z.string(), AddressSchema)
 
-const InitOptionsSchema = Joi.object({
-  isDev: Joi.boolean().optional(),
-  packagePrefix: Joi.string().optional(),
-  loadOptions: Joi.object().optional().default(defaultLoadOptions)
+const looseObjectSchema = z.record(z.string(), z.unknown())
+
+const InitOptionsSchema = z.object({
+  isDev: z.boolean().optional(),
+  packagePrefix: z.string().optional(),
+  loadOptions: looseObjectSchema.optional().default(defaultLoadOptions as Record<string, unknown>)
 })
 
 export const attemptInitOptions = (options?: InitOptions) => {
-  return Joi.attempt(options || {}, InitOptionsSchema)
+  return InitOptionsSchema.parse(options || {}) as Required<Pick<InitOptions, 'loadOptions'>> & InitOptions
 }
 
-const ClientsOptionsSchema = Joi.object({
+const ClientsOptionsSchema = z.object({
   services: ClientsAddressSchema.optional(),
-  credentials: Joi.any().optional(),
-  channelOptions: Joi.object().optional().default(defaultChannelOptions)
+  credentials: z.any().optional(),
+  channelOptions: looseObjectSchema.optional().default(defaultChannelOptions as Record<string, unknown>)
 })
 
 export type ClientsOptions = {
@@ -70,13 +85,13 @@ export type ClientsOptions = {
   credentials?: ChannelCredentials
 }
 
-export const attemptInitClientsOptions = (options: ClientsOptions) => {
-  return Joi.attempt(options || {}, ClientsOptionsSchema)
+export const attemptInitClientsOptions = (options: ClientsOptions): ClientsOptions => {
+  return ClientsOptionsSchema.parse(options || {}) as ClientsOptions
 }
 
-const ServerOptionsSchema = Joi.object({
-  channelOptions: Joi.object().optional().default(defaultChannelOptions),
-  credentials: Joi.any().optional()
+const ServerOptionsSchema = z.object({
+  channelOptions: looseObjectSchema.optional().default(defaultChannelOptions as Record<string, unknown>),
+  credentials: z.any().optional()
 })
 
 export type ServerOptions = {
@@ -85,5 +100,5 @@ export type ServerOptions = {
 }
 
 export const attemptInitServerOptions = (options?: ServerOptions): ServerOptions => {
-  return Joi.attempt(options || {}, ServerOptionsSchema)
+  return ServerOptionsSchema.parse(options || {}) as ServerOptions
 }

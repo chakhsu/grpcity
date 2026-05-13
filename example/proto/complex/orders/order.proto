@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+import "complex/common/types.proto";
+import "complex/inventory/item.proto";
+
+package complex.orders;
+
+message Order {
+  message Line {
+    string item_id = 1;
+    int32 quantity = 2;
+    complex.common.Money unit_price = 3;
+  }
+
+  int64 id = 1;
+  complex.common.Status status = 2;
+  repeated Line lines = 3;
+  // int64 keys exercise the longs=String proto-loader option on map keys.
+  map<int64, complex.inventory.Item> items_by_id = 4;
+  oneof payment {
+    string credit_card_last4 = 5;
+    string invoice_number = 6;
+  }
+  complex.common.Money total = 7;
+}
+
+message CreateOrderRequest {
+  Order order = 1;
+}
+
+message CreateOrderResponse {
+  int64 order_id = 1;
+  complex.common.Status status = 2;
+}

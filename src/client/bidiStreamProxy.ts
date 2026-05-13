@@ -1,21 +1,23 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
+import { extractSignal } from './clientSignal'
 import { createContext, createResponse, ClientResponse } from './clientContext'
 import { iterator } from '../utils/iterator'
-import { UntypedServiceImplementation, Metadata, StatusObject, ClientDuplexStream, InterceptingCall } from '@grpc/grpc-js'
+import { UntypedServiceImplementation, Metadata, StatusObject, ClientDuplexStream } from '@grpc/grpc-js'
+import type { ComposedMiddleware } from '../utils/compose'
 
-export type ClientDuplexStreamCall = ClientDuplexStream<Request, Response> & {
+export type ClientDuplexStreamCall = ClientDuplexStream<any, any> & {
   writeAll: (message: any[]) => void
-  writeEnd: Function
-  readAll: () => AsyncIterator<any, any, any>
+  writeEnd: () => void
+  readAll: () => AsyncIterableIterator<any>
   readEnd: () => ClientResponse
 }
 
 export const bidiStreamProxy = (
   client: UntypedServiceImplementation,
   func: any,
-  composeFunc: Function,
+  composeFunc: ComposedMiddleware,
   defaultMetadata: Record<string, unknown>,
   defaultOptions: Record<string, unknown>,
   methodOptions: { requestStream: boolean; responseStream: boolean }
@@ -30,11 +32,19 @@ export const bidiStreamProxy = (
     metadata = combineMetadata(metadata || new Metadata(), defaultMetadata)
     options = setDeadline(options, defaultOptions)
 
-    const ctx = createContext({ metadata, options, methodOptions })
+    const { signal, options: callOptions } = extractSignal(options)
+    signal?.throwIfAborted()
 
-    let ctxMetadata = ctx.method.metadata
-    let ctxOptions = ctx.method.options
+    const ctx = createContext({ metadata, options: callOptions, methodOptions })
+
+    const ctxMetadata = ctx.method.metadata
+    const ctxOptions = ctx.method.options
     const call = func.apply(client, [ctxMetadata, ctxOptions])
+
+    const onAbort = () => call.cancel()
+    if (signal) {
+      signal.addEventListener('abort', onAbort, { once: true })
+    }
 
     call.writeAll = (messages: any[]) => {
       if (Array.isArray(messages)) {
@@ -45,10 +55,6 @@ export const bidiStreamProxy = (
     }
     call.writeEnd = call.end
 
-    call.on('error', (err: Error) => {
-      throw createClientError(err, metadata)
-    })
-
     const handler = async () => {
       call.readAll = () => {
         call.on('metadata', (metadata: Metadata) => {
@@ -57,15 +63,18 @@ export const bidiStreamProxy = (
         call.on('status', (status: StatusObject) => {
           ctx.status = status
           ctx.peer = call.getPeer()
+          signal?.removeEventListener('abort', onAbort)
         })
         return iterator(call, 'data', {
           resolutionEvents: ['status', 'end']
         })
       }
     }
-    await composeFunc(ctx, handler).catch((err: Error) => {
+    try {
+      await composeFunc(ctx, handler)
+    } catch (err) {
       throw createClientError(err, metadata)
-    })
+    }
 
     call.readEnd = () => {
       return createResponse(ctx)

@@ -1,6 +1,7 @@
 import * as grpc from '@grpc/grpc-js'
 import { createContext } from './serverContext'
 import { createServerError } from './serverError'
+import type { ComposedMiddleware } from '../utils/compose'
 
 export type ServerUnaryCall = grpc.ServerUnaryCall<any, any>
 
@@ -9,7 +10,7 @@ export type HandleUnaryCall = (call: ServerUnaryCall, callback: grpc.sendUnaryDa
 export const callUnaryProxy = (
   target: any,
   key: string,
-  composeFunc: Function,
+  composeFunc: ComposedMiddleware,
   methodOptions: { requestStream: boolean; responseStream: boolean }
 ): HandleUnaryCall => {
   return (call, callback) => {
@@ -22,9 +23,12 @@ export const callUnaryProxy = (
         }
         ctx.response = await target[key](call)
       }
-      await composeFunc(ctx, handleResponse).catch((err: Error) => {
-        callback(createServerError(err))
-      })
+      try {
+        await composeFunc(ctx, handleResponse)
+      } catch (err) {
+        callback(createServerError(err as Error))
+        return
+      }
       callback(null, ctx.response)
     })
   }

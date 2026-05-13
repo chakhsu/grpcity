@@ -1,73 +1,46 @@
 import { loader } from './loader.js'
 
 const start = async (addr) => {
-  await loader.init({
-    isDev: true,
-    packagePrefix: 'test'
-  })
+  await loader.init()
 
   const clients = await loader.initClients({
-    services: {
-      'stream.Hellor': addr
-    }
+    services: { 'stream.Hellor': addr }
   })
 
   const meta = loader.makeMetadata({
     'x-cache-control': 'max-age=100',
-    'x-business-id': ['grpcity', 'testing'],
-    'x-timestamp-client': 'begin=' + new Date().toISOString()
+    'x-business-id': ['grpcity', 'example'],
+    'x-timestamp-client': `begin=${new Date().toISOString()}`
   })
 
   const client = clients.get('stream.Hellor')
 
-  // client to server
-  client.call.unaryHello({ message: 'gRPCity' }, meta, (err, response) => {
-    if (err) {
-      console.log(err)
-    } else {
-      console.log(response)
-    }
-  })
+  // unary
+  const unary = await client.unaryHello({ message: 'gRPCity' }, meta)
+  console.log('unaryHello ←', unary.response)
 
-  // stream client to server
-  const clientStreamHelloCall = client.call.clientStreamHello(meta, (err, response) => {
-    if (err) {
-      console.log(err)
-    } else {
-      console.log(response)
-    }
-  })
-  clientStreamHelloCall.write({ message: 'Hello!' })
-  clientStreamHelloCall.write({ message: 'How are you?' })
-  clientStreamHelloCall.end()
+  // client → server stream
+  const clientStream = await client.clientStreamHello(meta)
+  clientStream.write({ message: 'Hello!' })
+  clientStream.write({ message: 'How are you?' })
+  const clientStreamResult = await clientStream.writeEnd()
+  console.log('clientStreamHello ←', clientStreamResult.response)
 
-  // client to stream server
-  const serverStreamHelloCall = client.call.serverStreamHello({
-    message: 'Hello! How are you?'
-  })
-  serverStreamHelloCall.on('data', (chunk) => {
-    console.log(chunk)
-  })
-  serverStreamHelloCall.on('end', () => {
-    console.log('server call end.')
-  })
+  // server → client stream
+  const serverStream = await client.serverStreamHello({ message: 'gRPCity' }, meta)
+  for await (const data of serverStream.readAll()) {
+    console.log('serverStreamHello ←', data)
+  }
+  await serverStream.readEnd()
 
-  // stream client to stream server
-  const mutualStreamHelloCall = client.call.mutualStreamHello()
-  mutualStreamHelloCall.write({ message: 'Hello!' })
-  mutualStreamHelloCall.write({ message: 'How are you?' })
-  mutualStreamHelloCall.write({ message: 'other thing x' })
-
-  mutualStreamHelloCall.on('data', (data) => {
-    console.log(data)
-    if (data.message === 'delay 1s') {
-      mutualStreamHelloCall.write({ message: 'ok, I known you delay 1s' })
-      mutualStreamHelloCall.end()
-    }
-  })
-  mutualStreamHelloCall.on('end', () => {
-    console.log('server call end.')
-  })
+  // bidi
+  const bidi = await client.mutualStreamHello(meta)
+  bidi.writeAll([{ message: 'Hello!' }, { message: 'How are you?' }, { message: 'something else' }])
+  bidi.writeEnd()
+  for await (const data of bidi.readAll()) {
+    console.log('mutualStreamHello ←', data)
+  }
+  await bidi.readEnd()
 }
 
-start('localhost:9097')
+start('127.0.0.1:9097')

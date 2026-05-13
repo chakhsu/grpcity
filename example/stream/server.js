@@ -1,74 +1,60 @@
 import { loader } from './loader.js'
 
-class Stream {
-  unaryHello(call, callback) {
-    console.log(call.request.message)
-    callback(null, { message: 'hello ' + call.request.message })
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+class Hellor {
+  async unaryHello(call) {
+    return { message: `hello, ${call.request.message}` }
   }
 
-  clientStreamHello(call, callback) {
-    const metadata = call.metadata.clone()
-    metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
-    call.sendMetadata(metadata)
+  async clientStreamHello(call) {
+    const echo = call.metadata.clone()
+    echo.add('x-timestamp-server', `received=${new Date().toISOString()}`)
+    call.sendMetadata(echo)
 
-    call.on('data', (data) => {
-      console.log(data)
-    })
-    call.on('end', () => {
-      callback(null, { message: "Hello! I'm fine, thank you!" })
-    })
+    const messages = []
+    for await (const data of call.readAll()) {
+      messages.push(data.message)
+    }
+    return { message: `received ${messages.length} message(s): ${messages.join(', ')}` }
   }
 
-  serverStreamHello(call) {
-    const metadata = call.metadata.clone()
-    metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
-    call.sendMetadata(metadata)
+  async serverStreamHello(call) {
+    const echo = call.metadata.clone()
+    echo.add('x-timestamp-server', `received=${new Date().toISOString()}`)
+    call.sendMetadata(echo)
 
-    console.log(call.request.message)
-    call.write({ message: 'Hello! I got you message.' })
-    call.write({ message: "I'm fine, thank you" })
+    call.write({ message: `hello, ${call.request.message}` })
+    call.writeAll([{ message: 'how are you?' }, { message: 'have a nice day' }])
     call.end()
   }
 
-  mutualStreamHello(call) {
-    const metadata = call.metadata.clone()
-    metadata.add('x-timestamp-server', 'received=' + new Date().toISOString())
-    call.sendMetadata(metadata)
+  async mutualStreamHello(call) {
+    const echo = call.metadata.clone()
+    echo.add('x-timestamp-server', `received=${new Date().toISOString()}`)
+    call.sendMetadata(echo)
 
-    call.write({ message: 'emmm...' })
-    call.on('data', (chunk) => {
-      console.log(chunk.message)
-      if (chunk.message === 'Hello!') {
-        call.write({ message: 'Hello too.' })
-      } else if (chunk.message === 'How are you?') {
+    for await (const data of call.readAll()) {
+      if (data.message === 'How are you?') {
         call.write({ message: "I'm fine, thank you" })
-        setTimeout(() => {
-          call.write({ message: 'delay 1s' })
-        }, 1000)
+        await delay(200)
+        call.write({ message: 'delay 200ms' })
       } else {
-        call.write({ message: 'pardon?' })
+        call.write({ message: `echo: ${data.message}` })
       }
-    })
-    call.on('end', () => {
-      setTimeout(() => {
-        console.log('client call end.')
-        call.end()
-      }, 3000)
-    })
+    }
+    call.end()
   }
 }
 
 const start = async (addr) => {
-  await loader.init({
-    isDev: true,
-    packagePrefix: 'test'
-  })
+  await loader.init()
 
   const server = await loader.initServer()
-  server.add('stream.Hellor', new Stream())
+  server.add('stream.Hellor', new Hellor())
 
   await server.listen(addr)
-  console.log('start:', addr)
+  console.log('gRPC server listening on', addr)
 }
 
-start('localhost:9097')
+start('127.0.0.1:9097')

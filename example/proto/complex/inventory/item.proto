@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+import "complex/common/types.proto";
+
+package complex.inventory;
+
+enum Category {
+  CATEGORY_UNSPECIFIED = 0;
+  CATEGORY_BOOK = 1;
+  CATEGORY_FOOD = 2;
+  CATEGORY_ELECTRONICS = 3;
+}
+
+message Item {
+  // Nested type referenced by Item.Variant.
+  message Variant {
+    string sku = 1;
+    complex.common.Money price = 2;
+    int32 stock = 3;
+  }
+
+  string id = 1;
+  string name = 2;
+  Category category = 3;
+  complex.common.Status status = 4;
+  repeated string tags = 5;
+  repeated Variant variants = 6;
+  map<string, double> region_prices = 7;
+  bytes payload = 8;
+  bool featured = 9;
+  google.protobuf.Timestamp created_at = 10;
+  double weight_kg = 11;
+}
+
+message UpdateItemRequest {
+  string id = 1;
+  oneof change {
+    string rename = 2;
+    Category recategorize = 3;
+    Item replace = 4;
+  }
+}
+
+message UpdateItemResponse {
+  Item item = 1;
+  // Echoes which oneof branch the server saw.
+  string applied = 2;
+}
+
+message BulkInsertResponse {
+  int32 inserted = 1;
+  repeated string ids = 2;
+}
+
+message ListItemsRequest {
+  Category category = 1;
+  int32 limit = 2;
+}
+
+message SyncEvent {
+  oneof kind {
+    Item upsert = 1;
+    string delete_id = 2;
+  }
+}

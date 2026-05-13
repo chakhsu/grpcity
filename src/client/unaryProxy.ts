@@ -1,15 +1,17 @@
 import { createClientError } from './clientError'
 import { combineMetadata } from './clientMetadata'
 import { setDeadline } from './clientDeadline'
+import { extractSignal } from './clientSignal'
 import { createContext, createResponse, ClientResponse } from './clientContext'
 import { UntypedServiceImplementation, Metadata, StatusObject, ClientUnaryCall } from '@grpc/grpc-js'
+import type { ComposedMiddleware } from '../utils/compose'
 
 export type { ClientUnaryCall } from '@grpc/grpc-js'
 
 export const unaryProxy = (
   client: UntypedServiceImplementation,
   func: any,
-  composeFunc: Function,
+  composeFunc: ComposedMiddleware,
   defaultMetadata: Record<string, unknown>,
   defaultOptions: Record<string, unknown>,
   methodOptions: { requestStream: boolean; responseStream: boolean }
@@ -24,22 +26,31 @@ export const unaryProxy = (
     metadata = combineMetadata(metadata || new Metadata(), defaultMetadata)
     options = setDeadline(options, defaultOptions)
 
-    const ctx = createContext({ request, metadata, options, methodOptions })
+    const { signal, options: callOptions } = extractSignal(options)
+    signal?.throwIfAborted()
+
+    const ctx = createContext({ request, metadata, options: callOptions, methodOptions })
 
     const handler = async () => {
       await new Promise<void>((resolve, reject) => {
-        let { request } = ctx
-        let { metadata, options } = ctx.method
+        const { request } = ctx
+        const { metadata, options } = ctx.method
 
         const argumentsList: Array<any> = [request, metadata, options]
         argumentsList.push((err: any, response: any) => {
           if (err) {
             reject(createClientError(err, metadata))
+            return
           }
           ctx.response = response
         })
 
         const call: ClientUnaryCall = func.apply(client, argumentsList)
+
+        const onAbort = () => call.cancel()
+        if (signal) {
+          signal.addEventListener('abort', onAbort, { once: true })
+        }
 
         call.on('metadata', (metadata: Metadata) => {
           ctx.metadata = metadata
@@ -47,14 +58,13 @@ export const unaryProxy = (
         call.on('status', (status: StatusObject) => {
           ctx.status = status
           ctx.peer = call.getPeer()
+          signal?.removeEventListener('abort', onAbort)
           resolve()
         })
       })
     }
 
-    await composeFunc(ctx, handler).catch((err: Error) => {
-      throw createClientError(err, metadata)
-    })
+    await composeFunc(ctx, handler)
 
     return createResponse(ctx)
   }

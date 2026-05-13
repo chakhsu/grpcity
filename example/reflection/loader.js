@@ -1,16 +1,10 @@
-import { ProtoLoader } from '../../lib/index.js'
-// same as import { ProtoLoader } from 'grpcity'
-
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { ProtoLoader } from 'grpcity'
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname)
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-export const helloworldLoader = new ProtoLoader({
+export const loader = new ProtoLoader({
   location: path.join(__dirname, '../proto'),
   files: ['helloworld/service.proto']
-})
-
-export const asyncStreamLoader = new ProtoLoader({
-  location: path.join(__dirname, '../proto'),
-  files: ['stream/service.proto']
 })

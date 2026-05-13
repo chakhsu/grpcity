@@ -72,7 +72,7 @@ describe('gRPC Bidi Stream Call', () => {
 
     const { status, peer, metadata, response } = await mutualStreamHelloCall.readEnd()
 
-    expect(!response).toBeTruthy
+    expect(response).toBeFalsy()
     expect(status.code).toBe(0)
     expect(metadata.get('x-service-path')[0]).toBe('/stream.Hellor/MutualStreamHello')
     expect(typeof peer).toBe('string')

@@ -153,7 +153,7 @@ describe('gRPC Unary Call', () => {
     expect(response.message).toBe('hello, grpcity')
     expect(status.code).toBe(0)
     expect(metadata.get('x-test-name')[0]).toBe('grpcity')
-    expect(peer.includes(addr.host + ':' + addr.port)).toBeTruthy
+    expect(peer.includes(addr.host + ':' + addr.port)).toBeTruthy()
 
     await server.shutdown()
   })
@@ -186,11 +186,11 @@ describe('gRPC Unary Call', () => {
     expect(metadata.get('x-service-path')[0]).toBe('/helloworld.Greeter/SayGreet')
 
     const timestamps = metadata.get('x-timestamp-server')
-    expect(Array.isArray(timestamps)).toBeTruthy
-    expect(timestamps.length === 1).toBeTruthy
+    expect(Array.isArray(timestamps)).toBeTruthy()
+    expect(timestamps.length === 1).toBeTruthy()
     const timestampServerReceived = Number(timestamps[0].split('=')[1])
     const timeUsed = timestampServerReceived - timestampClientSend
-    expect(timeUsed < 100).toBeTruthy
+    expect(timeUsed < 100).toBeTruthy()
 
     await server.shutdown()
   })
@@ -215,8 +215,8 @@ describe('gRPC Unary Call', () => {
     } catch (err: any) {
       expect(err.code).toBe(13)
       expect(err.name).toBe('GrpcClientError')
-      expect(/x-throw-error/.test(err.message)).toBeTruthy
-      expect(/SayGreet/i.test(err.message)).toBeTruthy
+      expect(/x-throw-error/.test(err.message)).toBeTruthy()
+      expect(/SayGreet/i.test(err.message)).toBeTruthy()
     }
 
     await server.shutdown()
@@ -242,10 +242,10 @@ describe('gRPC Unary Call', () => {
     try {
       await greeterClient.sayGreet({ name: 'grpcity' }, meta)
     } catch (err: any) {
-      expect(Date.now() - start < timeout * 1.5).toBeTruthy
+      expect(Date.now() - start < timeout * 1.5).toBeTruthy()
       expect(err.code).toBe(4)
-      expect(/Deadline/i.test(err.message)).toBeTruthy
-      expect(/SayGreet/i.test(err.message)).toBeTruthy
+      expect(/Deadline/i.test(err.message)).toBeTruthy()
+      expect(/SayGreet/i.test(err.message)).toBeTruthy()
     }
 
     await server.shutdown()
@@ -301,8 +301,8 @@ describe('gRPC Unary Call', () => {
       const greeterClient = clientsWithoutCredentials.get('helloworld.Greeter')
       await greeterClient.sayGreet({ name: 'credentials' })
     } catch (err: any) {
-      expect(/UNAVAILABLE/i.test(err.message)).toBeTruthy
-      expect(/SayGreet/i.test(err.message)).toBeTruthy
+      expect(/UNAVAILABLE/i.test(err.message)).toBeTruthy()
+      expect(/SayGreet/i.test(err.message)).toBeTruthy()
     }
 
     await server.shutdown()
@@ -313,7 +313,7 @@ describe('gRPC Unary Call', () => {
 
     // server
     const serverMiddleware = async (ctx: ServerContext, next: Next) => {
-      expect(!ctx.response).toBeTruthy
+      expect(ctx.response).toBeFalsy()
       if (ctx.request) {
         ctx.request.name = ctx.request.name + '1'
       }
@@ -321,7 +321,7 @@ describe('gRPC Unary Call', () => {
       if (ctx.response) {
         ctx.response.message = ctx.response.message + '2'
       }
-      expect(!!ctx.response).toBeTruthy
+      expect(ctx.response).toBeTruthy()
     }
 
     const server = await loader.initServer()
@@ -331,12 +331,12 @@ describe('gRPC Unary Call', () => {
 
     // client
     const clientMiddleware = async (ctx: ClientContext, next: Next) => {
-      expect(!ctx.response).toBeTruthy
+      expect(ctx.response).toBeFalsy()
       if (ctx.request) {
         ctx.request.name = ctx.request.name + '3'
       }
       await next()
-      expect(!!ctx.response).toBeTruthy
+      expect(ctx.response).toBeTruthy()
       if (ctx.response) {
         ctx.response.message = ctx.response.message + '4'
       }
@@ -425,7 +425,7 @@ describe('gRPC Unary Call', () => {
     expect(response.message).toBe('hello, grpcity')
     expect(status.code).toBe(0)
     expect(metadata.get('x-test-name')[0]).toBe('grpcity')
-    expect(peer.includes(addr.host + ':' + addr.port)).toBeTruthy
+    expect(peer.includes(addr.host + ':' + addr.port)).toBeTruthy()
 
     await server.shutdown()
   })
@@ -449,7 +449,7 @@ describe('gRPC Unary Call', () => {
     try {
       clients.get('helloworld.Greeter')
     } catch (err: any) {
-      expect(/address/i.test(err.message)).toBeTruthy
+      expect(/address/i.test(err.message)).toBeTruthy()
     }
 
     clients.init({

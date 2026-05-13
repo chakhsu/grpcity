@@ -24,18 +24,11 @@ export default class Server {
 
   constructor(loader: ProtoLoader, options: ServerOptions) {
     this._loader = loader
-    if (!this._loader) {
-      this._loader = loader
+    const { channelOptions, credentials } = options
+    if (credentials) {
+      this._credentials = credentials
     }
-    if (!this._server) {
-      const { channelOptions, credentials } = options
-      if (credentials) {
-        this._credentials = credentials
-      }
-
-      const serverOptions = assignServerChannelOptions(channelOptions)
-      this._server = new grpc.Server(serverOptions)
-    }
+    this._server = new grpc.Server(assignServerChannelOptions(channelOptions))
   }
 
   async listen(addr: string | { host: string; port: number }, credentials?: grpc.ServerCredentials): Promise<void> {
@@ -45,13 +38,25 @@ export default class Server {
       credentials = this._credentials
     }
 
-    const url = isString(addr) ? (addr as string) : `${(addr as any).host}:${(addr as any).port}`
+    let url: string
+    let port: number
+    if (isString(addr)) {
+      url = addr as string
+      const idx = url.lastIndexOf(':')
+      assert(idx > 0 && idx < url.length - 1, `invalid listen address: ${url}`)
+      port = Number(url.slice(idx + 1))
+      assert(Number.isInteger(port), `invalid port in listen address: ${url}`)
+    } else {
+      const obj = addr as { host: string; port: number }
+      url = `${obj.host}:${obj.port}`
+      port = obj.port
+    }
+
     const bindPort = await new Promise<number>((resolve, reject) => {
       this._server!.bindAsync(url, credentials || (this._loader as ProtoLoader).makeServerCredentials(), (err, result) =>
         err ? reject(err) : resolve(result)
       )
     })
-    const port = (addr as any).port ? (addr as any).port : Number((addr as string).match(/:(\d+)/)![1])
     assert(bindPort === port, 'server bind port not to be right')
 
     this._started = true

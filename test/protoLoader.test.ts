@@ -10,8 +10,8 @@ describe('gRPC Proto Loader', () => {
 
     await loader.init()
 
-    expect(!!loader.service('helloworld.Greeter')).toBeTruthy
-    expect(!!loader.service('helloworld.Hellor')).toBeTruthy
+    expect(loader.service('helloworld.Greeter')).toBeDefined()
+    expect(loader.service('helloworld.Hellor')).toBeDefined()
   })
 
   test('Should be load multi proto paths', async () => {
@@ -28,9 +28,9 @@ describe('gRPC Proto Loader', () => {
 
     await loader.init()
 
-    expect(!!loader.service('helloworld.Greeter')).toBeTruthy
-    expect(!!loader.service('helloworld.Hellor')).toBeTruthy
-    expect(!!loader.service('stream.Hellor')).toBeTruthy
+    expect(loader.service('helloworld.Greeter')).toBeDefined()
+    expect(loader.service('helloworld.Hellor')).toBeDefined()
+    expect(loader.service('stream.Hellor')).toBeDefined()
   })
 
   test('Should get protobuf service definition: Greeter', async () => {

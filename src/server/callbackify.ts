@@ -15,7 +15,8 @@ export type CallbackifyOptions = {
 export const callbackify = (target: any, middleware: MiddlewareFunction[], options: CallbackifyOptions): any => {
   assert(typeof target === 'object', 'Must callbackify an object')
 
-  let { _implementationType, exclude, inherit } = options
+  const { _implementationType, inherit } = options
+  let { exclude } = options
 
   const protoPropertyNames = Object.getOwnPropertyNames(Object.getPrototypeOf({}))
   if (exclude) {

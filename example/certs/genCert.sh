@@ -9,7 +9,7 @@ echo "Generating certificates ..."
 password="grpcity"
 
 # 证书有效期变量
-days=365
+days=3650
 
 # 设置CA相关变量
 ca_key="ca.key"

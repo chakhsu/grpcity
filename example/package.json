@@ -1,3 +1,11 @@
 {
-  "type": "module"
+  "name": "grpcity-examples",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "grpcity": "link:.."
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  }
 }

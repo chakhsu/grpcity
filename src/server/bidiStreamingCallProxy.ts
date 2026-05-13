@@ -2,10 +2,11 @@ import * as grpc from '@grpc/grpc-js'
 import { iterator } from '../utils/iterator'
 import { createContext } from './serverContext'
 import { createServerError } from './serverError'
+import type { ComposedMiddleware } from '../utils/compose'
 
 export type ServerDuplexStream = grpc.ServerDuplexStream<any, any> & {
   writeAll: (message: any[]) => void
-  readAll: Function
+  readAll: () => AsyncIterableIterator<any>
 }
 
 export type HandleBidiStreamingCall = (call: ServerDuplexStream) => void
@@ -13,7 +14,7 @@ export type HandleBidiStreamingCall = (call: ServerDuplexStream) => void
 export const callBidiStreamProxy = (
   target: any,
   key: string,
-  composeFunc: Function,
+  composeFunc: ComposedMiddleware,
   methodOptions: { requestStream: boolean; responseStream: boolean }
 ): HandleBidiStreamingCall => {
   return (call) => {
@@ -36,9 +37,12 @@ export const callBidiStreamProxy = (
       const handleResponse = async () => {
         await target[key](call)
       }
-      await composeFunc(ctx, handleResponse).catch((err: Error) => {
-        call.destroy(createServerError(err))
-      })
+      try {
+        await composeFunc(ctx, handleResponse)
+      } catch (err) {
+        call.emit('error', createServerError(err as Error))
+        return
+      }
       call.end()
     })
   }

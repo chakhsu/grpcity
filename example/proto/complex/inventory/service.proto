@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+import "complex/inventory/item.proto";
+
+package complex.inventory;
+
+service InventoryService {
+  rpc UpdateItem (UpdateItemRequest) returns (UpdateItemResponse) {}
+  rpc BulkInsert (stream Item) returns (BulkInsertResponse) {}
+  rpc ListItems (ListItemsRequest) returns (stream Item) {}
+  rpc Sync (stream SyncEvent) returns (stream SyncEvent) {}
+}
